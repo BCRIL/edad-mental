@@ -17,6 +17,15 @@ if (typeof window.updateTimer === 'undefined') {
 // ══════════════════════════════════════════════════
 
 window.handleGoogleLogin = async function() {
+    // Save pending score if we are currently on the results screen
+    if (window._shareData) {
+        localStorage.setItem('pendingBrainAgeResult', JSON.stringify({
+            shareData: window._shareData,
+            games: window.games || [],
+            difficulty: window.currentDifficulty || 'normal'
+        }));
+    }
+
     const btn = document.getElementById('btn-google-login');
     if (btn) {
         btn.disabled = true;
@@ -314,60 +323,4 @@ window.addEventListener('load', () => {
     }
 
     // Override: guardar ranking con user_id si el usuario está logueado
-    const btnSubmitScore = document.getElementById('btn-submit-score');
-    if (btnSubmitScore) {
-        // Clonar para eliminar listeners anteriores
-        const newBtn = btnSubmitScore.cloneNode(true);
-        btnSubmitScore.parentNode.replaceChild(newBtn, btnSubmitScore);
-
-        newBtn.addEventListener('click', async () => {
-            const nameInput = document.getElementById('player-name-input');
-            const name = (window._currentDisplayName || nameInput?.value || '').trim();
-            const msgEl = document.getElementById('ranking-msg');
-
-            if (!name) {
-                if (msgEl) { msgEl.textContent = 'Por favor, ingresa tu nombre.'; msgEl.style.color = 'var(--clr-danger)'; }
-                if (nameInput) { nameInput.classList.add('shake'); setTimeout(() => nameInput.classList.remove('shake'), 400); }
-                return;
-            }
-
-            newBtn.disabled = true;
-            newBtn.innerHTML = '<svg style="animation:spin 1s linear infinite;display:inline-block;margin-right:6px;" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>Guardando...';
-            if (msgEl) msgEl.textContent = '';
-
-            const shareData = window._shareData;
-            if (!shareData) { newBtn.disabled = false; newBtn.textContent = 'Guardar en Ranking'; return; }
-
-            const data = {
-                player_name: name,
-                difficulty: window._currentDifficulty || 'normal',
-                brain_age: shareData.brainAge,
-                reaction_score: (shareData.scores || {}).reaction || 0,
-                numbers_score: (shareData.scores || {}).numbers || 0,
-                patterns_score: (shareData.scores || {}).patterns || 0,
-                math_score: (shareData.scores || {}).math || 0,
-                sequence_score: (shareData.scores || {}).sequence || 0,
-            };
-
-            // Añadir user_id si está logueado
-            if (window._currentUser) {
-                data.user_id = window._currentUser.id;
-            }
-
-            const err = await saveRanking(data);
-            newBtn.disabled = false;
-            newBtn.textContent = 'Guardar en Ranking';
-
-            if (err) {
-                if (msgEl) { msgEl.textContent = 'Error al guardar. Intenta de nuevo.'; msgEl.style.color = 'var(--clr-danger)'; }
-            } else {
-                window._sharePlayerName = name;
-                const overlay = document.getElementById('score-saved-overlay');
-                const textEl  = document.getElementById('score-saved-text');
-                if (textEl) textEl.textContent = `¡Tu puntuación (${shareData.brainAge} años mentales) ha sido guardada en el ranking global!`;
-                if (overlay) overlay.style.display = 'flex';
-                newBtn.textContent = '✓ Guardado';
-            }
-        });
-    }
 });

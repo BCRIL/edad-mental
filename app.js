@@ -1611,7 +1611,52 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', initEvents);
+    function restorePendingResult() {
+        try {
+            const pending = localStorage.getItem('pendingBrainAgeResult');
+            if (pending) {
+                const data = JSON.parse(pending);
+                window._shareData = data.shareData;
+                if (data.games) games = data.games;
+                if (data.difficulty) currentDifficulty = data.difficulty;
+                
+                // Re-populate DOM
+                $('#results-age').textContent = data.shareData.brainAge;
+                $('#results-percentile').innerHTML = `Tu cerebro funciona mejor que el <strong>${data.shareData.percentile}%</strong> de los usuarios que han hecho este test.`;
+                
+                const breakdownContainer = $('.results-breakdown');
+                breakdownContainer.innerHTML = '<h3 class="breakdown-title">Desglose por Prueba</h3>';
+                games.forEach(g => {
+                    const key = g.iconKey;
+                    breakdownContainer.innerHTML += `
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">${g.label}</span>
+                            <div class="breakdown-bar-bg"><div class="breakdown-bar" id="bar-${key}"></div></div>
+                            <span class="breakdown-value" id="val-${key}">--</span>
+                        </div>
+                    `;
+                });
+                
+                setTimeout(() => {
+                    games.forEach(g => {
+                        setBar(g.iconKey, data.shareData.scores[g.iconKey], data.shareData.ages[g.iconKey]);
+                    });
+                }, 300);
+                
+                // Hide modal if open
+                const authModal = document.getElementById('auth-modal');
+                if (authModal) authModal.style.display = 'none';
+                
+                showScreen('results');
+                localStorage.removeItem('pendingBrainAgeResult');
+            }
+        } catch(e) {}
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initEvents();
+        restorePendingResult();
+    });
 
     // ══════════════════════════════════════════
     // V3/V4: BACKGROUND PARTICLES (reactive)
@@ -2274,13 +2319,16 @@
         const pill      = document.getElementById('nav-user-pill');
         const avatar    = document.getElementById('nav-avatar');
         const nameSpan  = document.getElementById('nav-username');
-        // Ranking auth gate elements
+        // Ranking save auth gate elements
         const rankGate  = document.getElementById('ranking-auth-gate');
         const rankForm  = document.getElementById('ranking-save-form');
         const rankLabel = document.getElementById('ranking-user-label');
-        // Profile auth gate elements
+        // Profile view auth gate elements
         const profGate  = document.getElementById('profile-auth-gate');
         const profContent = document.getElementById('profile-content');
+        // Ranking view auth gate elements
+        const rankPageGate = document.getElementById('ranking-page-auth-gate');
+        const rankPageContent = document.getElementById('ranking-page-content');
 
         if (user && displayName) {
             _currentUser        = user;
@@ -2299,6 +2347,9 @@
             // Show profile content, hide auth gate
             if (profGate) profGate.style.display = 'none';
             if (profContent) profContent.style.display = 'block';
+            // Show ranking page content, hide auth gate
+            if (rankPageGate) rankPageGate.style.display = 'none';
+            if (rankPageContent) rankPageContent.style.display = 'block';
         } else {
             _currentUser        = null;
             _currentDisplayName = null;
@@ -2310,6 +2361,9 @@
             // Show profile auth gate, hide content
             if (profGate) profGate.style.display = 'block';
             if (profContent) profContent.style.display = 'none';
+            // Show ranking page auth gate, hide content
+            if (rankPageGate) rankPageGate.style.display = 'block';
+            if (rankPageContent) rankPageContent.style.display = 'none';
         }
     }
 

@@ -696,7 +696,15 @@
 
         <!-- VIEW: RANKING -->
         <div id="view-ranking" class="spa-view" style="display:none; opacity:0; transition: opacity 0.3s ease;">
-            <main class="ranking-container" style="max-width: 800px; margin: 80px auto 40px; padding: 20px;">
+            <!-- Auth gate for ranking -->
+            <div id="ranking-page-auth-gate" style="display:none; max-width:500px; margin:120px auto; text-align:center; padding:40px 20px;">
+                <div style="font-size:64px;margin-bottom:16px;">🛑</div>
+                <h2 style="font-family:var(--font-display);font-size:24px;margin-bottom:12px;color:var(--clr-text);">Ranking Privado</h2>
+                <p style="color:var(--clr-text-muted);font-size:14px;margin-bottom:24px;line-height:1.6;">Necesitas iniciar sesión para ver las puntuaciones de otros jugadores y comparar tu edad mental.</p>
+                <button class="btn btn-primary btn-glow" onclick="document.getElementById('auth-modal').style.display='flex'" style="font-size:15px;padding:12px 28px;">🔑 Iniciar Sesión</button>
+            </div>
+            
+            <main id="ranking-page-content" class="app-container">
                 <h1 class="ranking-title"
                     style="font-family: var(--font-display); font-size: 36px; text-align: center; margin-bottom: 10px; background: linear-gradient(135deg, var(--clr-primary-light), var(--clr-accent-light)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
                     Top Mejores Cerebros</h1>
