@@ -2039,9 +2039,9 @@
             const pos = index + 1;
             let posClass = 'rank-pos';
             let medal = '';
-            if (pos === 1) { posClass += ' gold'; medal = '🥇'; }
-            else if (pos === 2) { posClass += ' silver'; medal = '🥈'; }
-            else if (pos === 3) { posClass += ' bronze'; medal = '🥉'; }
+            if (pos === 1) { posClass += ' gold'; medal = '<span class="rank-medal medal-gold">1</span>'; }
+            else if (pos === 2) { posClass += ' silver'; medal = '<span class="rank-medal medal-silver">2</span>'; }
+            else if (pos === 3) { posClass += ' bronze'; medal = '<span class="rank-medal medal-bronze">3</span>'; }
 
             const diffMap = {
                 easy: { label: 'Fácil', cls: 'easy' },
@@ -2051,7 +2051,7 @@
             const diff = diffMap[row.difficulty] || diffMap.normal;
 
             tr.innerHTML = `
-                <td class="${posClass}">${medal ? '<span class="rank-medal">' + medal + '</span>' : ''}#${pos}</td>
+                <td class="${posClass}">${medal}#${pos}</td>
                 <td class="rank-name">${escapeHTML(row.player_name)}</td>
                 <td class="rank-age">${row.brain_age} años</td>
                 <td><span class="diff-badge ${diff.cls}">${diff.label}</span></td>
@@ -2220,6 +2220,11 @@
                 e.preventDefault();
                 const path = link.getAttribute('href');
                 navigate(path);
+                // Close hamburger menu on mobile
+                const navLinks = document.querySelector('.nav-links');
+                const hamburger = document.getElementById('hamburger-btn');
+                if (navLinks) navLinks.classList.remove('open');
+                if (hamburger) hamburger.classList.remove('active');
             }
         });
 

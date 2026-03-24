@@ -40,6 +40,9 @@
     <header class="main-header">
         <div class="header-content">
             <a href="/" class="logo" data-route="home">Edad Mental</a>
+            <button id="hamburger-btn" class="hamburger-btn" onclick="document.querySelector('.nav-links').classList.toggle('open');this.classList.toggle('active');" aria-label="Menú">
+                <span></span><span></span><span></span>
+            </button>
             <nav class="nav-links">
                 <a href="/" class="nav-link active-route" data-route="home"><svg viewBox="0 0 24 24" width="16"
                         height="16" fill="none" stroke="currentColor" stroke-width="2">
