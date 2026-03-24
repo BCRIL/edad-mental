@@ -58,8 +58,14 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="db.js?v=2.0"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
+        window.addEventListener('load', async () => {
             const tbody = document.getElementById('ranking-body');
+
+            if (typeof getTopRankings !== 'function') {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--clr-danger); padding: 30px;">Error: No se pudo conectar con la base de datos.</td></tr>';
+                return;
+            }
+
             const { data, error } = await getTopRankings();
             
             if (error || !data) {
