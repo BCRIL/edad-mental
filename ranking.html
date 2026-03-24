@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ranking Global | Test de Edad Mental</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=2.1">
+    <link rel="stylesheet" href="styles.css?v=3.0">
     <style>
         .ranking-container { max-width: 800px; margin: 80px auto 40px; padding: 20px; }
-        .ranking-title { font-family: var(--font-display); font-size: 36px; text-align: center; margin-bottom: 30px; background: linear-gradient(135deg, var(--clr-primary-light), var(--clr-accent-light)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .ranking-title { font-family: var(--font-display); font-size: 36px; text-align: center; margin-bottom: 10px; background: linear-gradient(135deg, var(--clr-primary-light), var(--clr-accent-light)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .ranking-subtitle { text-align: center; color: var(--clr-text-muted); margin-bottom: 24px; font-size: 14px; }
         .ranking-table { width: 100%; border-collapse: collapse; background: var(--clr-surface); backdrop-filter: blur(20px); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-card); border: 1px solid var(--clr-glass-border); }
         .ranking-table th, .ranking-table td { padding: 16px 24px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .ranking-table th { background: rgba(0,0,0,0.2); font-weight: 700; color: var(--clr-text-muted); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
@@ -20,8 +21,22 @@
         .rank-pos.bronze { color: #b45309; font-size: 20px; }
         .rank-name { font-weight: 600; color: var(--clr-text); font-size: 16px; }
         .rank-age { font-family: var(--font-display); font-weight: 800; font-size: 22px; color: var(--clr-primary-light); }
-        
         .loading-spinner { text-align: center; padding: 40px; color: var(--clr-text-muted); }
+
+        /* Difficulty filter tabs */
+        .filter-tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap; }
+        .filter-tab { font-family: var(--font-body); font-weight: 600; font-size: 13px; padding: 8px 20px; border: 1px solid var(--clr-glass-border); border-radius: 999px; background: var(--clr-surface); color: var(--clr-text-muted); cursor: pointer; transition: all 0.2s; }
+        .filter-tab:hover { background: var(--clr-surface-hover); color: var(--clr-text); }
+        .filter-tab.active { background: linear-gradient(135deg, var(--clr-primary), var(--clr-primary-dark)); color: #fff; border-color: transparent; }
+
+        /* Difficulty badges */
+        .diff-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .diff-badge.easy { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .diff-badge.normal { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .diff-badge.hard { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+        /* Medal emoji for top 3 */
+        .rank-medal { font-size: 20px; margin-right: 4px; }
     </style>
 </head>
 <body>
@@ -38,7 +53,16 @@
 
     <main class="ranking-container">
         <h1 class="ranking-title">Top Mejores Cerebros</h1>
-        
+        <p class="ranking-subtitle" id="ranking-count"></p>
+
+        <!-- Difficulty Filter Tabs -->
+        <div class="filter-tabs" id="filter-tabs">
+            <button class="filter-tab active" data-filter="all">Todas</button>
+            <button class="filter-tab" data-filter="easy">🟢 Fácil</button>
+            <button class="filter-tab" data-filter="normal">🔵 Normal</button>
+            <button class="filter-tab" data-filter="hard">🔴 Difícil</button>
+        </div>
+
         <table class="ranking-table">
             <thead>
                 <tr>
@@ -54,57 +78,93 @@
         </table>
     </main>
 
+    <footer class="footer">
+        <div class="footer-content">
+            <p class="footer-brand">Test de Edad Mental &copy; 2026</p>
+            <nav class="footer-links">
+                <a href="index.html">Inicio</a>
+                <a href="estadisticas.html">Estadísticas</a>
+                <a href="contacto.html">Contacto</a>
+            </nav>
+        </div>
+    </footer>
+
     <!-- Supabase CDN and Shared DB logic -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="db.js?v=2.1"></script>
+    <script src="db.js?v=3.0"></script>
     <script>
-        window.addEventListener('load', async () => {
+        let currentFilter = 'all';
+
+        async function loadRanking(filter) {
             const tbody = document.getElementById('ranking-body');
+            tbody.innerHTML = '<tr><td colspan="4" class="loading-spinner">Cargando...</td></tr>';
 
             if (typeof getTopRankings !== 'function') {
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--clr-danger); padding: 30px;">Error: No se pudo conectar con la base de datos.</td></tr>';
                 return;
             }
 
-            const { data, error } = await getTopRankings();
-            
+            const { data, error } = await getTopRankings(filter);
+
             if (error || !data) {
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--clr-danger); padding: 30px;">Error al cargar el ranking.</td></tr>';
                 console.error(error);
                 return;
             }
-            
+
+            const countEl = document.getElementById('ranking-count');
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 30px;">Aún no hay puntuaciones. ¡Sé el primero en jugar!</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 30px;">Aún no hay puntuaciones en esta categoría. ¡Sé el primero!</td></tr>';
+                countEl.textContent = '';
                 return;
             }
+
+            countEl.textContent = `${data.length} jugador${data.length !== 1 ? 'es' : ''} en el ranking`;
 
             tbody.innerHTML = '';
             data.forEach((row, index) => {
                 const tr = document.createElement('tr');
                 const pos = index + 1;
                 let posClass = 'rank-pos';
-                if (pos === 1) posClass += ' gold';
-                else if (pos === 2) posClass += ' silver';
-                else if (pos === 3) posClass += ' bronze';
+                let medal = '';
+                if (pos === 1) { posClass += ' gold'; medal = '🥇'; }
+                else if (pos === 2) { posClass += ' silver'; medal = '🥈'; }
+                else if (pos === 3) { posClass += ' bronze'; medal = '🥉'; }
 
-                const diff = row.difficulty === 'easy' ? 'Fácil' : (row.difficulty === 'hard' ? 'Difícil' : 'Normal');
+                const diffMap = {
+                    easy: { label: 'Fácil', cls: 'easy' },
+                    normal: { label: 'Normal', cls: 'normal' },
+                    hard: { label: 'Difícil', cls: 'hard' }
+                };
+                const diff = diffMap[row.difficulty] || diffMap.normal;
 
                 tr.innerHTML = `
-                    <td class="${posClass}">#${pos}</td>
+                    <td class="${posClass}">${medal ? '<span class="rank-medal">' + medal + '</span>' : ''}#${pos}</td>
                     <td class="rank-name">${escapeHTML(row.player_name)}</td>
                     <td class="rank-age">${row.brain_age} años</td>
-                    <td><span style="font-size:12px;opacity:0.8">${diff}</span></td>
+                    <td><span class="diff-badge ${diff.cls}">${diff.label}</span></td>
                 `;
                 tbody.appendChild(tr);
             });
-        });
+        }
 
         function escapeHTML(str) {
             const div = document.createElement('div');
             div.innerText = str;
             return div.innerHTML;
         }
+
+        // Filter tabs
+        document.getElementById('filter-tabs').addEventListener('click', (e) => {
+            const tab = e.target.closest('.filter-tab');
+            if (!tab) return;
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            currentFilter = tab.dataset.filter;
+            loadRanking(currentFilter);
+        });
+
+        window.addEventListener('load', () => loadRanking('all'));
     </script>
 </body>
 </html>

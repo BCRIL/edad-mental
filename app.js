@@ -1297,7 +1297,27 @@
 
         showScreen('results');
 
-        window._shareData = { brainAge, percentile, scores };
+        window._shareData = { brainAge, percentile, scores, ages };
+
+        // V3: Load global comparison
+        if (typeof getGlobalAverages === 'function') {
+            getGlobalAverages().then(avg => {
+                if (avg) {
+                    const el = $('#global-comparison');
+                    const avgEl = $('#global-avg-age');
+                    const verdictEl = $('#comparison-verdict');
+                    avgEl.textContent = avg.avgBrainAge;
+                    if (brainAge < avg.avgBrainAge) {
+                        verdictEl.innerHTML = '¡Tu cerebro es <strong style="color:var(--clr-success)">más joven</strong> que la media! 🧠🔥';
+                    } else if (brainAge === avg.avgBrainAge) {
+                        verdictEl.textContent = 'Estás justo en la media. ¿Puedes mejorar? 💪';
+                    } else {
+                        verdictEl.innerHTML = 'Estás por encima de la media. <strong style="color:var(--clr-warning)">¡Entrena tu cerebro!</strong> 🏋️';
+                    }
+                    el.style.display = 'block';
+                }
+            });
+        }
     }
 
     function setBar(name, score, age) {
@@ -1394,13 +1414,14 @@
             showScreen('welcome');
         });
 
+        // Save ranking to Supabase
         const btnSubmitScore = $('#btn-submit-score');
         if (btnSubmitScore) {
             btnSubmitScore.addEventListener('click', async () => {
                 const nameInput = $('#player-name-input');
                 const name = nameInput.value.trim();
                 const msgEl = $('#ranking-msg');
-                
+
                 if (!name) {
                     msgEl.textContent = 'Por favor, ingresa tu nombre.';
                     msgEl.style.color = 'var(--clr-danger)';
@@ -1442,7 +1463,174 @@
                 }
             });
         }
+
+        // V3: Download shareable card
+        const btnDownload = $('#btn-download-card');
+        if (btnDownload) {
+            btnDownload.addEventListener('click', () => {
+                const d = window._shareData;
+                if (!d) return;
+                const canvas = document.createElement('canvas');
+                canvas.width = 600; canvas.height = 400;
+                const ctx = canvas.getContext('2d');
+                // Background gradient
+                const grd = ctx.createLinearGradient(0, 0, 600, 400);
+                grd.addColorStop(0, '#0f0c29');
+                grd.addColorStop(0.5, '#1a1145');
+                grd.addColorStop(1, '#24243e');
+                ctx.fillStyle = grd;
+                ctx.fillRect(0, 0, 600, 400);
+                // Border glow
+                ctx.strokeStyle = 'rgba(139, 92, 246, 0.5)';
+                ctx.lineWidth = 3;
+                ctx.roundRect(10, 10, 580, 380, 20);
+                ctx.stroke();
+                // Title
+                ctx.fillStyle = '#a78bfa';
+                ctx.font = 'bold 22px Outfit, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('Test de Edad Mental', 300, 55);
+                // Brain age
+                ctx.fillStyle = '#22d3ee';
+                ctx.font = 'bold 80px Outfit, sans-serif';
+                ctx.fillText(d.brainAge, 300, 160);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '24px Inter, sans-serif';
+                ctx.fillText('años de edad mental', 300, 195);
+                // Scores
+                const labels = ['Reacción', 'Números', 'Patrones', 'Mates', 'Secuencia'];
+                const scoreKeys = ['reaction', 'numbers', 'patterns', 'math', 'sequence'];
+                const barY = 230;
+                labels.forEach((label, i) => {
+                    const y = barY + i * 30;
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = '14px Inter, sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(label, 60, y + 4);
+                    // Bar bg
+                    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+                    ctx.fillRect(180, y - 8, 300, 14);
+                    // Bar fill
+                    const score = d.scores[scoreKeys[i]];
+                    const barGrd = ctx.createLinearGradient(180, 0, 480, 0);
+                    barGrd.addColorStop(0, '#8b5cf6');
+                    barGrd.addColorStop(1, '#06b6d4');
+                    ctx.fillStyle = barGrd;
+                    ctx.fillRect(180, y - 8, (score / 100) * 300, 14);
+                    // Score value
+                    ctx.fillStyle = '#f1f5f9';
+                    ctx.textAlign = 'right';
+                    ctx.font = 'bold 14px Outfit, sans-serif';
+                    ctx.fillText(d.ages[scoreKeys[i]] + ' años', 540, y + 4);
+                });
+                // URL
+                ctx.fillStyle = '#64748b';
+                ctx.font = '13px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('edadmental.online', 300, 385);
+                // Download
+                const link = document.createElement('a');
+                link.download = 'mi-edad-mental.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+
+        // V3: Challenge a friend
+        const btnChallenge = $('#btn-challenge');
+        if (btnChallenge) {
+            btnChallenge.addEventListener('click', () => {
+                const d = window._shareData;
+                if (!d) return;
+                const text = encodeURIComponent(`🧠 Mi edad mental es ${d.brainAge} años. ¿Puedes superarme?\n\nHaz el test gratis en 3 minutos:\nhttps://edadmental.online`);
+                window.open(`https://wa.me/?text=${text}`, '_blank');
+            });
+        }
     }
 
     document.addEventListener('DOMContentLoaded', initEvents);
+
+    // ══════════════════════════════════════════
+    // V3: BACKGROUND PARTICLES (floating neurons)
+    // ══════════════════════════════════════════
+    function initBgParticles() {
+        const canvas = document.getElementById('bg-particles');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let w, h;
+        const particles = [];
+        const PARTICLE_COUNT = 40;
+
+        function resize() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            particles.push({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                r: Math.random() * 2 + 1,
+                dx: (Math.random() - 0.5) * 0.4,
+                dy: (Math.random() - 0.5) * 0.4,
+                opacity: Math.random() * 0.3 + 0.1,
+                color: ['rgba(139,92,246,', 'rgba(6,182,212,', 'rgba(167,139,250,'][Math.floor(Math.random() * 3)]
+            });
+        }
+
+        function drawParticles() {
+            ctx.clearRect(0, 0, w, h);
+            particles.forEach(p => {
+                p.x += p.dx;
+                p.y += p.dy;
+                if (p.x < 0) p.x = w;
+                if (p.x > w) p.x = 0;
+                if (p.y < 0) p.y = h;
+                if (p.y > h) p.y = 0;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = p.color + p.opacity + ')';
+                ctx.fill();
+            });
+            // Lines between nearby particles
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(139, 92, 246, ${0.08 * (1 - dist / 150)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(drawParticles);
+        }
+        drawParticles();
+    }
+
+    // V3: Load player count on welcome screen
+    function loadPlayerCount() {
+        if (typeof getPlayerCount === 'function') {
+            getPlayerCount().then(count => {
+                const el = document.getElementById('player-count-number');
+                const container = document.getElementById('welcome-players');
+                if (el && count > 0) {
+                    el.textContent = count.toLocaleString('es-ES');
+                    container.style.opacity = '1';
+                }
+            });
+        }
+    }
+
+    window.addEventListener('load', () => {
+        initBgParticles();
+        loadPlayerCount();
+    });
 })();
