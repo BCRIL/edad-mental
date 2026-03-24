@@ -220,6 +220,68 @@
         showScreen('instructions');
     }
 
+    function renderDailyTestsInfo() {
+        const container = $('#daily-tests-info');
+        if (!container) return;
+        
+        const fullDescriptions = {
+            'reaction': {
+                desc1: 'Mide cuanto tarda tu sistema nervioso en procesar un estimulo visual y generar una respuesta motora. Segun investigaciones de Der y Deary (2006), el tiempo de reaccion simple promedia 250ms en adultos jovenes y aumenta aproximadamente 1ms por año despues de los 25.',
+                desc2: 'Se realizan 3 rondas para calcular tu media y reducir la variabilidad. Los resultados reflejan la eficiencia de tu transmision neuronal.',
+                tags: ['Velocidad neuronal', 'Atención sostenida']
+            },
+            'numbers': {
+                desc1: 'Evalua tu memoria de trabajo a corto plazo. Aparecera una secuencia de digitos durante unos segundos. Despues de que desaparezcan, tendras que introducirlos de memoria.',
+                desc2: 'Basado en el subtest de digitos de la escala WAIS-IV. Cada nivel superado con exito anade un digito adicional a la secuencia. Un span de 7 digitos es considerado promedio.',
+                tags: ['Memoria de trabajo', 'Retencion a corto plazo']
+            },
+            'patterns': {
+                desc1: 'Diseñada para evaluar la inteligencia fluida (resolver problemas nuevos ideando patrones lógicos concurrentes). Tienes 30 segundos para identificar la figura o el numero que continua cada secuencia.',
+                desc2: 'Mide el razonamiento inductivo tipico del test de Matrices de Raven mediante la aplicación de flexibilidad cognitiva en tiempo real.',
+                tags: ['Inteligencia Fluida', 'Razonamiento logico']
+            },
+            'math': {
+                desc1: 'Mide tu velocidad de procesamiento cognitivo resolviendo sumas, restas y multiplicaciones simples contra el reloj. Esta habilidad es una de las que más declinan con la edad de forma natural.',
+                desc2: 'La puntuacion tiene en cuenta tanto la velocidad como la precision. Responder al azar penaliza tu resultado.',
+                tags: ['Velocidad de procesamiento', 'Calculo mental']
+            },
+            'sequence': {
+                desc1: 'Inspirada en el test de bloques de Corsi y el clasico juego Simon. Evalua tu memoria visuoespacial y capacidad de retener secuencias de forma ordenada y estructurada.',
+                desc2: 'La cuadricula se iluminará en secuencias de posiciones ordenadas. Debes reproducir el orden exacto de los flashes.',
+                tags: ['Memoria visuoespacial', 'Span de Corsi']
+            },
+            'colors': {
+                desc1: 'Aplica el mundialmente famoso "Efecto Stroop". Valida tu control inhibitorio y atención selectiva. Deberás ignorar lo que ESTÁ ESCRITO en la pantalla, y pulsar el botón que concuerde con la TINTA en la que está coloreada la palabra.',
+                desc2: 'El cerebro adulto sano tiende a leer las palabras más rápido de lo que reconoce los colores, obligando a tu córtex prefrontal a suprimir ese instinto para acertar.',
+                tags: ['Atención dividida', 'Control inhibitorio']
+            },
+            'spatial': {
+                desc1: 'Una variación estática del test de Span visuoespacial. Deberás memorizar las coordenadas de los bloques que se iluminan brevemente y recordar ÚNICAMENTE sus ubicaciones de manera simultánea.',
+                desc2: 'Prueba la flexibilidad de la memoria de trabajo y evalúa directamente la capacidad de almacenamiento visual fotográfico.',
+                tags: ['Memoria fotográfica', 'Retención espacial']
+            }
+        };
+
+        container.innerHTML = '';
+        games.forEach((g, idx) => {
+            const d = fullDescriptions[g.iconKey];
+            const tagsHtml = d.tags.map(t => `<span class="test-metric">${t}</span>`).join('');
+            container.innerHTML += `
+                <div class="test-detail">
+                    <div class="test-detail-header">
+                        <div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;">
+                            ${gameIcons[g.iconKey]}
+                        </div>
+                        <h3>Prueba ${idx + 1}: ${g.title}</h3>
+                    </div>
+                    <p>${d.desc1}</p>
+                    <p>${d.desc2}</p>
+                    ${tagsHtml}
+                </div>
+            `;
+        });
+    }
+
     // ── Navigation ──
     function startNextGame() {
         if (currentGame >= 5) {
@@ -325,7 +387,7 @@
     function startNumberGame() {
         numberLevel = 3;
         numberMaxLevel = 0;
-        showScreen('game2');
+        showScreen('game-numbers');
         showNumber();
     }
 
@@ -878,7 +940,7 @@
         patternCorrect = 0;
         patternTimeLeft = currentDifficulty === 'hard' ? 20 : (currentDifficulty === 'easy' ? 45 : 30);
         patternOrder = shuffle([...Array(patternSets.length).keys()]);
-        showScreen('game3');
+        showScreen('game-patterns');
         showPatternRound();
         patternTimer = setInterval(() => {
             patternTimeLeft--;
@@ -1010,7 +1072,7 @@
         mathCorrect = 0;
         mathTotal = 0;
         mathTimeLeft = currentDifficulty === 'hard' ? 20 : (currentDifficulty === 'easy' ? 45 : 30);
-        showScreen('game4');
+        showScreen('game-math');
         showMathProblem();
         mathTimer = setInterval(() => {
             mathTimeLeft--;
@@ -1112,7 +1174,7 @@
         simonLevel = 0;
         simonMaxLevel = 0;
         simonPlaying = false;
-        showScreen('game5');
+        showScreen('game-sequence');
         nextSimonRound();
     }
 
@@ -1237,14 +1299,6 @@
         return ageMap[Math.min(span, 8)];
     }
 
-    function startPatternGame() {
-        patternScore = 0;
-        patternTimeLeft = 30;
-        $('#pattern-score').textContent = 'Aciertos: 0';
-        updateTimer('pattern-timer', patternTimeLeft);
-        showScreen('game-patterns');
-        runPatternRound();
-    }
 
     function patternScoreToAge(correct) {
         // 10/10 = 18yr (peak fluid intelligence), 0/10 = 70yr
@@ -1253,14 +1307,6 @@
         return Math.round(70 - (correct / 10) * 52);
     }
 
-    function startMathGame() {
-        mathScore = 0;
-        mathTimeLeft = 30;
-        $('#math-score').textContent = 'Aciertos: 0';
-        updateTimer('math-timer', mathTimeLeft);
-        showScreen('game-math');
-        showMathProblem();
-    }
 
     function mathRateToAge(correctIn30s) {
         // Normative: young adults solve ~10-15 simple arithmetic in 30s
@@ -1358,11 +1404,6 @@
     let spatialActiveCells = [];
     let spatialUserClicks = [];
 
-    function startNumberGame() {
-        numberLevel = 1;
-        showScreen('game-numbers');
-        runNumberRound();
-    }
 
     function startSpatialGame() {
         spatialLevel = 1;
@@ -2168,6 +2209,7 @@
         initBgParticles();
         loadPlayerCount();
         setupRouter();
+        renderDailyTestsInfo();
         // Initial route on load
         navigate(window.location.pathname, false);
     });
