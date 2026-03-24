@@ -101,7 +101,7 @@
         </section>
 
         <!-- SCREEN: Game 1 - Reaction Time -->
-        <section class="screen" id="screen-game1">
+        <section class="screen" id="screen-game-reaction">
             <div class="card game-card game-reaction">
                 <div class="game-header">
                     <span class="game-badge-small">Prueba 1/5 — Reacción</span>
@@ -116,7 +116,7 @@
         </section>
 
         <!-- SCREEN: Game 2 - Number Memory -->
-        <section class="screen" id="screen-game2">
+        <section class="screen" id="screen-game-numbers">
             <div class="card game-card">
                 <div class="game-header">
                     <span class="game-badge-small">Prueba 2/5 — Números</span>
@@ -136,7 +136,7 @@
         </section>
 
         <!-- SCREEN: Game 3 - Pattern Recognition -->
-        <section class="screen" id="screen-game3">
+        <section class="screen" id="screen-game-patterns">
             <div class="card game-card">
                 <div class="game-header">
                     <span class="game-badge-small">Prueba 3/5 — Patrones</span>
@@ -150,7 +150,7 @@
         </section>
 
         <!-- SCREEN: Game 4 - Math Speed -->
-        <section class="screen" id="screen-game4">
+        <section class="screen" id="screen-game-math">
             <div class="card game-card">
                 <div class="game-header">
                     <span class="game-badge-small">Prueba 4/5 — Matemáticas</span>
@@ -163,7 +163,7 @@
         </section>
 
         <!-- SCREEN: Game 5 - Sequence Memory (Simon) -->
-        <section class="screen" id="screen-game5">
+        <section class="screen" id="screen-game-sequence">
             <div class="card game-card">
                 <div class="game-header">
                     <span class="game-badge-small">Prueba 5/5 — Secuencia</span>
@@ -180,6 +180,39 @@
                     <button class="simon-btn" data-index="6"></button>
                     <button class="simon-btn" data-index="7"></button>
                     <button class="simon-btn" data-index="8"></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN: Game 6 - Color Perception -->
+        <section class="screen" id="screen-game-colors">
+            <div class="card game-card">
+                <div class="game-header">
+                    <span class="game-badge-small">Percepción de Colores</span>
+                    <span class="game-timer" id="colors-timer">30s</span>
+                </div>
+                <p class="game-prompt" id="colors-prompt">¿De qué COLOR está pintada la palabra?</p>
+                <div class="colors-display" id="colors-display" style="font-size:48px; font-weight:900; font-family:var(--font-display); text-align:center; margin:30px 0; text-transform:uppercase; letter-spacing:4px;"></div>
+                <div class="colors-options" id="colors-options" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
+                <div class="colors-score" id="colors-score" style="text-align:center; margin-top:20px; font-weight:600;">Aciertos: 0</div>
+            </div>
+        </section>
+
+        <!-- SCREEN: Game 7 - Spatial Memory -->
+        <section class="screen" id="screen-game-spatial">
+            <style>
+            .spatial-btn { aspect-ratio:1; border-radius:12px; background:rgba(255,255,255,0.05); border:2px solid rgba(255,255,255,0.1); cursor:pointer; transition:all 0.2s; }
+            .spatial-btn.active-target { background:var(--clr-primary); box-shadow:0 0 15px var(--clr-primary); border-color:var(--clr-primary-light); }
+            .spatial-btn.success-pulse { background:var(--clr-success) !important; box-shadow:0 0 15px var(--clr-success); border-color:transparent; }
+            </style>
+            <div class="card game-card">
+                <div class="game-header">
+                    <span class="game-badge-small">Memoria Espacial</span>
+                    <span class="game-level" id="spatial-level">Nivel 1</span>
+                </div>
+                <p class="game-prompt" id="spatial-prompt">Memoriza las celdas...</p>
+                <div class="spatial-grid" id="spatial-grid" style="display:grid; gap:12px; margin:24px auto; max-width:280px; width:100%;">
+                    <!-- buttons generated in js -->
                 </div>
             </div>
         </section>

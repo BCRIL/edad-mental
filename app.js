@@ -7,28 +7,64 @@
     'use strict';
 
     // ── State ──
-    const scores = { reaction: 0, numbers: 0, patterns: 0, math: 0, sequence: 0 };
+    const scores = { reaction: 0, numbers: 0, patterns: 0, math: 0, sequence: 0, colors: 0, spatial: 0 };
     // Raw metrics stored for scientific brain-age mapping
-    const rawMetrics = { reactionMs: 0, digitSpan: 0, patternScore: 0, mathRate: 0, sequenceSpan: 0 };
+    const rawMetrics = { reactionMs: 0, digitSpan: 0, patternScore: 0, mathRate: 0, sequenceSpan: 0, colorsScore: 0, spatialSpan: 0 };
     let currentGame = 0;
     let currentDifficulty = 'normal';
 
-    // SVG icons for each game (replacing emojis)
+    // SVG icons for each game
     const gameIcons = {
         reaction: '<svg viewBox="0 0 48 48" width="48" height="48"><path d="M28 4l-4 18h10L20 44l4-18H14L28 4z" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
         numbers: '<svg viewBox="0 0 48 48" width="48" height="48"><rect x="8" y="8" width="32" height="32" rx="6" fill="none" stroke="#06b6d4" stroke-width="2.5"/><text x="24" y="30" text-anchor="middle" font-family="Outfit,sans-serif" font-weight="800" font-size="18" fill="#22d3ee">123</text></svg>',
         patterns: '<svg viewBox="0 0 48 48" width="48" height="48"><circle cx="16" cy="16" r="6" fill="none" stroke="#a78bfa" stroke-width="2.5"/><rect x="28" y="10" width="12" height="12" rx="2" fill="none" stroke="#f472b6" stroke-width="2.5"/><polygon points="16,28 22,40 10,40" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linejoin="round"/><path d="M28 28l12 12M28 40l12-12" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/></svg>',
         math: '<svg viewBox="0 0 48 48" width="48" height="48"><circle cx="24" cy="24" r="18" fill="none" stroke="#8b5cf6" stroke-width="2.5"/><text x="24" y="20" text-anchor="middle" font-family="Outfit,sans-serif" font-weight="800" font-size="12" fill="#a78bfa">+-%C3%97</text><path d="M15 28h18" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/><text x="24" y="38" text-anchor="middle" font-family="Outfit,sans-serif" font-weight="800" font-size="10" fill="#22d3ee">=?</text></svg>',
         sequence: '<svg viewBox="0 0 48 48" width="48" height="48"><rect x="6" y="6" width="10" height="10" rx="2" fill="#8b5cf6" opacity=".3"/><rect x="19" y="6" width="10" height="10" rx="2" fill="#8b5cf6" opacity=".7"/><rect x="32" y="6" width="10" height="10" rx="2" fill="#8b5cf6" opacity=".3"/><rect x="6" y="19" width="10" height="10" rx="2" fill="#8b5cf6" opacity=".7"/><rect x="19" y="19" width="10" height="10" rx="2" fill="#8b5cf6"/><rect x="32" y="19" width="10" height="10" rx="2" fill="#8b5cf6" opacity=".7"/><rect x="6" y="32" width="10" height="10" rx="2" fill="#8b5cf6" opacity=".3"/><rect x="19" y="32" width="10" height="10" rx="2" fill="#8b5cf6" opacity=".7"/><rect x="32" y="32" width="10" height="10" rx="2" fill="#8b5cf6" opacity=".3"/></svg>',
+        colors: '<svg viewBox="0 0 48 48" width="48" height="48"><circle cx="18" cy="18" r="12" fill="none" stroke="#ef4444" stroke-width="2.5"/><circle cx="30" cy="18" r="12" fill="none" stroke="#3b82f6" stroke-width="2.5"/><circle cx="24" cy="30" r="12" fill="none" stroke="#10b981" stroke-width="2.5"/></svg>',
+        spatial: '<svg viewBox="0 0 48 48" width="48" height="48"><rect x="10" y="10" width="12" height="12" rx="2" fill="none" stroke="#f472b6" stroke-width="2.5"/><rect x="26" y="10" width="12" height="12" rx="2" fill="#f472b6" /><rect x="10" y="26" width="12" height="12" rx="2" fill="#f472b6" /><rect x="26" y="26" width="12" height="12" rx="2" fill="none" stroke="#f472b6" stroke-width="2.5"/></svg>'
     };
 
-    const games = [
-        { id: 1, iconKey: 'reaction', title: 'Tiempo de Reaccion', desc: 'Mide la velocidad de tu sistema nervioso. Cuando la zona roja cambie a verde, pulsa lo mas rapido posible. Se realizaran 3 rondas y se calculara tu tiempo medio de reaccion. Un adulto joven promedia unos 250ms.' },
-        { id: 2, iconKey: 'numbers', title: 'Memoria de Numeros', desc: 'Evalua tu memoria de trabajo a corto plazo. Aparecera una secuencia de digitos durante unos segundos. Despues, deberas escribirla de memoria. Cada nivel anade un digito mas. La capacidad media es de 7 digitos.' },
-        { id: 3, iconKey: 'patterns', title: 'Reconocimiento de Patrones', desc: 'Mide tu inteligencia fluida y razonamiento logico. Identifica que elemento completa cada secuencia. Tienes 30 segundos para resolver el maximo de patrones posibles entre numeros, colores, formas y letras.' },
-        { id: 4, iconKey: 'math', title: 'Velocidad Matematica', desc: 'Evalua tu velocidad de procesamiento cognitivo. Resuelve sumas, restas y multiplicaciones lo mas rapido posible en 30 segundos. La precision tambien cuenta: las respuestas incorrectas reducen tu puntuacion.' },
-        { id: 5, iconKey: 'sequence', title: 'Memoria de Secuencia', desc: 'Basada en el test de bloques de Corsi. Observa las casillas que se iluminan y repite la secuencia en el mismo orden. Cada ronda anade un paso mas. La capacidad media es de 5-6 elementos.' },
+    const gamesPool = [
+        { iconKey: 'reaction', title: 'Tiempo de Reaccion', desc: 'Mide la velocidad de tu sistema nervioso. Cuando la zona roja cambie a verde, pulsa lo mas rapido posible. Se realizaran 3 rondas y se calculara tu tiempo medio de reaccion. Un adulto joven promedia unos 250ms.', label: 'Reacción' },
+        { iconKey: 'numbers', title: 'Memoria de Numeros', desc: 'Evalua tu memoria de trabajo a corto plazo. Aparecera una secuencia de digitos durante unos segundos. Despues, deberas escribirla de memoria. Cada nivel anade un digito mas. La capacidad media es de 7 digitos.', label: 'Números' },
+        { iconKey: 'patterns', title: 'Reconocimiento de Patrones', desc: 'Mide tu inteligencia fluida y razonamiento logico. Identifica que elemento completa cada secuencia. Tienes 30 segundos para resolver el maximo de patrones posibles entre numeros, colores, formas y letras.', label: 'Patrones' },
+        { iconKey: 'math', title: 'Velocidad Matematica', desc: 'Evalua tu velocidad de procesamiento cognitivo. Resuelve sumas, restas y multiplicaciones lo mas rapido posible en 30 segundos. La precision tambien cuenta: las respuestas incorrectas reducen tu puntuacion.', label: 'Mates' },
+        { iconKey: 'sequence', title: 'Memoria de Secuencia', desc: 'Basada en el test de bloques de Corsi. Observa las casillas que se iluminan y repite la secuencia en el mismo orden. Cada ronda anade un paso mas. La capacidad media es de 5-6 elementos.', label: 'Secuencia' },
+        { iconKey: 'colors', title: 'Percepción de Colores', desc: 'Efecto Stroop. Presta atención al COLOR en el que está pintada la palabra, ignorando lo que dice el texto. Selecciona el botón que indique el COLOR de la tinta. Tienes 30 segundos.', label: 'Colores' },
+        { iconKey: 'spatial', title: 'Memoria Espacial', desc: 'Aparecerá una cuadrícula donde algunas celdas se iluminarán en azul durante un instante. Memoriza las posiciones. Cuando se oculten, pulsa solo las celdas que se iluminaron. Se requiere precisión perfecta.', label: 'Espacial' }
     ];
+
+    // Seeded Random Number Generator for Daily Tests
+    function getSeededRandom(seed) {
+        return function() {
+            let t = seed += 0x6D2B79F5;
+            t = Math.imul(t ^ t >>> 15, t | 1);
+            t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        }
+    }
+
+    function shuffleWithSeed(array, rng) {
+        let m = array.length, t, i;
+        const arr = [...array];
+        while (m) {
+            i = Math.floor(rng() * m--);
+            t = arr[m];
+            arr[m] = arr[i];
+            arr[i] = t;
+        }
+        return arr;
+    }
+
+    // Daily Seed
+    const todayStr = new Date().toISOString().split('T')[0];
+    let seed = 0;
+    for (let i = 0; i < todayStr.length; i++) seed += todayStr.charCodeAt(i);
+    const dailyRng = getSeededRandom(seed);
+
+    // Select 5 games for today's test
+    const games = shuffleWithSeed(gamesPool, dailyRng).slice(0, 5);
+    games.forEach((g, i) => g.id = i + 1);
 
     // ── Helpers ──
     const $ = (sel) => document.querySelector(sel);
@@ -205,7 +241,7 @@
     function startReactionGame() {
         reactionAttempts = [];
         reactionRound = 0;
-        showScreen('game1');
+        showScreen('game-reaction');
         runReactionRound();
     }
 
@@ -1201,11 +1237,29 @@
         return ageMap[Math.min(span, 8)];
     }
 
+    function startPatternGame() {
+        patternScore = 0;
+        patternTimeLeft = 30;
+        $('#pattern-score').textContent = 'Aciertos: 0';
+        updateTimer('pattern-timer', patternTimeLeft);
+        showScreen('game-patterns');
+        runPatternRound();
+    }
+
     function patternScoreToAge(correct) {
         // 10/10 = 18yr (peak fluid intelligence), 0/10 = 70yr
         if (correct >= 10) return 18;
         if (correct <= 0) return 70;
         return Math.round(70 - (correct / 10) * 52);
+    }
+
+    function startMathGame() {
+        mathScore = 0;
+        mathTimeLeft = 30;
+        $('#math-score').textContent = 'Aciertos: 0';
+        updateTimer('math-timer', mathTimeLeft);
+        showScreen('game-math');
+        showMathProblem();
     }
 
     function mathRateToAge(correctIn30s) {
@@ -1223,6 +1277,190 @@
         if (level <= 0) return 70;
         const ageMap = [70, 62, 55, 48, 40, 33, 27, 22, 18]; // index 0=level0
         return ageMap[Math.min(level, 8)];
+    }
+
+    // ══════════════════════════════════════════
+    // NEW GAME: Color Perception (Stroop)
+    // ══════════════════════════════════════════
+    let colorsScore = 0;
+    let colorsTimeLeft = 30;
+    let colorsInterval = null;
+    let currentColorAnswer = '';
+
+    function startColorGame() {
+        colorsScore = 0;
+        colorsTimeLeft = 30;
+        $('#colors-score').textContent = 'Aciertos: 0';
+        updateTimer('colors-timer', colorsTimeLeft);
+        showScreen('game-colors');
+        
+        colorsInterval = setInterval(() => {
+            colorsTimeLeft--;
+            updateTimer('colors-timer', colorsTimeLeft);
+            if (colorsTimeLeft <= 0) {
+                clearInterval(colorsInterval);
+                rawMetrics.colorsScore = colorsScore;
+                scores.colors = Math.min(100, Math.round((colorsScore / 25) * 100)); // 25 is excellent score
+                currentGame++;
+                startNextGame();
+            } else if (colorsTimeLeft <= 5) {
+                sfxTimerWarn();
+            }
+        }, 1000);
+        
+        runColorRound();
+    }
+
+    function runColorRound() {
+        const words = ['ROJO', 'AZUL', 'VERDE', 'AMARILLO', 'ROSA'];
+        const cssColors = ['#ef4444', '#3b82f6', '#10b981', '#eab308', '#f472b6'];
+        
+        const wIdx = randInt(0, 4);
+        let cIdx = randInt(0, 4);
+        // 40% chance of matching color/word
+        if (Math.random() < 0.4) cIdx = wIdx;
+
+        const display = $('#colors-display');
+        display.textContent = words[wIdx];
+        display.style.color = cssColors[cIdx];
+        
+        currentColorAnswer = words[cIdx]; // Answer is the COLOR of the ink
+
+        const optsContainer = $('#colors-options');
+        optsContainer.innerHTML = '';
+        
+        // Options are names of colors (always white text)
+        const opts = shuffle([...words]);
+        opts.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-math-opt'; // reuse styling
+            btn.textContent = opt;
+            btn.addEventListener('click', () => {
+                if (opt === currentColorAnswer) {
+                    colorsScore++;
+                    sfxCorrect();
+                } else {
+                    colorsScore = Math.max(0, colorsScore - 1);
+                    sfxWrong();
+                }
+                $('#colors-score').textContent = 'Aciertos: ' + colorsScore;
+                runColorRound();
+            });
+            optsContainer.appendChild(btn);
+        });
+    }
+
+    // ══════════════════════════════════════════
+    // NEW GAME: Spatial Memory (Grid)
+    // ══════════════════════════════════════════
+    let spatialLevel = 1;
+    let spatialGrid = [];
+    let spatialActiveCells = [];
+    let spatialUserClicks = [];
+
+    function startNumberGame() {
+        numberLevel = 1;
+        showScreen('game-numbers');
+        runNumberRound();
+    }
+
+    function startSpatialGame() {
+        spatialLevel = 1;
+        showScreen('game-spatial');
+        runSpatialRound();
+    }
+
+    async function runSpatialRound() {
+        $('#spatial-prompt').textContent = 'Nivel ' + spatialLevel + ': Memoriza las celdas...';
+        $('#spatial-level').textContent = 'Nivel ' + spatialLevel;
+        const grid = $('#spatial-grid');
+        grid.innerHTML = '';
+        
+        // Calculate grid size based on level
+        const gridSize = spatialLevel < 5 ? 9 : 16;
+        spatialGrid = [];
+        spatialActiveCells = [];
+        spatialUserClicks = [];
+        
+        grid.style.gridTemplateColumns = gridSize === 9 ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)';
+
+        const activeCount = Math.min(2 + Math.floor(spatialLevel / 2), gridSize - 1);
+        
+        for (let i = 0; i < gridSize; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'spatial-btn';
+            btn.dataset.idx = i;
+            grid.appendChild(btn);
+            spatialGrid.push(btn);
+        }
+        
+        // Select random cells
+        const indices = shuffle(Array.from(Array(gridSize).keys())).slice(0, activeCount);
+        spatialActiveCells = indices;
+        
+        sfxGo();
+        
+        // Show cells
+        await sleep(500);
+        indices.forEach(idx => {
+            spatialGrid[idx].classList.add('active-target');
+            sfxSimonFlash(5);
+        });
+        
+        // Hide cells
+        await sleep(1500 + (activeCount * 200));
+        indices.forEach(idx => spatialGrid[idx].classList.remove('active-target'));
+        
+        $('#spatial-prompt').textContent = '¡Tu turno! Selecciona las ' + activeCount;
+        
+        // Enable clicks
+        spatialGrid.forEach(btn => {
+            btn.addEventListener('click', function onClick() {
+                const idx = parseInt(btn.dataset.idx);
+                if (spatialUserClicks.includes(idx)) return;
+                
+                spatialUserClicks.push(idx);
+                
+                if (spatialActiveCells.includes(idx)) {
+                    sfxClick();
+                    btn.classList.add('active-target', 'success-pulse'); // Blue/Green
+                    if (spatialUserClicks.length === spatialActiveCells.length) {
+                        // Level complete
+                        sfxCorrect();
+                        spatialLevel++;
+                        setTimeout(runSpatialRound, 1000);
+                    }
+                } else {
+                    // Wrong! Game over
+                    sfxWrong();
+                    btn.style.backgroundColor = '#ef4444'; // Red
+                    // Reveal missing ones
+                    spatialActiveCells.forEach(i => {
+                        if (!spatialUserClicks.includes(i)) spatialGrid[i].style.borderColor = '#10b981';
+                    });
+                    
+                    setTimeout(() => {
+                        rawMetrics.spatialSpan = spatialLevel;
+                        scores.spatial = Math.min(100, Math.round(((spatialLevel - 1) / 8) * 100));
+                        currentGame++;
+                        startNextGame();
+                    }, 1500);
+                }
+            });
+        });
+    }
+
+    function colorScoreToAge(correct) {
+        if (correct >= 20) return 18;
+        if (correct <= 0) return 70;
+        return Math.round(70 - (correct / 20) * 52);
+    }
+
+    function spatialSpanToAge(span) {
+        if (span >= 9) return 18;
+        if (span <= 1) return 70;
+        const ageMap = [70, 70, 65, 55, 45, 35, 28, 22, 18, 18];
+        return ageMap[Math.min(span, 9)];
     }
 
     /**
@@ -1267,36 +1505,51 @@
             patterns: patternScoreToAge(rawMetrics.patternScore),
             math: mathRateToAge(rawMetrics.mathRate),
             sequence: sequenceSpanToAge(rawMetrics.sequenceSpan),
+            colors: colorScoreToAge(rawMetrics.colorsScore),
+            spatial: spatialSpanToAge(rawMetrics.spatialSpan)
         };
 
-        // Weighted average (reaction time and sequence memory weighted slightly more
-        // as they're the most validated cognitive markers)
-        const weights = { reaction: 1.2, numbers: 1.0, patterns: 0.9, math: 0.9, sequence: 1.0 };
+        const weights = { reaction: 1.2, numbers: 1.0, patterns: 0.9, math: 0.9, sequence: 1.0, colors: 1.1, spatial: 1.0 };
         let weightedSum = 0;
         let totalWeight = 0;
-        for (const key in ages) {
-            weightedSum += ages[key] * weights[key];
-            totalWeight += weights[key];
-        }
+        let avgScoreSum = 0;
+
+        games.forEach(g => {
+            weightedSum += ages[g.iconKey] * weights[g.iconKey];
+            totalWeight += weights[g.iconKey];
+            avgScoreSum += scores[g.iconKey];
+        });
 
         let brainAge = Math.round(weightedSum / totalWeight);
         brainAge = Math.max(18, Math.min(80, brainAge));
 
         // Percentile from score distribution
-        const avgScore = (scores.reaction + scores.numbers + scores.patterns + scores.math + scores.sequence) / 5;
+        const avgScore = avgScoreSum / 5;
         const percentile = scoreToPercentile(avgScore);
 
         // Update DOM
         $('#results-age').textContent = brainAge;
         $('#results-percentile').innerHTML = `Tu cerebro funciona mejor que el <strong>${percentile}%</strong> de los usuarios que han hecho este test.`;
 
-        // Breakdown bars — show age per test, not a 0-100 score
+        // Breakdown bars — render dynamically based on the 5 selected games
+        const breakdownContainer = $('.results-breakdown');
+        breakdownContainer.innerHTML = '<h3 class="breakdown-title">Desglose por Prueba</h3>';
+
+        games.forEach(g => {
+            const key = g.iconKey;
+            breakdownContainer.innerHTML += `
+                <div class="breakdown-item">
+                    <span class="breakdown-label">${g.label}</span>
+                    <div class="breakdown-bar-bg"><div class="breakdown-bar" id="bar-${key}"></div></div>
+                    <span class="breakdown-value" id="val-${key}">--</span>
+                </div>
+            `;
+        });
+
         setTimeout(() => {
-            setBar('reaction', scores.reaction, ages.reaction);
-            setBar('numbers', scores.numbers, ages.numbers);
-            setBar('patterns', scores.patterns, ages.patterns);
-            setBar('math', scores.math, ages.math);
-            setBar('sequence', scores.sequence, ages.sequence);
+            games.forEach(g => {
+                setBar(g.iconKey, scores[g.iconKey], ages[g.iconKey]);
+            });
         }, 300);
 
         showScreen('results');
@@ -1370,12 +1623,15 @@
 
         $('#btn-ready').addEventListener('click', () => {
             sfxClick();
-            switch (currentGame) {
-                case 0: startReactionGame(); break;
-                case 1: startNumberGame(); break;
-                case 2: startPatternGame(); break;
-                case 3: startMathGame(); break;
-                case 4: startSimonGame(); break;
+            const currentSelectedGame = games[currentGame];
+            switch (currentSelectedGame.iconKey) {
+                case 'reaction': startReactionGame(); break;
+                case 'numbers': startNumberGame(); break;
+                case 'patterns': startPatternGame(); break;
+                case 'math': startMathGame(); break;
+                case 'sequence': startSimonGame(); break;
+                case 'colors': startColorGame(); break;
+                case 'spatial': startSpatialGame(); break;
             }
         });
 
@@ -1501,9 +1757,9 @@
                 ctx.fillStyle = '#94a3b8';
                 ctx.font = '24px Inter, sans-serif';
                 ctx.fillText('años de edad mental', 300, 195);
-                // Scores
-                const labels = ['Reacción', 'Números', 'Patrones', 'Mates', 'Secuencia'];
-                const scoreKeys = ['reaction', 'numbers', 'patterns', 'math', 'sequence'];
+                // Scores dynamically generated for the 5 selected games
+                const labels = games.map(g => g.label);
+                const scoreKeys = games.map(g => g.iconKey);
                 const barY = 230;
                 labels.forEach((label, i) => {
                     const y = barY + i * 30;
