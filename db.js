@@ -1,4 +1,4 @@
-// db.js - shared database logic (v5.0 — with Auth)
+// db.js - shared database logic (v6.0 — with Google OAuth)
 const SUPABASE_URL = 'https://owfppbdauqmghpmqrgse.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93ZnBwYmRhdXFtZ2hwbXFyZ3NlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjYyNDEsImV4cCI6MjA4OTk0MjI0MX0.AiW5Pmc8mSqa0Rx-EmWk5nzSrTDqCl99eKLnQg7v9Fw';
 
@@ -8,7 +8,7 @@ function getSupabaseClient() {
     if (_supabase) return _supabase;
     if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
         _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-            auth: { persistSession: true } // keep session across page reloads
+            auth: { persistSession: true }
         });
     }
     return _supabase;
@@ -39,7 +39,8 @@ async function authSignUp(email, password, displayName) {
             options: { data: { display_name: safeName } }
         });
         if (error) return { user: null, error };
-        // Insert into profiles table
+        // El trigger handle_new_user() crea el perfil automáticamente,
+        // pero hacemos upsert por si el trigger va lento
         if (data.user) {
             await client.from('profiles').upsert({
                 id: data.user.id,
@@ -60,6 +61,27 @@ async function authSignIn(email, password) {
         return { user: data?.user || null, error };
     } catch (err) {
         return { user: null, error: err };
+    }
+}
+
+// ── NUEVO: Google OAuth ──
+async function authSignInWithGoogle() {
+    const client = getSupabaseClient();
+    if (!client) return { error: { message: 'Supabase no disponible.' } };
+    try {
+        const { data, error } = await client.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: window.location.origin,
+                queryParams: {
+                    access_type: 'offline',
+                    prompt: 'select_account'   // permite cambiar de cuenta Google
+                }
+            }
+        });
+        return { data, error };
+    } catch (err) {
+        return { error: err };
     }
 }
 
@@ -92,12 +114,46 @@ async function getUserDisplayName(userId) {
     }
 }
 
+// ── NUEVO: obtener avatar del perfil (para Google devuelve foto de Google) ──
+async function getUserProfile(userId) {
+    const client = getSupabaseClient();
+    if (!client) return null;
+    try {
+        const { data, error } = await client
+            .from('profiles')
+            .select('display_name, avatar_url')
+            .eq('id', userId)
+            .single();
+        if (error || !data) return null;
+        return data;
+    } catch {
+        return null;
+    }
+}
+
 function onAuthChange(callback) {
     const client = getSupabaseClient();
     if (!client) return;
     client.auth.onAuthStateChange((_event, session) => {
         callback(session?.user || null);
     });
+}
+
+// ── NUEVO: obtener historial de rankings del usuario logueado ──
+async function getUserRankings(userId) {
+    const client = getSupabaseClient();
+    if (!client) return { data: null, error: { message: 'Supabase no disponible.' } };
+    try {
+        const { data, error } = await client
+            .from('rankings')
+            .select('brain_age, difficulty, created_at, reaction_score, numbers_score, patterns_score, math_score, sequence_score')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(20);
+        return { data, error };
+    } catch (err) {
+        return { data: null, error: err };
+    }
 }
 
 // ══════════════════════════════════════
