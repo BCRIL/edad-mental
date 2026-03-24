@@ -1380,7 +1380,7 @@
         window._shareData = { brainAge, percentile, scores, ages, archetype };
 
         // Save to localStorage history (Phase 3)
-        saveResultToHistory(brainAge, currentDifficulty, games.map(g => g.label));
+        saveResultToHistory(brainAge, currentDifficulty, games.map(g => g.label), scores);
         // Show streak notification
         showStreakNotification();
 
@@ -1801,39 +1801,65 @@
 
     async function loadRanking(filter) {
         const tbody = document.getElementById('ranking-body');
+        const podium = document.getElementById('ranking-podium');
         if (!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="4" class="loading-spinner" style="text-align: center; padding: 40px;">Cargando...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="loading-spinner" style="text-align: center; padding: 40px;">Cargando...</td></tr>';
+        if (podium) podium.innerHTML = '';
 
         if (typeof getTopRankings !== 'function') {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--clr-danger); padding: 30px;">Error: No se pudo conectar con la base de datos.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--clr-danger); padding: 30px;">Error: No se pudo conectar con la base de datos.</td></tr>';
             return;
         }
 
         const { data, error } = await getTopRankings(filter);
 
         if (error || !data) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--clr-danger); padding: 30px;">Error al cargar el ranking.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--clr-danger); padding: 30px;">Error al cargar el ranking.</td></tr>';
             return;
         }
 
         const countEl = document.getElementById('ranking-count');
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 30px;">Aún no hay puntuaciones en esta categoría. ¡Sé el primero!</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 30px;">Aún no hay puntuaciones en esta categoría. ¡Sé el primero!</td></tr>';
             if (countEl) countEl.textContent = '';
             return;
         }
 
         if (countEl) countEl.textContent = `${data.length} jugador${data.length !== 1 ? 'es' : ''} en el ranking`;
 
+        // 🏆 Render Podium (Top 3)
+        if (podium && data.length > 0) {
+            const top3 = data.slice(0, 3);
+            const diffMap = { easy: 'Fácil', normal: 'Normal', hard: 'Difícil' };
+            
+            // Reorder for visual podium: 2nd, 1st, 3rd
+            const podiumOrder = [];
+            if (top3[1]) podiumOrder.push({ ...top3[1], pos: 2, height: '120px', bg: 'rgba(226, 232, 240, 0.1)', border: '#94a3b8', medal: '🥈' });
+            if (top3[0]) podiumOrder.push({ ...top3[0], pos: 1, height: '150px', bg: 'rgba(234, 179, 8, 0.15)', border: '#eab308', medal: '🥇' });
+            if (top3[2]) podiumOrder.push({ ...top3[2], pos: 3, height: '100px', bg: 'rgba(180, 83, 9, 0.1)', border: '#b45309', medal: '🥉' });
+
+            podium.innerHTML = podiumOrder.map(p => `
+                <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;">
+                    <div style="font-size: 24px; margin-bottom: 4px;">${p.medal}</div>
+                    <div style="font-size: 14px; font-weight: 700; color: #fff; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80px;">${escapeHTML(p.player_name)}</div>
+                    <div style="font-size: 12px; color: var(--clr-text-muted); margin-bottom: 8px;">${p.brain_age} años</div>
+                    <div style="width: 100%; height: ${p.height}; background: ${p.bg}; border: 2px solid ${p.border}; border-bottom: none; border-radius: 12px 12px 0 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 24px; font-weight: 900; color: ${p.border};">
+                        #${p.pos}
+                    </div>
+                </div>
+            `).join('');
+        }
+
         tbody.innerHTML = '';
-        data.forEach((row, index) => {
+        const tableData = podium ? data.slice(3) : data; // Si hay podio, ocultar los 3 primeros de la tabla
+        const startIndex = podium ? 3 : 0;
+
+        tableData.forEach((row, index) => {
             const tr = document.createElement('tr');
-            const pos = index + 1;
+            const pos = index + 1 + startIndex;
             let posClass = 'rank-pos';
             let medal = '';
-            if (pos === 1) { posClass += ' gold'; medal = '<span class="rank-medal medal-gold">1</span>'; }
-            else if (pos === 2) { posClass += ' silver'; medal = '<span class="rank-medal medal-silver">2</span>'; }
-            else if (pos === 3) { posClass += ' bronze'; medal = '<span class="rank-medal medal-bronze">3</span>'; }
+            // No medals since they are in the podium view
 
             const diffMap = {
                 easy: { label: 'Fácil', cls: 'easy' },
@@ -1844,12 +1870,12 @@
 
             // Visual Gamification Demo League
             let leagueIcon = '🥉'; let leagueName = 'Bronce'; let leagueColor = '#b45309';
-            if (pos <= 5) { leagueIcon = '💎'; leagueName = 'Diamante'; leagueColor = '#06b6d4'; }
+            if (pos <= 5 || index <= 2) { leagueIcon = '💎'; leagueName = 'Diamante'; leagueColor = '#06b6d4'; }
             else if (pos <= 20) { leagueIcon = '🥇'; leagueName = 'Oro'; leagueColor = '#f59e0b'; }
             else if (pos <= 50) { leagueIcon = '🥈'; leagueName = 'Plata'; leagueColor = '#94a3b8'; }
 
             tr.innerHTML = `
-                <td class="${posClass}">${medal}#${pos}</td>
+                <td class="${posClass}">#${pos}</td>
                 <td class="rank-name">${escapeHTML(row.player_name)}</td>
                 <td class="rank-age">${row.brain_age} años</td>
                 <td><span class="diff-badge ${diff.cls}">${diff.label}</span></td>
@@ -1860,7 +1886,7 @@
     }
 
     async function loadStats() {
-        if (statsLoaded || typeof Chart === 'undefined') return;
+        if (typeof Chart === 'undefined') return;
         
         // Chart.js global defaults
         Chart.defaults.color = '#94a3b8';
@@ -1868,11 +1894,18 @@
 
         let ageData = [0, 0, 0, 0, 0, 0];
         let radarData = [0, 0, 0, 0, 0];
+        let archetypeData = [0, 0, 0, 1]; // [Francotirador, Ajedrecista, Calculadora, Equilibrada]
+        let diffPerformance = [0, 0, 0]; // [Fácil, Normal, Difícil]
+        let diffCounts = [0, 0, 0];
+        let totalCount = 0;
+        let sumBrainAge = 0;
 
         if (typeof getStats === 'function') {
             const { data, error } = await getStats();
             if (!error && data && data.length > 0) {
+                totalCount = data.length;
                 data.forEach(row => {
+                    sumBrainAge += row.brain_age;
                     const a = row.brain_age;
                     if (a < 20) ageData[0]++;
                     else if (a <= 25) ageData[1]++;
@@ -1880,6 +1913,18 @@
                     else if (a <= 40) ageData[3]++;
                     else if (a <= 50) ageData[4]++;
                     else ageData[5]++;
+
+                    // Performance vs Difficulty
+                    if (row.difficulty === 'easy') { diffPerformance[0] += row.brain_age; diffCounts[0]++; }
+                    else if (row.difficulty === 'hard') { diffPerformance[2] += row.brain_age; diffCounts[2]++; }
+                    else { diffPerformance[1] += row.brain_age; diffCounts[1]++; }
+
+                    // Archetype determination (Simulación por row de DB si no hay campo)
+                    const maxS = Math.max(row.reaction_score||0, row.numbers_score||0, row.patterns_score||0, row.math_score||0);
+                    if (maxS > 80) archetypeData[0]++;
+                    else if (maxS > 60) archetypeData[1]++;
+                    else if (maxS > 40) archetypeData[2]++;
+                    else archetypeData[3]++;
                 });
 
                 let sumR = 0, sumN = 0, sumP = 0, sumM = 0, sumS = 0;
@@ -1890,20 +1935,41 @@
                     sumM += row.math_score || 0;
                     sumS += row.sequence_score || 0;
                 });
-                const count = data.length;
                 radarData = [
-                    Math.round(sumR / count),
-                    Math.round(sumN / count),
-                    Math.round(sumP / count),
-                    Math.round(sumM / count),
-                    Math.round(sumS / count)
+                    Math.round(sumR / totalCount),
+                    Math.round(sumN / totalCount),
+                    Math.round(sumP / totalCount),
+                    Math.round(sumM / totalCount),
+                    Math.round(sumS / totalCount)
                 ];
             } else {
+                // Mock fallback
+                totalCount = 100;
+                sumBrainAge = 3200;
                 ageData = [12, 35, 25, 18, 7, 3];
                 radarData = [75, 60, 65, 55, 78];
+                archetypeData = [20, 30, 15, 35];
+                diffPerformance = [28, 34, 40];
+                diffCounts = [1, 1, 1];
             }
         }
 
+        const avgAge = Math.round(sumBrainAge / (totalCount || 1));
+        
+        // Update KPIs
+        const totalPlayersEl = document.getElementById('stats-total-players');
+        const avgAgeEl = document.getElementById('stats-avg-age');
+        const topArchEl = document.getElementById('stats-top-archetype');
+        
+        if (totalPlayersEl) totalPlayersEl.textContent = totalCount;
+        if (avgAgeEl) avgAgeEl.textContent = avgAge + ' años';
+        if (topArchEl) {
+            const arches = ['Francotirador 🎯', 'Ajedrecista ♟️', 'Calculadora 🧮', 'Equilibrada ⚖️'];
+            const maxIdx = archetypeData.indexOf(Math.max(...archetypeData));
+            topArchEl.textContent = arches[maxIdx];
+        }
+
+        // 1. Age Chart
         const ctxAge = document.getElementById('ageChart');
         if (ctxAge) {
             new Chart(ctxAge.getContext('2d'), {
@@ -1919,17 +1985,11 @@
                         borderRadius: 4
                     }]
                 },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
-                        x: { grid: { display: false } }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
         }
 
+        // 2. Radar Chart
         const ctxRadar = document.getElementById('radarChart');
         if (ctxRadar) {
             new Chart(ctxRadar.getContext('2d'), {
@@ -1947,18 +2007,49 @@
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            angleLines: { color: 'rgba(255,255,255,0.1)' },
-                            grid: { color: 'rgba(255,255,255,0.1)' },
-                            pointLabels: { color: '#f1f5f9', font: { size: 12 } },
-                            ticks: { display: false, max: 100, min: 0 }
-                        }
-                    },
-                    plugins: { legend: { position: 'bottom' } }
+                    scales: { r: { angleLines: { color: 'rgba(255,255,255,0.1)' }, grid: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#f1f5f9' }, ticks: { display: false } } }
                 }
             });
         }
+
+        // 3. Archetype Chart (Donut)
+        const ctxArch = document.getElementById('archetypeChart');
+        if (ctxArch) {
+            new Chart(ctxArch.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Francotirador', 'Ajedrecista', 'Calculadora', 'Equilibrada'],
+                    datasets: [{
+                        data: archetypeData,
+                        backgroundColor: ['rgba(244, 63, 94, 0.7)', 'rgba(139, 92, 246, 0.7)', 'rgba(16, 185, 129, 0.7)', 'rgba(245, 158, 11, 0.7)'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } } }
+            });
+        }
+
+        // 4. Performance vs Dificultad (Bar)
+        const ctxDiff = document.getElementById('difficultyPerformanceChart');
+        if (ctxDiff) {
+            const finalPerformance = diffCounts.map((c, i) => c > 0 ? Math.round(diffPerformance[i] / c) : 0);
+            new Chart(ctxDiff.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Fácil', 'Normal', 'Difícil'],
+                    datasets: [{
+                        label: 'Edad Mental Media',
+                        data: finalPerformance,
+                        backgroundColor: ['rgba(16, 185, 129, 0.6)', 'rgba(14, 165, 233, 0.6)', 'rgba(244, 63, 94, 0.6)'],
+                        borderColor: ['#10b981', '#0ea5e9', '#f43f5e'],
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
         statsLoaded = true;
     }
 
@@ -2081,10 +2172,10 @@
         } catch(e) { return 0; }
     }
 
-    function saveResultToHistory(brainAge, difficulty, gameLabels) {
+    function saveResultToHistory(brainAge, difficulty, gameLabels, currentScores) {
         const history = getHistory();
         const dateNow = new Date().toISOString().split('T')[0];
-        history.unshift({ date: dateNow, brainAge, difficulty, games: gameLabels });
+        history.unshift({ date: dateNow, brainAge, difficulty, games: gameLabels, scores: { ...currentScores } });
         if (history.length > 10) history.splice(10);
         saveHistory(history);
         updateStreak(dateNow);
@@ -2209,6 +2300,64 @@
                         y: { reverse: true, min: 15, max: 75, grid: { color:'rgba(255,255,255,0.05)' }, ticks: { color:'#94a3b8' } },
                         x: { grid: { display: false }, ticks: { color:'#94a3b8' } }
                     }
+                }
+            });
+        }
+
+        // 📊 Profile Radar Chart (Fortalezas Cognitivas)
+        const ctxRadarProfile = document.getElementById('profileRadarChart');
+        if (ctxRadarProfile && typeof Chart !== 'undefined' && history.length > 0) {
+            let sumScores = { reaction: 0, numbers: 0, patterns: 0, math: 0, sequence: 0 };
+            let counts = { reaction: 0, numbers: 0, patterns: 0, math: 0, sequence: 0 };
+            
+            history.forEach(h => {
+                if (h.scores) {
+                    for (const k in sumScores) {
+                        if (h.scores[k] !== undefined) {
+                            sumScores[k] += h.scores[k] || 0;
+                            counts[k] = (counts[k] || 0) + 1;
+                        }
+                    }
+                }
+            });
+
+            const radarDataProfile = [
+                counts.reaction > 0 ? Math.round(sumScores.reaction / counts.reaction) : 0,
+                counts.numbers > 0 ? Math.round(sumScores.numbers / counts.numbers) : 0,
+                counts.patterns > 0 ? Math.round(sumScores.patterns / counts.patterns) : 0,
+                counts.math > 0 ? Math.round(sumScores.math / counts.math) : 0,
+                counts.sequence > 0 ? Math.round(sumScores.sequence / counts.sequence) : 0
+            ];
+
+            // Use Fallback if no scores yet (compatibility with old history)
+            const hasData = radarDataProfile.some(v => v > 0);
+            const finalData = hasData ? radarDataProfile : [75, 60, 80, 55, 70]; // Default mock for empty visual fallback
+
+            if (window._profileRadarChartInstance) window._profileRadarChartInstance.destroy();
+            window._profileRadarChartInstance = new Chart(ctxRadarProfile.getContext('2d'), {
+                type: 'radar',
+                data: {
+                    labels: ['Reacción', 'Memoria Nums.', 'Patrones', 'Mates', 'Secuencia'],
+                    datasets: [{
+                        label: 'Tu Puntuación',
+                        data: finalData,
+                        backgroundColor: 'rgba(6, 182, 212, 0.2)',
+                        borderColor: 'rgba(6, 182, 212, 1)',
+                        pointBackgroundColor: 'rgba(6, 182, 212, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255,255,255,0.1)' },
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            pointLabels: { color: '#f1f5f9', font: { size: 11 } },
+                            ticks: { display: false, max: 100, min: 0 }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
                 }
             });
         }
