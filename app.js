@@ -2554,4 +2554,7 @@
         if (refText) refText.textContent = window.location.origin + '?ref=top';
     });
 
+    // START
+    initRouter();
+    initEvents();
 })();
