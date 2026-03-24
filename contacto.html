@@ -11,6 +11,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
+    <script type="module">
+        import { injectSpeedInsights } from 'https://cdn.jsdelivr.net/npm/@vercel/speed-insights@1/dist/index.js';
+        injectSpeedInsights();
+    </script>
     <style>
         .legal-container { max-width: 640px; margin: 0 auto; padding: 40px 16px 60px; position: relative; z-index: 1; }
         .legal-header { text-align: center; margin-bottom: 40px; }
