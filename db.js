@@ -3,8 +3,13 @@ const supabaseUrl = 'https://owfppbdauqmghpmqrgse.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93ZnBwYmRhdXFtZ2hwbXFyZ3NlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjYyNDEsImV4cCI6MjA4OTk0MjI0MX0.AiW5Pmc8mSqa0Rx-EmWk5nzSrTDqCl99eKLnQg7v9Fw';
 let supabase;
 
+console.log("Script db.js cargado.");
+
 try {
-    supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    // Al ejecutar desde un archivo local (file://), las sesiones guardadas pueden colgar el código.
+    supabase = window.supabase.createClient(supabaseUrl, supabaseKey, {
+        auth: { persistSession: false }
+    });
 } catch (err) {
     console.error("Error initializing Supabase client (possibly invalid key):", err);
 }
