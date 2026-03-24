@@ -169,6 +169,7 @@
     }
 
     function sfxCorrect() {
+        if (navigator.vibrate) navigator.vibrate([10, 30, 10]);
         playTone(523, 0.12, 'sine', 0.12);
         setTimeout(() => playTone(659, 0.12, 'sine', 0.12), 80);
         setTimeout(() => playTone(784, 0.18, 'sine', 0.10), 160);
@@ -179,6 +180,7 @@
     }
 
     function sfxWrong() {
+        if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
         playTone(330, 0.15, 'square', 0.08);
         setTimeout(() => playTone(260, 0.25, 'square', 0.06), 120);
     }
@@ -1356,7 +1358,26 @@
 
         showScreen('results');
 
-        window._shareData = { brainAge, percentile, scores, ages };
+        // Determinar Arquetipo Cognitivo
+        const archetypeScores = {
+            'Francotirador 🎯': Math.max(scores.reaction || 0, scores.colors || 0, scores.spatial || 0),
+            'Ajedrecista ♟️': Math.max(scores.sequence || 0, scores.patterns || 0),
+            'Calculadora Humana 🧮': Math.max(scores.math || 0, scores.numbers || 0)
+        };
+        let archetype = 'Mente Equilibrada ⚖️';
+        let maxArchScore = 0;
+        for (const [arch, s] of Object.entries(archetypeScores)) {
+            if (s > maxArchScore && s > 0) {
+                maxArchScore = s;
+                archetype = arch;
+            }
+        }
+        const archEl = $('#results-archetype');
+        if (archEl) {
+            archEl.innerHTML = `Arquetipo: <span style="color:#fff;">${archetype}</span>`;
+        }
+
+        window._shareData = { brainAge, percentile, scores, ages, archetype };
 
         // Save to localStorage history (Phase 3)
         saveResultToHistory(brainAge, currentDifficulty, games.map(g => g.label));
@@ -1406,7 +1427,7 @@
                            d.brainAge <= 35 ? '¡Muy por encima de la media!' :
                            d.brainAge <= 45 ? 'Rendimiento sólido.' :
                            d.brainAge <= 55 ? 'Hay margen de mejora.' : 'El cerebro nunca deja de aprender.';
-        return `Acabo de hacer el Test de Edad Mental.\n\nMi resultado: ${d.brainAge} años de edad mental.\n${comentario}\nMejor que el ${d.percentile}% de los usuarios.\n\nHaz el test gratis (3 minutos):\n${window.location.href}`;
+        return `Acabo de hacer el Test de Edad Mental.\n\nMi resultado: ${d.brainAge} años mentales.\nArquetipo: ${d.archetype || ''}\n${comentario}\nMejor que el ${d.percentile}% de los jugadores.\n\nHaz el test gratis (3 minutos):\n${window.location.href}`;
     }
 
     // ── Event Listeners ──
@@ -1821,11 +1842,18 @@
             };
             const diff = diffMap[row.difficulty] || diffMap.normal;
 
+            // Visual Gamification Demo League
+            let leagueIcon = '🥉'; let leagueName = 'Bronce'; let leagueColor = '#b45309';
+            if (pos <= 5) { leagueIcon = '💎'; leagueName = 'Diamante'; leagueColor = '#06b6d4'; }
+            else if (pos <= 20) { leagueIcon = '🥇'; leagueName = 'Oro'; leagueColor = '#f59e0b'; }
+            else if (pos <= 50) { leagueIcon = '🥈'; leagueName = 'Plata'; leagueColor = '#94a3b8'; }
+
             tr.innerHTML = `
                 <td class="${posClass}">${medal}#${pos}</td>
                 <td class="rank-name">${escapeHTML(row.player_name)}</td>
                 <td class="rank-age">${row.brain_age} años</td>
                 <td><span class="diff-badge ${diff.cls}">${diff.label}</span></td>
+                <td style="text-align:center;"><span style="background:${leagueColor}40; color:${leagueColor}; padding:4px 10px; border-radius:12px; font-weight:700; font-size:12px; border:1px solid ${leagueColor}60;">${leagueIcon} ${leagueName}</span></td>
             `;
             tbody.appendChild(tr);
         });
@@ -2088,6 +2116,22 @@
             document.getElementById('profile-best').textContent = Math.min(...history.map(h => h.brainAge));
             document.getElementById('profile-no-data').style.display = 'none';
         }
+
+        let league = { name: 'Bronce', icon: '🥉', color: '#b45309' };
+        if (history.length > 0) {
+            const sortedH = [...history].reverse();
+            let impr = 0;
+            for (let i = 1; i < sortedH.length; i++) {
+                if (sortedH[i].brainAge <= sortedH[i-1].brainAge) impr++;
+                else impr = 0;
+            }
+            if (impr >= 9) league = { name: 'Diamante', icon: '💎', color: '#06b6d4' };
+            else if (impr >= 6) league = { name: 'Oro', icon: '🥇', color: '#f59e0b' };
+            else if (impr >= 3) league = { name: 'Plata', icon: '🥈', color: '#94a3b8' };
+        }
+        document.getElementById('profile-league-icon').textContent = league.icon;
+        document.getElementById('profile-league-name').textContent = league.name;
+        document.getElementById('profile-league-name').style.color = league.color;
 
         // Badges
         const bestAge = history.length > 0 ? Math.min(...history.map(h => h.brainAge)) : 999;
@@ -2468,5 +2512,46 @@
             tabLogin.style.color      = 'var(--clr-text-muted)';
         }
     };
+    // ── Referral System (Growth Loop Demo) ──
+    let referrals = 0;
+    
+    window.copyReferralLink = function() {
+        let link = window.location.origin + '?ref=demo';
+        if (window._shareData) link = window.location.origin + '?ref=' + window._shareData.brainAge + 'y';
+        navigator.clipboard.writeText(link);
+        const btn = document.getElementById('btn-copy-ref');
+        btn.textContent = '¡Copiado!';
+        setTimeout(() => btn.textContent = 'Copiar Enlace Privado', 2000);
+        
+        // Demo simulation: A friend clicks the link after 4 seconds
+        if (referrals < 2) {
+            setTimeout(() => {
+                referrals++;
+                document.getElementById('ref-count').textContent = referrals;
+                document.getElementById('ref-progress-bar').style.width = (referrals * 50) + '%';
+                
+                // Efecto de sonido (opcional)
+                if (typeof playTone === 'function') playTone(880, 0.1, 'sine', 0.1);
+
+                if (referrals >= 2) {
+                    const unlockBtn = document.getElementById('btn-unlock-analytics');
+                    unlockBtn.disabled = false;
+                    unlockBtn.style.opacity = '1';
+                    unlockBtn.style.cursor = 'pointer';
+                    unlockBtn.classList.remove('btn-secondary');
+                    unlockBtn.classList.add('btn-primary', 'btn-glow');
+                    unlockBtn.textContent = 'Ver mi Analítica Profunda';
+                    unlockBtn.onclick = () => {
+                        alert('¡Analítica desbloqueada! Aquí se renderizaría el PDF de Mapeo Cerebral Premium.');
+                    };
+                }
+            }, 4000);
+        }
+    };
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const refText = document.getElementById('referral-link-text');
+        if (refText) refText.textContent = window.location.origin + '?ref=top';
+    });
 
 })();

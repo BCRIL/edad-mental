@@ -156,6 +156,32 @@ async function getUserRankings(userId) {
     }
 }
 
+// ── NUEVO: Calcular Liga (Gamificación) ──
+function calculateLeague(rankings) {
+    if (!rankings || rankings.length === 0) return { name: 'Bronce', icon: '🥉', color: '#b45309' };
+    
+    // Ordenar de más antiguo a más reciente
+    const sorted = [...rankings].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+    
+    let consecutiveImprovements = 0;
+    for (let i = 1; i < sorted.length; i++) {
+        const prev = sorted[i-1];
+        const curr = sorted[i];
+        
+        // Comprobar si hay mejora en Edad Mental (menor es mejor)
+        if (curr.brain_age <= prev.brain_age) {
+            consecutiveImprovements++;
+        } else {
+            consecutiveImprovements = 0;
+        }
+    }
+    
+    if (consecutiveImprovements >= 9) return { name: 'Diamante', icon: '💎', color: '#06b6d4' };
+    if (consecutiveImprovements >= 6) return { name: 'Oro', icon: '🥇', color: '#f59e0b' };
+    if (consecutiveImprovements >= 3) return { name: 'Plata', icon: '🥈', color: '#94a3b8' };
+    return { name: 'Bronce', icon: '🥉', color: '#b45309' };
+}
+
 // ══════════════════════════════════════
 // RANKING FUNCTIONS
 // ══════════════════════════════════════

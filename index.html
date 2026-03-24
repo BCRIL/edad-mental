@@ -28,6 +28,12 @@
     <meta name="google-adsense-account" content="ca-pub-5204963814118924">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5204963814118924"
         crossorigin="anonymous"></script>
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#8b5cf6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
 </head>
 
 <body>
@@ -207,6 +213,32 @@
                     Cuenta creada. Revisa tu email para confirmar.</p>
             </form>
 
+    </div>
+
+    <!-- ══════════════════════════════════════
+         DEEP ANALYTICS MODAL (Growth Loop)
+    ══════════════════════════════════════ -->
+    <div id="analytics-modal"
+        style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.8);backdrop-filter:blur(12px);align-items:center;justify-content:center;padding:20px;">
+        <div style="background:var(--clr-surface);border:1px solid var(--clr-glass-border);border-radius:20px;padding:36px;max-width:450px;width:100%;position:relative;text-align:center;box-shadow:0 24px 80px rgba(139,92,246,0.3);">
+            <button onclick="document.getElementById('analytics-modal').style.display='none'"
+                style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--clr-text-muted);font-size:20px;cursor:pointer;">✕</button>
+            <div style="font-size:48px;margin-bottom:16px;">📊</div>
+            <h2 style="font-family:var(--font-display);font-size:24px;margin-bottom:12px;color:#f1f5f9;">Analítica Cognitiva Profunda</h2>
+            <p style="color:var(--clr-text-muted);font-size:14px;margin-bottom:24px;line-height:1.6;">
+                Descubre tus debilidades ocultas, la lateralidad de tu cerebro y consejos personalizados.
+                <strong style="color:var(--clr-text);display:block;margin-top:8px;">Invita a 2 amigos con tu enlace para desbloquearlo gratis.</strong>
+            </p>
+            <div style="background:rgba(0,0,0,0.2);padding:16px;border-radius:12px;border:1px dashed var(--clr-glass-border);margin-bottom:24px;">
+                <p id="referral-link-text" style="font-family:monospace;color:var(--clr-primary-light);font-size:13px;word-break:break-all;margin-bottom:12px;"></p>
+                <button id="btn-copy-ref" onclick="copyReferralLink()" class="btn btn-primary" style="padding:10px 24px;font-size:13px;width:auto;margin:0 auto;">Copiar Enlace Privado</button>
+            </div>
+            <div style="text-align:left;margin-bottom:8px;font-size:12px;color:var(--clr-text-muted);font-weight:600;">Progreso: <span id="ref-count">0</span>/2 amigos usando el enlace</div>
+            <div style="width:100%;height:8px;background:rgba(255,255,255,0.1);border-radius:4px;margin-bottom:24px;overflow:hidden;">
+                <div id="ref-progress-bar" style="width:0%;height:100%;background:linear-gradient(90deg,#8b5cf6,#06b6d4);transition:width 0.5s;"></div>
+            </div>
+            
+            <button id="btn-unlock-analytics" class="btn btn-secondary" disabled style="opacity:0.5;cursor:not-allowed;">Desbloquear mi Dashboard</button>
         </div>
     </div>
 
@@ -473,6 +505,9 @@
                         <div class="results-percentile" id="results-percentile">
                             ¡Tu cerebro funciona mejor que el <strong>78%</strong> de los usuarios!
                         </div>
+                        <div id="results-archetype" style="margin-top: 16px; margin-bottom: 24px; text-align: center; font-family: var(--font-display); font-size: 20px; color: var(--clr-primary-light); background: rgba(139,92,246,0.1); padding: 12px; border-radius: 12px; border: 1px solid rgba(139,92,246,0.3);">
+                            Arquetipo: <span style="color:#fff;">--</span>
+                        </div>
                         <div class="results-breakdown">
                             <h3 class="breakdown-title">Desglose por Prueba</h3>
                             <div class="breakdown-item">
@@ -571,6 +606,15 @@
                                 <span>Reta a un amigo</span>
                             </button>
                         </div>
+                        
+                        <!-- Growth Loop Monetization -->
+                        <div style="margin: 24px 0 16px 0;">
+                            <button class="btn btn-primary" id="btn-deep-analytics" onclick="document.getElementById('analytics-modal').style.display='flex'" style="width:100%; background: linear-gradient(135deg, #0f172a, #1e293b); border: 1px solid rgba(139,92,246,0.5); box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                                🧠 Desbloquear Analítica Profunda
+                                <span style="display:block; font-size:11px; color:#94a3b8; font-weight:400; margin-top:4px;">Requiere invitar a 2 amigos</span>
+                            </button>
+                        </div>
+                        
                         <button class="btn btn-secondary" id="btn-retry">Repetir Test</button>
                     </div>
                 </section>
@@ -740,11 +784,14 @@
                             <th
                                 style="padding: 16px 24px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); font-weight: 700; color: var(--clr-text-muted); font-size: 14px; text-transform: uppercase;">
                                 Dificultad</th>
+                            <th
+                                style="padding: 16px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); font-weight: 700; color: var(--clr-text-muted); font-size: 14px; text-transform: uppercase;">
+                                Liga</th>
                         </tr>
                     </thead>
                     <tbody id="ranking-body">
                         <tr>
-                            <td colspan="4" class="loading-spinner"
+                            <td colspan="5" class="loading-spinner"
                                 style="text-align: center; padding: 40px; color: var(--clr-text-muted);">Cargando
                                 puntuaciones...</td>
                         </tr>
@@ -803,7 +850,17 @@
 
                 <!-- Stats row -->
                 <div id="profile-stats-row"
-                    style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px;">
+                    style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px;">
+                    <div class="card"
+                        style="padding: 24px; text-align:center; border: 1px solid var(--clr-glass-border);">
+                        <div
+                            style="font-size: 13px; color: var(--clr-text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing:.08em;">
+                            🏆 Liga Actual</div>
+                        <div id="profile-league-icon"
+                            style="font-size: 42px; margin-bottom: 4px; line-height: 1;">
+                            --</div>
+                        <div id="profile-league-name" style="font-size: 14px; font-weight: 700; color: var(--clr-text);">Sin Rango</div>
+                    </div>
                     <div class="card"
                         style="padding: 24px; text-align:center; border: 1px solid var(--clr-glass-border);">
                         <div
@@ -912,6 +969,16 @@
     <script src="db.js?v=6.0"></script>
     <script src="app.js?v=4.0"></script>
     <script src="auth-google.js?v=1.0"></script>
+    <!-- PWA Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(reg => console.log('✅ PWA: Service Worker listo (Scope: ' + reg.scope + ')'))
+            .catch(err => console.error('❌ PWA: Error', err));
+        });
+      }
+    </script>
 </body>
 
 </html>
