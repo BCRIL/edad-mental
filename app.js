@@ -1756,20 +1756,20 @@
         if (btnSubmitScore) {
             btnSubmitScore.addEventListener('click', async () => {
                 const nameInput = $('#player-name-input');
-                const name = nameInput.value.trim();
+                // Use logged-in user's display name if available
+                const name = (_currentDisplayName || nameInput?.value || '').trim();
                 const msgEl = $('#ranking-msg');
 
                 if (!name) {
                     msgEl.textContent = 'Por favor, ingresa tu nombre.';
                     msgEl.style.color = 'var(--clr-danger)';
-                    nameInput.classList.add('shake');
-                    setTimeout(() => nameInput.classList.remove('shake'), 400);
+                    if (nameInput) { nameInput.classList.add('shake'); setTimeout(() => nameInput.classList.remove('shake'), 400); }
                     return;
                 }
 
                 btnSubmitScore.disabled = true;
-                btnSubmitScore.textContent = 'Guardando...';
-                msgEl.textContent = '';
+                btnSubmitScore.innerHTML = '<svg style="animation:spin 1s linear infinite;display:inline-block;margin-right:6px;" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>Guardando...';
+                if (msgEl) msgEl.textContent = '';
 
                 const data = {
                     player_name: name,
@@ -1783,22 +1783,20 @@
                 };
 
                 const err = await saveRanking(data);
+                btnSubmitScore.disabled = false;
+                btnSubmitScore.textContent = 'Guardar en Ranking';
 
                 if (err) {
-                    msgEl.textContent = 'Error al guardar. Intenta de nuevo.';
-                    msgEl.style.color = 'var(--clr-danger)';
-                    btnSubmitScore.disabled = false;
-                    btnSubmitScore.textContent = 'Guardar';
+                    if (msgEl) { msgEl.textContent = 'Error al guardar. Intenta de nuevo.'; msgEl.style.color = 'var(--clr-danger)'; }
                     console.error('Supabase Error:', err);
                 } else {
-                    // Save player name for duel URL
-                    window._sharePlayerName = safePlayerName;
-                    msgEl.textContent = '¡Puntuación guardada con éxito!';
-                    msgEl.style.color = 'var(--clr-success)';
-                    btnSubmitScore.textContent = 'Guardado';
-                    setTimeout(() => {
-                        window.location.href = 'ranking.html';
-                    }, 1500);
+                    window._sharePlayerName = name;
+                    // Show success overlay
+                    const overlay = document.getElementById('score-saved-overlay');
+                    const textEl  = document.getElementById('score-saved-text');
+                    if (textEl) textEl.textContent = `¡Tu puntuación (${window._shareData.brainAge} años mentales) ha sido guardada en el ranking global!`;
+                    if (overlay) overlay.style.display = 'flex';
+                    btnSubmitScore.textContent = '✓ Guardado';
                 }
             });
         }
@@ -2520,5 +2518,153 @@
                 }
             });
         }
+
+        // See ranking after save
+        const btnSeeRanking = document.getElementById('btn-see-ranking');
+        if (btnSeeRanking) {
+            btnSeeRanking.addEventListener('click', () => {
+                document.getElementById('score-saved-overlay').style.display = 'none';
+                navigate('/ranking');
+            });
+        }
+
+        // Auth setup
+        initAuth();
     });
+
+    // ══════════════════════════════════════════
+    // AUTH SYSTEM (Supabase Auth)
+    // ══════════════════════════════════════════
+    let _currentUser = null;
+    let _currentDisplayName = null;
+
+    function updateNavForUser(user, displayName) {
+        const btnLogin  = document.getElementById('btn-nav-login');
+        const pill      = document.getElementById('nav-user-pill');
+        const avatar    = document.getElementById('nav-avatar');
+        const nameSpan  = document.getElementById('nav-username');
+
+        if (user && displayName) {
+            _currentUser        = user;
+            _currentDisplayName = displayName;
+            window._sharePlayerName = displayName;
+            if (btnLogin) btnLogin.style.display = 'none';
+            if (pill) {
+                pill.style.display = 'flex';
+                avatar.textContent = displayName.charAt(0).toUpperCase();
+                nameSpan.textContent = displayName;
+            }
+            // Auto-fill name input on results screen
+            const nameInput = document.getElementById('player-name-input');
+            if (nameInput) nameInput.value = displayName;
+        } else {
+            _currentUser        = null;
+            _currentDisplayName = null;
+            if (btnLogin) btnLogin.style.display = '';
+            if (pill) pill.style.display = 'none';
+        }
+    }
+
+    async function initAuth() {
+        // Listen to auth changes (handles login, logout, session restore)
+        if (typeof onAuthChange === 'function') {
+            onAuthChange(async (user) => {
+                if (user) {
+                    const name = await getUserDisplayName(user.id) || user.email;
+                    updateNavForUser(user, name);
+                } else {
+                    updateNavForUser(null, null);
+                }
+            });
+        }
+        // Also check immediately on load
+        if (typeof getCurrentUser === 'function') {
+            const user = await getCurrentUser();
+            if (user) {
+                const name = await getUserDisplayName(user.id) || user.email;
+                updateNavForUser(user, name);
+            }
+        }
+    }
+
+    // Global functions (called from inline HTML onsubmit / onclick)
+    window.handleLogin = async function(e) {
+        e.preventDefault();
+        const email    = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value;
+        const errEl    = document.getElementById('login-error');
+        const btn      = document.getElementById('btn-login-submit');
+        errEl.style.display = 'none';
+        btn.textContent = 'Entrando...';
+        btn.disabled = true;
+        const { user, error } = await authSignIn(email, password);
+        btn.textContent = 'Entrar';
+        btn.disabled = false;
+        if (error) {
+            errEl.textContent = error.message || 'Error al iniciar sesión.';
+            errEl.style.display = 'block';
+        } else {
+            document.getElementById('auth-modal').style.display = 'none';
+            const name = await getUserDisplayName(user.id) || user.email;
+            updateNavForUser(user, name);
+        }
+    };
+
+    window.handleRegister = async function(e) {
+        e.preventDefault();
+        const name     = document.getElementById('reg-name').value.trim();
+        const email    = document.getElementById('reg-email').value.trim();
+        const password = document.getElementById('reg-password').value;
+        const errEl    = document.getElementById('register-error');
+        const successEl = document.getElementById('register-success');
+        const btn      = document.getElementById('btn-register-submit');
+        errEl.style.display = 'none';
+        successEl.style.display = 'none';
+        btn.textContent = 'Creando cuenta...';
+        btn.disabled = true;
+        const { user, error } = await authSignUp(email, password, name);
+        btn.textContent = 'Crear Cuenta';
+        btn.disabled = false;
+        if (error) {
+            errEl.textContent = error.message || 'Error al crear cuenta.';
+            errEl.style.display = 'block';
+        } else {
+            successEl.style.display = 'block';
+            // If email confirmation is disabled, auto-login
+            if (user) {
+                updateNavForUser(user, name);
+                setTimeout(() => {
+                    document.getElementById('auth-modal').style.display = 'none';
+                }, 2000);
+            }
+        }
+    };
+
+    window.handleLogout = async function() {
+        await authSignOut();
+        updateNavForUser(null, null);
+    };
+
+    window.switchAuthTab = function(tab) {
+        const loginForm  = document.getElementById('form-login');
+        const regForm    = document.getElementById('form-register');
+        const tabLogin   = document.getElementById('tab-login');
+        const tabReg     = document.getElementById('tab-register');
+        if (tab === 'login') {
+            loginForm.style.display = '';
+            regForm.style.display   = 'none';
+            tabLogin.style.background = 'rgba(139,92,246,0.25)';
+            tabLogin.style.color      = '#f1f5f9';
+            tabReg.style.background   = 'transparent';
+            tabReg.style.color        = 'var(--clr-text-muted)';
+        } else {
+            loginForm.style.display = 'none';
+            regForm.style.display   = '';
+            tabReg.style.background   = 'rgba(139,92,246,0.25)';
+            tabReg.style.color        = '#f1f5f9';
+            tabLogin.style.background = 'transparent';
+            tabLogin.style.color      = 'var(--clr-text-muted)';
+        }
+    };
+
 })();
