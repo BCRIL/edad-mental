@@ -223,6 +223,98 @@ body::before {
 }
 .btn-copy:hover { background: var(--clr-surface-hover); }
 
+/* --- Header / Navigation --- */
+.main-header {
+    width: 100%;
+    padding: 16px 24px;
+    background: rgba(15, 12, 41, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--clr-glass-border);
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 100;
+}
+
+.header-content {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--clr-text);
+    text-decoration: none;
+    background: linear-gradient(135deg, var(--clr-text), var(--clr-primary-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.nav-links {
+    display: flex;
+    gap: 16px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--clr-text-muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.nav-link:hover {
+    color: var(--clr-accent-light);
+}
+
+/* --- Difficulty Selector --- */
+.difficulty-selector {
+    margin-bottom: 32px;
+}
+
+.difficulty-label {
+    font-size: 14px;
+    color: var(--clr-text-muted);
+    margin-bottom: 12px;
+}
+
+.difficulty-options {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.btn-diff {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-glass-border);
+    color: var(--clr-text-muted);
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-diff.active {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: var(--clr-primary);
+    color: var(--clr-primary-light);
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+}
+
+.btn-diff:hover:not(.active) {
+    background: var(--clr-surface-hover);
+    color: var(--clr-text);
+}
+
 /* --- Welcome Screen --- */
 .welcome-card {
     text-align: center;
@@ -1067,6 +1159,93 @@ body::before {
 .faq-item p {
     font-size: 14px;
     margin-bottom: 0;
+}
+
+/* --- Ranking & Stats Additions --- */
+.ranking-submit-area {
+    margin-bottom: 32px;
+    padding: 24px;
+    background: rgba(139, 92, 246, 0.08);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: var(--radius-md);
+}
+
+.ranking-input-group {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.ranking-input-group input {
+    flex: 1;
+    padding: 12px 16px;
+    font-family: var(--font-body);
+    font-size: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--clr-glass-border);
+    border-radius: var(--radius-sm);
+    color: var(--clr-text);
+    outline: none;
+    transition: border-color var(--transition);
+}
+
+.ranking-input-group input:focus {
+    border-color: var(--clr-primary);
+}
+
+.btn-submit-score {
+    padding: 12px 24px;
+    font-weight: 700;
+    font-family: var(--font-body);
+    font-size: 16px;
+    background: linear-gradient(135deg, var(--clr-primary), var(--clr-accent));
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-submit-score:hover {
+    opacity: 0.9;
+}
+
+.btn-submit-score:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.ranking-msg {
+    font-size: 13px;
+    color: var(--clr-success);
+    font-weight: 600;
+    min-height: 20px;
+}
+
+/* Particles / Más chulo effects */
+.particle {
+    position: fixed;
+    pointer-events: none;
+    background: var(--clr-accent-light);
+    border-radius: 50%;
+    z-index: 1000;
+    animation: simpleParticle 1s ease-out forwards;
+}
+
+@keyframes simpleParticle {
+    0% { transform: scale(1) translateY(0); opacity: 1; }
+    100% { transform: scale(0) translateY(-100px); opacity: 0; }
+}
+
+.shake {
+    animation: shakeAnim 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shakeAnim {
+    10%, 90% { transform: translate3d(-3px, 0, 0); }
+    20%, 80% { transform: translate3d(5px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-10px, 0, 0); }
+    40%, 60% { transform: translate3d(10px, 0, 0); }
 }
 
 /* --- Responsive --- */

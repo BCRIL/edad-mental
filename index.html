@@ -20,6 +20,17 @@
 </head>
 <body>
 
+    <!-- Header Navegation -->
+    <header class="main-header">
+        <div class="header-content">
+            <a href="index.html" class="logo">Edad Mental</a>
+            <nav class="nav-links">
+                <a href="ranking.html" class="nav-link"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"></path></svg> Ranking</a>
+                <a href="estadisticas.html" class="nav-link"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-4"></path></svg> Estadísticas</a>
+            </nav>
+        </div>
+    </header>
+
     <!-- AD SLOT: Top Banner -->
     <div class="ad-container ad-top" id="ad-top">
         <div class="ad-placeholder">Espacio Publicitario</div>
@@ -45,6 +56,14 @@
                     <div class="stat">
                         <span class="stat-number">100%</span>
                         <span class="stat-label">Gratis</span>
+                    </div>
+                </div>
+                <div class="difficulty-selector">
+                    <p class="difficulty-label">Elige tu nivel:</p>
+                    <div class="difficulty-options">
+                        <button class="btn-diff" data-diff="easy">Fácil</button>
+                        <button class="btn-diff active" data-diff="normal">Normal</button>
+                        <button class="btn-diff" data-diff="hard">Difícil</button>
                     </div>
                 </div>
                 <button class="btn btn-primary btn-glow" id="btn-start">
@@ -197,6 +216,16 @@
                 <!-- AD SLOT: Between Results -->
                 <div class="ad-container ad-results" id="ad-results">
                     <div class="ad-placeholder">Espacio Publicitario</div>
+                </div>
+
+                <!-- Player Name for Ranking -->
+                <div class="ranking-submit-area" id="ranking-submit-area">
+                    <h3 class="breakdown-title">¡Guarda tu puntuación en el Ranking!</h3>
+                    <div class="ranking-input-group">
+                        <input type="text" id="player-name-input" placeholder="Tu nombre o apodo..." maxlength="20">
+                        <button class="btn btn-submit-score" id="btn-submit-score">Guardar</button>
+                    </div>
+                    <p class="ranking-msg" id="ranking-msg"></p>
                 </div>
 
                 <div class="results-share">
@@ -375,6 +404,10 @@
         </div>
     </footer>
 
+    <!-- Supabase CDN and Shared DB logic -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="db.js"></script>
+    <!-- Main Application Logic -->
     <script src="app.js"></script>
 </body>
 </html>

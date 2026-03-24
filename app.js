@@ -11,6 +11,7 @@
     // Raw metrics stored for scientific brain-age mapping
     const rawMetrics = { reactionMs: 0, digitSpan: 0, patternScore: 0, mathRate: 0, sequenceSpan: 0 };
     let currentGame = 0;
+    let currentDifficulty = 'normal';
 
     // SVG icons for each game (replacing emojis)
     const gameIcons = {
@@ -61,6 +62,38 @@
 
     function sleep(ms) {
         return new Promise(r => setTimeout(r, ms));
+    }
+
+    function spawnParticles(element) {
+        if (!element) return;
+        const rect = element.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        for (let i = 0; i < 12; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = cx + 'px';
+            p.style.top = cy + 'px';
+            p.style.width = randInt(6, 12) + 'px';
+            p.style.height = p.style.width;
+            p.style.position = 'fixed';
+            p.style.pointerEvents = 'none';
+            p.style.zIndex = '1000';
+            p.style.backgroundColor = ['#22d3ee', '#a78bfa', '#f472b6', '#34d399', '#f59e0b'][randInt(0, 4)];
+            p.style.borderRadius = '50%';
+            p.style.transition = 'all 0.6s cubic-bezier(0.25, 1, 0.5, 1)';
+            document.body.appendChild(p);
+            
+            const angle = Math.random() * Math.PI * 2;
+            const dist = randInt(40, 120);
+            const tx = Math.cos(angle) * dist;
+            const ty = Math.sin(angle) * dist - 40;
+            
+            void p.offsetWidth; // trigger reflow
+            p.style.transform = `translate(${tx}px, ${ty}px) scale(0)`;
+            p.style.opacity = '0';
+            setTimeout(() => p.remove(), 600);
+        }
     }
 
     // ══════════════════════════════════════════
@@ -279,7 +312,9 @@
 
         sfxCountdown();
 
-        const showTime = 1200 + (numberLevel * 400);
+        const timeMultiplier = currentDifficulty === 'hard' ? 300 : (currentDifficulty === 'easy' ? 600 : 400);
+        const baseTime = currentDifficulty === 'hard' ? 800 : (currentDifficulty === 'easy' ? 1500 : 1200);
+        const showTime = baseTime + (numberLevel * timeMultiplier);
         timerBar.style.transition = 'none';
         timerBar.style.width = '100%';
         setTimeout(() => {
@@ -311,17 +346,22 @@
             feedback.className = 'number-feedback correct';
             feedback.textContent = '¡Correcto! Siguiente nivel...';
             sfxCorrect();
+            spawnParticles(input);
             numberLevel++;
-            if (numberLevel > 10) {
+            if (numberLevel > (currentDifficulty === 'easy' ? 8 : (currentDifficulty === 'hard' ? 12 : 10))) {
                 finishNumber();
                 return;
             }
             setTimeout(() => showNumber(), 1000);
         } else {
+            input.classList.add('shake');
             feedback.className = 'number-feedback wrong';
             feedback.textContent = `Incorrecto — Era: ${numberTarget}`;
             sfxWrong();
-            setTimeout(() => finishNumber(), 1200);
+            setTimeout(() => {
+                input.classList.remove('shake');
+                finishNumber();
+            }, 1200);
         }
     }
 
@@ -684,6 +724,108 @@
                 { type: 'number', value: '0' },
             ]
         },
+        {
+            // Squares minus 1: 0, 3, 8, 15, ?
+            label: '¿Qué número sigue la secuencia?',
+            seq: [
+                { type: 'number', value: '0' },
+                { type: 'number', value: '3' },
+                { type: 'number', value: '8' },
+                { type: 'number', value: '15' },
+            ],
+            answer: 0,
+            options: [
+                { type: 'number', value: '24' },
+                { type: 'number', value: '25' },
+                { type: 'number', value: '20' },
+                { type: 'number', value: '22' },
+            ]
+        },
+        {
+            // Double and subtract 1: 2, 3, 5, 9... 17 (33)
+            label: 'Resuelve esta secuencia lógica',
+            seq: [
+                { type: 'number', value: '2' },
+                { type: 'number', value: '3' },
+                { type: 'number', value: '5' },
+                { type: 'number', value: '9' },
+            ],
+            answer: 0,
+            options: [
+                { type: 'number', value: '17' },
+                { type: 'number', value: '18' },
+                { type: 'number', value: '15' },
+                { type: 'number', value: '14' },
+            ]
+        },
+        {
+            // Alternating +3, -1: 5, 8, 7, 10, ? (9)
+            label: '¿Qué número sigue?',
+            seq: [
+                { type: 'number', value: '5' },
+                { type: 'number', value: '8' },
+                { type: 'number', value: '7' },
+                { type: 'number', value: '10' },
+            ],
+            answer: 0,
+            options: [
+                { type: 'number', value: '9' },
+                { type: 'number', value: '13' },
+                { type: 'number', value: '11' },
+                { type: 'number', value: '12' },
+            ]
+        },
+        {
+            // Skip 2 letters: A, D, G, J, ? (M)
+            label: '¿Qué letra falta?',
+            seq: [
+                { type: 'letter', value: 'A' },
+                { type: 'letter', value: 'D' },
+                { type: 'letter', value: 'G' },
+                { type: 'letter', value: 'J' },
+            ],
+            answer: 0,
+            options: [
+                { type: 'letter', value: 'M' },
+                { type: 'letter', value: 'N' },
+                { type: 'letter', value: 'L' },
+                { type: 'letter', value: 'K' },
+            ]
+        },
+        {
+            // Descending primes: 17, 13, 11, 7, ? (5)
+            label: 'Encuentra el número que sigue',
+            seq: [
+                { type: 'number', value: '17' },
+                { type: 'number', value: '13' },
+                { type: 'number', value: '11' },
+                { type: 'number', value: '7' },
+            ],
+            answer: 0,
+            options: [
+                { type: 'number', value: '5' },
+                { type: 'number', value: '3' },
+                { type: 'number', value: '6' },
+                { type: 'number', value: '4' },
+            ]
+        },
+        {
+            // Vowels missing one: A, E, I, O, ? (U)
+            label: '¿Qué vocal termina la secuencia?',
+            seq: [
+                { type: 'letter', value: 'A' },
+                { type: 'letter', value: 'E' },
+                { type: 'letter', value: 'I' },
+                { type: 'letter', value: 'O' },
+            ],
+            answer: 0,
+            options: [
+                { type: 'letter', value: 'U' },
+                { type: 'letter', value: 'N' },
+                { type: 'letter', value: 'Y' },
+                { type: 'letter', value: 'P' },
+            ]
+        },
     ];
     let patternIndex = 0;
     let patternCorrect = 0;
@@ -694,7 +836,7 @@
     function startPatternGame() {
         patternIndex = 0;
         patternCorrect = 0;
-        patternTimeLeft = 30;
+        patternTimeLeft = currentDifficulty === 'hard' ? 20 : (currentDifficulty === 'easy' ? 45 : 30);
         patternOrder = shuffle([...Array(patternSets.length).keys()]);
         showScreen('game3');
         showPatternRound();
@@ -793,9 +935,12 @@
             patternCorrect++;
             btn.classList.add('correct-answer');
             sfxCorrect();
+            spawnParticles(btn);
         } else {
             btn.classList.add('wrong-answer');
+            btn.classList.add('shake');
             sfxWrong();
+            setTimeout(() => btn.classList.remove('shake'), 400);
         }
 
         $('#pattern-score').textContent = `Aciertos: ${patternCorrect}`;
@@ -824,7 +969,7 @@
     function startMathGame() {
         mathCorrect = 0;
         mathTotal = 0;
-        mathTimeLeft = 30;
+        mathTimeLeft = currentDifficulty === 'hard' ? 20 : (currentDifficulty === 'easy' ? 45 : 30);
         showScreen('game4');
         showMathProblem();
         mathTimer = setInterval(() => {
@@ -842,18 +987,19 @@
         const ops = ['+', '-', '×'];
         const op = ops[randInt(0, 2)];
         let a, b, answer;
+        const diffMult = currentDifficulty === 'hard' ? 3 : (currentDifficulty === 'easy' ? 0.5 : 1);
 
         if (op === '+') {
-            a = randInt(5, 50);
-            b = randInt(5, 50);
+            a = Math.floor(randInt(5, 50) * diffMult);
+            b = Math.floor(randInt(5, 50) * diffMult);
             answer = a + b;
         } else if (op === '-') {
-            a = randInt(20, 80);
-            b = randInt(5, a - 1);
+            a = Math.floor(randInt(20, 80) * diffMult);
+            b = Math.floor(randInt(5, a - 1) * diffMult);
             answer = a - b;
         } else {
-            a = randInt(2, 12);
-            b = randInt(2, 12);
+            a = Math.floor(randInt(2, 12) * (currentDifficulty === 'hard' ? 2 : 1));
+            b = Math.floor(randInt(2, 12) * (currentDifficulty === 'hard' ? 2 : 1));
             answer = a * b;
         }
 
@@ -888,9 +1034,12 @@
         if (selected === correct) {
             mathCorrect++;
             sfxCorrect();
+            spawnParticles(btn);
         } else {
             btn.classList.add('wrong-answer');
+            btn.classList.add('shake');
             sfxWrong();
+            setTimeout(() => btn.classList.remove('shake'), 400);
         }
 
         $('#math-score').textContent = `Aciertos: ${mathCorrect} de ${mathTotal}`;
@@ -974,12 +1123,14 @@
                 simonPlaying = false;
                 setSimonEnabled(false);
 
-                if (simonLevel >= 9) {
+                const targetMaxLevel = currentDifficulty === 'hard' ? 12 : (currentDifficulty === 'easy' ? 7 : 9);
+                if (simonLevel >= targetMaxLevel) {
                     finishSimon();
                     return;
                 }
 
                 sfxCorrect();
+                spawnParticles(btn);
                 $('#simon-prompt').textContent = '¡Correcto! Siguiente nivel...';
                 await sleep(800);
                 nextSimonRound();
@@ -988,6 +1139,7 @@
             simonPlaying = false;
             setSimonEnabled(false);
             btn.classList.add('error-flash');
+            btn.classList.add('shake');
             sfxWrong();
             $('#simon-prompt').textContent = 'Secuencia incorrecta.';
             await sleep(1200);
@@ -1175,6 +1327,15 @@
 
     // ── Event Listeners ──
     function initEvents() {
+        $$('.btn-diff').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                $$('.btn-diff').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentDifficulty = btn.dataset.diff;
+                sfxClick();
+            });
+        });
+
         $('#btn-start').addEventListener('click', () => {
             // Initialize audio context on first user interaction
             getAudioCtx();
@@ -1232,6 +1393,55 @@
             currentGame = 0;
             showScreen('welcome');
         });
+
+        const btnSubmitScore = $('#btn-submit-score');
+        if (btnSubmitScore) {
+            btnSubmitScore.addEventListener('click', async () => {
+                const nameInput = $('#player-name-input');
+                const name = nameInput.value.trim();
+                const msgEl = $('#ranking-msg');
+                
+                if (!name) {
+                    msgEl.textContent = 'Por favor, ingresa tu nombre.';
+                    msgEl.style.color = 'var(--clr-danger)';
+                    nameInput.classList.add('shake');
+                    setTimeout(() => nameInput.classList.remove('shake'), 400);
+                    return;
+                }
+
+                btnSubmitScore.disabled = true;
+                btnSubmitScore.textContent = 'Guardando...';
+                msgEl.textContent = '';
+
+                const data = {
+                    player_name: name,
+                    difficulty: currentDifficulty,
+                    brain_age: window._shareData.brainAge,
+                    reaction_score: scores.reaction,
+                    numbers_score: scores.numbers,
+                    patterns_score: scores.patterns,
+                    math_score: scores.math,
+                    sequence_score: scores.sequence
+                };
+
+                const err = await saveRanking(data);
+
+                if (err) {
+                    msgEl.textContent = 'Error al guardar. Intenta de nuevo.';
+                    msgEl.style.color = 'var(--clr-danger)';
+                    btnSubmitScore.disabled = false;
+                    btnSubmitScore.textContent = 'Guardar';
+                    console.error('Supabase Error:', err);
+                } else {
+                    msgEl.textContent = '¡Puntuación guardada con éxito!';
+                    msgEl.style.color = 'var(--clr-success)';
+                    btnSubmitScore.textContent = 'Guardado';
+                    setTimeout(() => {
+                        window.location.href = 'ranking.html';
+                    }, 1500);
+                }
+            });
+        }
     }
 
     document.addEventListener('DOMContentLoaded', initEvents);

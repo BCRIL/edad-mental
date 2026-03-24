@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking Global | Test de Edad Mental</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .ranking-container { max-width: 800px; margin: 80px auto 40px; padding: 20px; }
+        .ranking-title { font-family: var(--font-display); font-size: 36px; text-align: center; margin-bottom: 30px; background: linear-gradient(135deg, var(--clr-primary-light), var(--clr-accent-light)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .ranking-table { width: 100%; border-collapse: collapse; background: var(--clr-surface); backdrop-filter: blur(20px); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-card); border: 1px solid var(--clr-glass-border); }
+        .ranking-table th, .ranking-table td { padding: 16px 24px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .ranking-table th { background: rgba(0,0,0,0.2); font-weight: 700; color: var(--clr-text-muted); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+        .ranking-table tr:last-child td { border-bottom: none; }
+        .ranking-table tbody tr:hover { background: var(--clr-surface-hover); }
+        .rank-pos { font-family: var(--font-display); font-weight: 800; font-size: 18px; color: var(--clr-accent-light); }
+        .rank-pos.gold { color: #fbbf24; font-size: 24px; }
+        .rank-pos.silver { color: #94a3b8; font-size: 22px; }
+        .rank-pos.bronze { color: #b45309; font-size: 20px; }
+        .rank-name { font-weight: 600; color: var(--clr-text); font-size: 16px; }
+        .rank-age { font-family: var(--font-display); font-weight: 800; font-size: 22px; color: var(--clr-primary-light); }
+        
+        .loading-spinner { text-align: center; padding: 40px; color: var(--clr-text-muted); }
+    </style>
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-content">
+            <a href="index.html" class="logo">Edad Mental</a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">Inicio</a>
+                <a href="ranking.html" class="nav-link" style="color:var(--clr-accent-light)">Ranking</a>
+                <a href="estadisticas.html" class="nav-link">Estadísticas</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="ranking-container">
+        <h1 class="ranking-title">Top Mejores Cerebros</h1>
+        
+        <table class="ranking-table">
+            <thead>
+                <tr>
+                    <th>Posición</th>
+                    <th>Jugador</th>
+                    <th>Edad Mental</th>
+                    <th>Dificultad</th>
+                </tr>
+            </thead>
+            <tbody id="ranking-body">
+                <tr><td colspan="4" class="loading-spinner">Cargando puntuaciones...</td></tr>
+            </tbody>
+        </table>
+    </main>
+
+    <!-- Supabase CDN and Shared DB logic -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="db.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const tbody = document.getElementById('ranking-body');
+            const { data, error } = await getTopRankings();
+            
+            if (error || !data) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--clr-danger); padding: 30px;">Error al cargar el ranking.</td></tr>';
+                console.error(error);
+                return;
+            }
+            
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 30px;">Aún no hay puntuaciones. ¡Sé el primero en jugar!</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            data.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                const pos = index + 1;
+                let posClass = 'rank-pos';
+                if (pos === 1) posClass += ' gold';
+                else if (pos === 2) posClass += ' silver';
+                else if (pos === 3) posClass += ' bronze';
+
+                const diff = row.difficulty === 'easy' ? 'Fácil' : (row.difficulty === 'hard' ? 'Difícil' : 'Normal');
+
+                tr.innerHTML = `
+                    <td class="${posClass}">#${pos}</td>
+                    <td class="rank-name">${escapeHTML(row.player_name)}</td>
+                    <td class="rank-age">${row.brain_age} años</td>
+                    <td><span style="font-size:12px;opacity:0.8">${diff}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.innerText = str;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
