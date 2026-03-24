@@ -562,412 +562,141 @@
         return div;
     }
 
-    const patternSets = [
-        {
-            // Number sequence: 2, 4, 6, 8, ?
-            label: '¿Qué número sigue la secuencia?',
-            seq: [
-                { type: 'number', value: '2' },
-                { type: 'number', value: '4' },
-                { type: 'number', value: '6' },
-                { type: 'number', value: '8' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'number', value: '10' },
-                { type: 'number', value: '9' },
-                { type: 'number', value: '12' },
-                { type: 'number', value: '7' },
-            ]
-        },
-        {
-            // Color gradient: light to dark blue
-            label: '¿Qué color continúa la degradación?',
-            seq: [
-                { type: 'color', color: '#bfdbfe' },
-                { type: 'color', color: '#60a5fa' },
-                { type: 'color', color: '#3b82f6' },
-                { type: 'color', color: '#2563eb' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'color', color: '#1d4ed8' },
-                { type: 'color', color: '#f87171' },
-                { type: 'color', color: '#93c5fd' },
-                { type: 'color', color: '#fbbf24' },
-            ]
-        },
-        {
-            // Dots: 1, 2, 3, 4, ?
-            label: '¿Cuántos puntos van a continuación?',
-            seq: [
-                { type: 'dots', count: 1, color: '#f472b6' },
-                { type: 'dots', count: 2, color: '#f472b6' },
-                { type: 'dots', count: 3, color: '#f472b6' },
-                { type: 'dots', count: 4, color: '#f472b6' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'dots', count: 5, color: '#f472b6' },
-                { type: 'dots', count: 6, color: '#f472b6' },
-                { type: 'dots', count: 3, color: '#f472b6' },
-                { type: 'dots', count: 7, color: '#f472b6' },
-            ]
-        },
-        {
-            // Number: 3, 6, 12, 24, ?
-            label: '¿Qué número sigue la secuencia?',
-            seq: [
-                { type: 'number', value: '3' },
-                { type: 'number', value: '6' },
-                { type: 'number', value: '12' },
-                { type: 'number', value: '24' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'number', value: '48' },
-                { type: 'number', value: '36' },
-                { type: 'number', value: '30' },
-                { type: 'number', value: '28' },
-            ]
-        },
-        {
-            // Bar heights: 10, 20, 30, 40, ?
-            label: '¿Qué barra sigue el patrón?',
-            seq: [
-                { type: 'bar', height: 10, color: '#34d399' },
-                { type: 'bar', height: 20, color: '#34d399' },
-                { type: 'bar', height: 30, color: '#34d399' },
-                { type: 'bar', height: 40, color: '#34d399' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'bar', height: 50, color: '#34d399' },
-                { type: 'bar', height: 35, color: '#34d399' },
-                { type: 'bar', height: 60, color: '#34d399' },
-                { type: 'bar', height: 20, color: '#34d399' },
-            ]
-        },
-        {
-            // Alternating colors: red, blue, red, blue, ?
-            label: '¿Qué color sigue la alternancia?',
-            seq: [
-                { type: 'color', color: '#ef4444' },
-                { type: 'color', color: '#3b82f6' },
-                { type: 'color', color: '#ef4444' },
-                { type: 'color', color: '#3b82f6' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'color', color: '#ef4444' },
-                { type: 'color', color: '#3b82f6' },
-                { type: 'color', color: '#22c55e' },
-                { type: 'color', color: '#f59e0b' },
-            ]
-        },
-        {
-            // Letters: A, C, E, G, ?
-            label: '¿Qué letra sigue la secuencia?',
-            seq: [
-                { type: 'letter', value: 'A' },
-                { type: 'letter', value: 'C' },
-                { type: 'letter', value: 'E' },
-                { type: 'letter', value: 'G' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'letter', value: 'I' },
-                { type: 'letter', value: 'H' },
-                { type: 'letter', value: 'J' },
-                { type: 'letter', value: 'F' },
-            ]
-        },
-        {
-            // Fibonacci: 1, 1, 2, 3, ?
-            label: '¿Qué número sigue la secuencia?',
-            seq: [
-                { type: 'number', value: '1' },
-                { type: 'number', value: '1' },
-                { type: 'number', value: '2' },
-                { type: 'number', value: '3' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'number', value: '5' },
-                { type: 'number', value: '4' },
-                { type: 'number', value: '6' },
-                { type: 'number', value: '3' },
-            ]
-        },
-        {
-            // Shape sizes: small, medium, large circles, ?
-            label: '¿Qué tamaño continúa la progresión?',
-            seq: [
-                { type: 'color', color: '#a78bfa', radius: '50%' },
-                { type: 'color', color: '#a78bfa', radius: '50%' },
-                { type: 'color', color: '#a78bfa', radius: '50%' },
-                { type: 'color', color: '#a78bfa', radius: '50%' },
-            ],
-            // We'll handle sizes via inline style overrides
-            seqSizes: [14, 20, 26, 32],
-            answer: 0,
-            options: [
-                { type: 'color', color: '#a78bfa', radius: '50%', size: 38 },
-                { type: 'color', color: '#a78bfa', radius: '50%', size: 20 },
-                { type: 'color', color: '#a78bfa', radius: '50%', size: 10 },
-                { type: 'color', color: '#a78bfa', radius: '50%', size: 50 },
-            ]
-        },
-        {
-            // Squares: 1², 2², 3², 4², ?
-            label: '¿Qué número sigue? (cuadrados perfectos)',
-            seq: [
-                { type: 'number', value: '1' },
-                { type: 'number', value: '4' },
-                { type: 'number', value: '9' },
-                { type: 'number', value: '16' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'number', value: '25' },
-                { type: 'number', value: '20' },
-                { type: 'number', value: '32' },
-                { type: 'number', value: '18' },
-            ]
-        },
-        {
-            // Triangular numbers: 1, 3, 6, 10, ?
-            label: '¿Qué número sigue la secuencia?',
-            seq: [
-                { type: 'number', value: '1' },
-                { type: 'number', value: '3' },
-                { type: 'number', value: '6' },
-                { type: 'number', value: '10' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'number', value: '15' },
-                { type: 'number', value: '14' },
-                { type: 'number', value: '12' },
-                { type: 'number', value: '16' },
-            ]
-        },
-        {
-            // Dots doubling: 1, 2, 4, 8, ?
-            label: '¿Cuántos puntos van a continuación?',
-            seq: [
-                { type: 'dots', count: 1, color: '#06b6d4' },
-                { type: 'dots', count: 2, color: '#06b6d4' },
-                { type: 'dots', count: 4, color: '#06b6d4' },
-                { type: 'dots', count: 8, color: '#06b6d4' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'dots', count: 16, color: '#06b6d4' },
-                { type: 'dots', count: 10, color: '#06b6d4' },
-                { type: 'dots', count: 12, color: '#06b6d4' },
-                { type: 'dots', count: 9, color: '#06b6d4' },
-            ]
-        },
-        {
-            // Bar descending: 50, 40, 30, 20, ?
-            label: '¿Qué barra sigue el patrón?',
-            seq: [
-                { type: 'bar', height: 50, color: '#f59e0b' },
-                { type: 'bar', height: 40, color: '#f59e0b' },
-                { type: 'bar', height: 30, color: '#f59e0b' },
-                { type: 'bar', height: 20, color: '#f59e0b' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'bar', height: 10, color: '#f59e0b' },
-                { type: 'bar', height: 15, color: '#f59e0b' },
-                { type: 'bar', height: 25, color: '#f59e0b' },
-                { type: 'bar', height: 40, color: '#f59e0b' },
-            ]
-        },
-        {
-            // Letter sequence: B, D, F, H, ?
-            label: '¿Qué letra sigue la secuencia?',
-            seq: [
-                { type: 'letter', value: 'B' },
-                { type: 'letter', value: 'D' },
-                { type: 'letter', value: 'F' },
-                { type: 'letter', value: 'H' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'letter', value: 'J' },
-                { type: 'letter', value: 'I' },
-                { type: 'letter', value: 'K' },
-                { type: 'letter', value: 'G' },
-            ]
-        },
-        {
-            // Powers of 3: 1, 3, 9, 27, ?
-            label: '¿Qué número sigue la secuencia?',
-            seq: [
-                { type: 'number', value: '1' },
-                { type: 'number', value: '3' },
-                { type: 'number', value: '9' },
-                { type: 'number', value: '27' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'number', value: '81' },
-                { type: 'number', value: '36' },
-                { type: 'number', value: '54' },
-                { type: 'number', value: '30' },
-            ]
-        },
-        {
-            // Color gradient: green progression
-            label: '¿Qué color continúa la degradación?',
-            seq: [
-                { type: 'color', color: '#bbf7d0' },
-                { type: 'color', color: '#4ade80' },
-                { type: 'color', color: '#22c55e' },
-                { type: 'color', color: '#16a34a' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'color', color: '#15803d' },
-                { type: 'color', color: '#ef4444' },
-                { type: 'color', color: '#86efac' },
-                { type: 'color', color: '#a78bfa' },
-            ]
-        },
-        {
-            // Subtraction: 64, 32, 16, 8, ?
-            label: '¿Qué número sigue la secuencia?',
-            seq: [
-                { type: 'number', value: '64' },
-                { type: 'number', value: '32' },
-                { type: 'number', value: '16' },
-                { type: 'number', value: '8' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'number', value: '4' },
-                { type: 'number', value: '6' },
-                { type: 'number', value: '2' },
-                { type: 'number', value: '0' },
-            ]
-        },
-        {
-            // Squares minus 1: 0, 3, 8, 15, ?
-            label: '¿Qué número sigue la secuencia?',
-            seq: [
-                { type: 'number', value: '0' },
-                { type: 'number', value: '3' },
-                { type: 'number', value: '8' },
-                { type: 'number', value: '15' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'number', value: '24' },
-                { type: 'number', value: '25' },
-                { type: 'number', value: '20' },
-                { type: 'number', value: '22' },
-            ]
-        },
-        {
-            // Double and subtract 1: 2, 3, 5, 9... 17 (33)
-            label: 'Resuelve esta secuencia lógica',
-            seq: [
-                { type: 'number', value: '2' },
-                { type: 'number', value: '3' },
-                { type: 'number', value: '5' },
-                { type: 'number', value: '9' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'number', value: '17' },
-                { type: 'number', value: '18' },
-                { type: 'number', value: '15' },
-                { type: 'number', value: '14' },
-            ]
-        },
-        {
-            // Alternating +3, -1: 5, 8, 7, 10, ? (9)
-            label: '¿Qué número sigue?',
-            seq: [
-                { type: 'number', value: '5' },
-                { type: 'number', value: '8' },
-                { type: 'number', value: '7' },
-                { type: 'number', value: '10' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'number', value: '9' },
-                { type: 'number', value: '13' },
-                { type: 'number', value: '11' },
-                { type: 'number', value: '12' },
-            ]
-        },
-        {
-            // Skip 2 letters: A, D, G, J, ? (M)
-            label: '¿Qué letra falta?',
-            seq: [
-                { type: 'letter', value: 'A' },
-                { type: 'letter', value: 'D' },
-                { type: 'letter', value: 'G' },
-                { type: 'letter', value: 'J' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'letter', value: 'M' },
-                { type: 'letter', value: 'N' },
-                { type: 'letter', value: 'L' },
-                { type: 'letter', value: 'K' },
-            ]
-        },
-        {
-            // Descending primes: 17, 13, 11, 7, ? (5)
-            label: 'Encuentra el número que sigue',
-            seq: [
-                { type: 'number', value: '17' },
-                { type: 'number', value: '13' },
-                { type: 'number', value: '11' },
-                { type: 'number', value: '7' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'number', value: '5' },
-                { type: 'number', value: '3' },
-                { type: 'number', value: '6' },
-                { type: 'number', value: '4' },
-            ]
-        },
-        {
-            // Vowels missing one: A, E, I, O, ? (U)
-            label: '¿Qué vocal termina la secuencia?',
-            seq: [
-                { type: 'letter', value: 'A' },
-                { type: 'letter', value: 'E' },
-                { type: 'letter', value: 'I' },
-                { type: 'letter', value: 'O' },
-            ],
-            answer: 0,
-            options: [
-                { type: 'letter', value: 'U' },
-                { type: 'letter', value: 'N' },
-                { type: 'letter', value: 'Y' },
-                { type: 'letter', value: 'P' },
-            ]
-        },
-    ];
+    // ── Dynamic Pattern Generator (infinite unique patterns) ──
+    function generatePattern() {
+        const generators = [
+            // Arithmetic: a, a+d, a+2d, a+3d -> a+4d
+            () => {
+                const a = randInt(1, 20);
+                const d = randInt(2, 8) * (Math.random() > 0.3 ? 1 : -1);
+                const seq = [a, a+d, a+2*d, a+3*d];
+                const ans = a + 4*d;
+                const wrongs = [ans + randInt(1,3), ans - randInt(1,3), ans + d].filter(w => w !== ans && w > 0);
+                return { label: '¿Qué número sigue la secuencia?', type: 'number', seq, answer: ans, wrongs };
+            },
+            // Geometric: a, a*r, a*r², a*r³ -> a*r⁴
+            () => {
+                const a = randInt(1, 4);
+                const r = [2, 3][randInt(0, 1)];
+                const seq = [a, a*r, a*r*r, a*r*r*r];
+                const ans = a*r*r*r*r;
+                const wrongs = [ans + randInt(1,10), ans - randInt(1,5), a*r*r*r + r].filter(w => w !== ans && w > 0);
+                return { label: '¿Qué número sigue la secuencia?', type: 'number', seq, answer: ans, wrongs };
+            },
+            // Squares: n², (n+1)², (n+2)², (n+3)² -> (n+4)²
+            () => {
+                const n = randInt(1, 6);
+                const seq = [n*n, (n+1)*(n+1), (n+2)*(n+2), (n+3)*(n+3)];
+                const ans = (n+4)*(n+4);
+                const wrongs = [ans+1, ans-1, (n+3)*(n+3)+n+4].filter(w => w !== ans && w > 0);
+                return { label: '¿Qué número sigue? (cuadrados)', type: 'number', seq, answer: ans, wrongs };
+            },
+            // Fibonacci-like: a, b, a+b, a+2b -> a+3b (or true fib)
+            () => {
+                const a = randInt(1, 5);
+                const b = randInt(1, 5);
+                const seq = [a, b, a+b, b+a+b];
+                const ans = (a+b) + (b+a+b);
+                const wrongs = [ans+2, ans-2, ans+randInt(3,6)].filter(w => w !== ans && w > 0);
+                return { label: '¿Qué número sigue la serie?', type: 'number', seq, answer: ans, wrongs };
+            },
+            // Letters with skip: start + skip N
+            () => {
+                const start = randInt(0, 10);
+                const skip = randInt(1, 3);
+                const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                const seq = [0,1,2,3].map(i => letters[start + i*skip]);
+                const ans = letters[start + 4*skip];
+                const nearLetters = [letters[start + 4*skip + 1], letters[start + 4*skip - 1], letters[start + 3*skip + 1]].filter(w => w && w !== ans);
+                return { label: '¿Qué letra sigue?', type: 'letter', seq, answer: ans, wrongs: nearLetters };
+            },
+            // Dots counting
+            () => {
+                const start = randInt(1, 3);
+                const step = randInt(1, 3);
+                const colors = ['#f472b6','#06b6d4','#8b5cf6','#f59e0b','#10b981'];
+                const c = colors[randInt(0, colors.length-1)];
+                const seq = [start, start+step, start+2*step, start+3*step];
+                const ans = start + 4*step;
+                const wrongs = [ans+1, ans-1, ans+step].filter(w => w !== ans && w > 0);
+                return { label: '¿Cuántos puntos van a continuación?', type: 'dots', seq, answer: ans, wrongs, color: c };
+            },
+            // Bar heights
+            () => {
+                const start = randInt(5, 15);
+                const step = randInt(5, 12);
+                const colors = ['#34d399','#f59e0b','#06b6d4','#a78bfa','#f472b6'];
+                const c = colors[randInt(0, colors.length-1)];
+                const seq = [start, start+step, start+2*step, start+3*step];
+                const ans = start + 4*step;
+                const wrongs = [ans+step, ans-step, start+2*step].filter(w => w !== ans && w > 0);
+                return { label: '¿Qué barra sigue el patrón?', type: 'bar', seq, answer: ans, wrongs, color: c };
+            },
+            // Color gradient
+            () => {
+                const hue = randInt(0, 360);
+                const seq = [0,1,2,3].map(i => `hsl(${hue}, 70%, ${80 - i*15}%)`);
+                const ans = `hsl(${hue}, 70%, ${80 - 4*15}%)`;
+                const wrongs = [
+                    `hsl(${(hue + 120) % 360}, 70%, 35%)`,
+                    `hsl(${hue}, 70%, 75%)`,
+                    `hsl(${(hue + 60) % 360}, 70%, 50%)`
+                ];
+                return { label: '¿Qué color continúa la degradación?', type: 'color', seq, answer: ans, wrongs };
+            },
+        ];
+
+        const gen = generators[randInt(0, generators.length - 1)];
+        return buildPatternSet(gen());
+    }
+
+    function buildPatternSet(raw) {
+        const { label, type, seq, answer, wrongs, color } = raw;
+        const patSet = { label, answer: 0, seq: [], options: [] };
+
+        if (type === 'number') {
+            patSet.seq = seq.map(v => ({ type: 'number', value: String(v) }));
+            const allOpts = [answer, ...wrongs.slice(0,3)];
+            while (allOpts.length < 4) allOpts.push(answer + randInt(1,8));
+            patSet.options = allOpts.map(v => ({ type: 'number', value: String(v) }));
+        } else if (type === 'letter') {
+            patSet.seq = seq.map(v => ({ type: 'letter', value: v }));
+            const allOpts = [answer, ...wrongs.slice(0,3)];
+            while (allOpts.length < 4) allOpts.push(String.fromCharCode(65 + randInt(0,25)));
+            patSet.options = allOpts.map(v => ({ type: 'letter', value: v }));
+        } else if (type === 'dots') {
+            patSet.seq = seq.map(v => ({ type: 'dots', count: v, color: color || '#f472b6' }));
+            const allOpts = [answer, ...wrongs.slice(0,3)];
+            while (allOpts.length < 4) allOpts.push(answer + randInt(1,4));
+            patSet.options = allOpts.map(v => ({ type: 'dots', count: v, color: color || '#f472b6' }));
+        } else if (type === 'bar') {
+            patSet.seq = seq.map(v => ({ type: 'bar', height: v, color: color || '#34d399' }));
+            const allOpts = [answer, ...wrongs.slice(0,3)];
+            while (allOpts.length < 4) allOpts.push(answer + randInt(2,10));
+            patSet.options = allOpts.map(v => ({ type: 'bar', height: v, color: color || '#34d399' }));
+        } else if (type === 'color') {
+            patSet.seq = seq.map(v => ({ type: 'color', color: v }));
+            const allOpts = [answer, ...wrongs.slice(0,3)];
+            while (allOpts.length < 4) allOpts.push(`hsl(${randInt(0,360)}, 60%, 50%)`);
+            patSet.options = allOpts.map(v => ({ type: 'color', color: v }));
+        }
+        return patSet;
+    }
+
+    // Generate N fresh patterns per game session
+    let generatedPatterns = [];
     let patternIndex = 0;
     let patternCorrect = 0;
     let patternTimer = null;
     let patternTimeLeft = 30;
-    let patternOrder = [];
 
     function startPatternGame() {
+        const numPatterns = D().patternRounds || 12;
+        generatedPatterns = [];
+        for (let i = 0; i < numPatterns; i++) generatedPatterns.push(generatePattern());
         patternIndex = 0;
         patternCorrect = 0;
-        patternTimeLeft = D().patternTime; // Easy=45s, Normal=30s, Hard=18s
-        patternOrder = shuffle([...Array(patternSets.length).keys()]);
+        patternTimeLeft = D().patternTime;
         showScreen('game-patterns');
         showPatternRound();
         patternTimer = setInterval(() => {
@@ -982,13 +711,13 @@
     }
 
     function showPatternRound() {
-        if (patternIndex >= patternSets.length) {
+        if (patternIndex >= generatedPatterns.length) {
             clearInterval(patternTimer);
             finishPattern();
             return;
         }
 
-        const p = patternSets[patternOrder[patternIndex]];
+        const p = generatedPatterns[patternIndex];
         const seqEl = $('#pattern-sequence');
         const optEl = $('#pattern-options');
         const scoreEl = $('#pattern-score');
@@ -1082,7 +811,8 @@
     function finishPattern() {
         clearInterval(patternTimer);
         rawMetrics.patternScore = patternCorrect;
-        let score = Math.round((patternCorrect / patternSets.length) * 100);
+        const numPatterns = generatedPatterns.length || 12;
+        let score = Math.round((patternCorrect / numPatterns) * 100);
         scores.patterns = score;
         currentGame++;
         startNextGame();
@@ -1755,15 +1485,11 @@
         const btnSubmitScore = $('#btn-submit-score');
         if (btnSubmitScore) {
             btnSubmitScore.addEventListener('click', async () => {
-                const nameInput = $('#player-name-input');
-                // Use logged-in user's display name if available
-                const name = (_currentDisplayName || nameInput?.value || '').trim();
+                const name = (_currentDisplayName || '').trim();
                 const msgEl = $('#ranking-msg');
 
-                if (!name) {
-                    msgEl.textContent = 'Por favor, ingresa tu nombre.';
-                    msgEl.style.color = 'var(--clr-danger)';
-                    if (nameInput) { nameInput.classList.add('shake'); setTimeout(() => nameInput.classList.remove('shake'), 400); }
+                if (!name || !_currentUser) {
+                    if (msgEl) { msgEl.textContent = 'Debes iniciar sesión para guardar.'; msgEl.style.color = 'var(--clr-danger)'; }
                     return;
                 }
 
@@ -2548,6 +2274,13 @@
         const pill      = document.getElementById('nav-user-pill');
         const avatar    = document.getElementById('nav-avatar');
         const nameSpan  = document.getElementById('nav-username');
+        // Ranking auth gate elements
+        const rankGate  = document.getElementById('ranking-auth-gate');
+        const rankForm  = document.getElementById('ranking-save-form');
+        const rankLabel = document.getElementById('ranking-user-label');
+        // Profile auth gate elements
+        const profGate  = document.getElementById('profile-auth-gate');
+        const profContent = document.getElementById('profile-content');
 
         if (user && displayName) {
             _currentUser        = user;
@@ -2559,14 +2292,24 @@
                 avatar.textContent = displayName.charAt(0).toUpperCase();
                 nameSpan.textContent = displayName;
             }
-            // Auto-fill name input on results screen
-            const nameInput = document.getElementById('player-name-input');
-            if (nameInput) nameInput.value = displayName;
+            // Show save form, hide auth gate
+            if (rankGate) rankGate.style.display = 'none';
+            if (rankForm) rankForm.style.display = 'block';
+            if (rankLabel) rankLabel.textContent = displayName;
+            // Show profile content, hide auth gate
+            if (profGate) profGate.style.display = 'none';
+            if (profContent) profContent.style.display = 'block';
         } else {
             _currentUser        = null;
             _currentDisplayName = null;
             if (btnLogin) btnLogin.style.display = '';
             if (pill) pill.style.display = 'none';
+            // Show auth gate, hide save form
+            if (rankGate) rankGate.style.display = 'block';
+            if (rankForm) rankForm.style.display = 'none';
+            // Show profile auth gate, hide content
+            if (profGate) profGate.style.display = 'block';
+            if (profContent) profContent.style.display = 'none';
         }
     }
 

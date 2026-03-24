@@ -523,13 +523,20 @@
                                     id="global-avg-age">--</strong> años. <span id="comparison-verdict"></span></p>
                         </div>
 
-                        <!-- Player Name for Ranking -->
+                        <!-- Player Name for Ranking (Auth-Gated) -->
                         <div class="ranking-submit-area" id="ranking-submit-area">
                             <h3 class="breakdown-title">¡Guarda tu puntuación en el Ranking!</h3>
-                            <div class="ranking-input-group">
-                                <input type="text" id="player-name-input" placeholder="Tu nombre o apodo..."
-                                    maxlength="20">
-                                <button class="btn btn-submit-score" id="btn-submit-score">Guardar</button>
+                            <!-- Shown when NOT logged in -->
+                            <div id="ranking-auth-gate" style="display:none;text-align:center;padding:16px 0;">
+                                <p style="color:var(--clr-text-muted);margin-bottom:14px;font-size:14px;">Necesitas iniciar sesión para guardar tu puntuación en el ranking global.</p>
+                                <button class="btn btn-primary" onclick="document.getElementById('auth-modal').style.display='flex'" style="font-size:14px;padding:10px 24px;">🔑 Iniciar Sesión para Guardar</button>
+                            </div>
+                            <!-- Shown when logged in -->
+                            <div id="ranking-save-form" style="display:none;">
+                                <div class="ranking-input-group">
+                                    <span id="ranking-user-label" style="padding:10px 16px;background:var(--clr-surface);border:1px solid var(--clr-glass-border);border-radius:var(--radius-md);color:var(--clr-text);font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;"></span>
+                                    <button class="btn btn-submit-score" id="btn-submit-score">Guardar</button>
+                                </div>
                             </div>
                             <p class="ranking-msg" id="ranking-msg"></p>
                         </div>
@@ -771,7 +778,15 @@
 
         <!-- VIEW: PERFIL -->
         <div id="view-profile" class="spa-view" style="display:none; opacity:0; transition: opacity 0.3s ease;">
-            <main class="profile-container" style="max-width: 960px; margin: 80px auto 40px; padding: 20px;">
+            <!-- Auth gate for profile -->
+            <div id="profile-auth-gate" style="display:none; max-width:500px; margin:120px auto; text-align:center; padding:40px 20px;">
+                <div style="font-size:64px;margin-bottom:16px;">🔒</div>
+                <h2 style="font-family:var(--font-display);font-size:24px;margin-bottom:12px;color:var(--clr-text);">Perfil Bloqueado</h2>
+                <p style="color:var(--clr-text-muted);font-size:14px;margin-bottom:24px;line-height:1.6;">Necesitas iniciar sesión para acceder a tu perfil cognitivo y ver tu evolución.</p>
+                <button class="btn btn-primary btn-glow" onclick="document.getElementById('auth-modal').style.display='flex'" style="font-size:15px;padding:12px 28px;">🔑 Iniciar Sesión</button>
+            </div>
+            <!-- Profile content (hidden when not logged in) -->
+            <main id="profile-content" class="profile-container" style="max-width: 960px; margin: 80px auto 40px; padding: 20px;">
                 <h1
                     style="font-family: var(--font-display); font-size: 36px; text-align: center; margin-bottom: 6px; background: linear-gradient(135deg, var(--clr-primary-light), var(--clr-accent-light)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
                     Mi Perfil Cognitivo</h1>
