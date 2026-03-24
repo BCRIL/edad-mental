@@ -13,6 +13,14 @@
     let currentGame = 0;
     let currentDifficulty = 'normal';
 
+    // ── Difficulty Config (dramatic differences per level) ──
+    const DIFF = {
+        easy:   { reactionFakeChance: 0,    reactionMinDelay: 2000, reactionMaxDelay: 4000, reactionRounds: 2, numberStart: 3,  patternTime: 45, mathTime: 45, simonFlashMs: 550, simonPauseMs: 250, colorsTime: 40, spatialStartLevel: 1 },
+        normal: { reactionFakeChance: 0,    reactionMinDelay: 1000, reactionMaxDelay: 3000, reactionRounds: 3, numberStart: 4,  patternTime: 30, mathTime: 30, simonFlashMs: 420, simonPauseMs: 180, colorsTime: 30, spatialStartLevel: 1 },
+        hard:   { reactionFakeChance: 0.35, reactionMinDelay: 500,  reactionMaxDelay: 1800, reactionRounds: 5, numberStart: 6,  patternTime: 18, mathTime: 18, simonFlashMs: 260, simonPauseMs: 100, colorsTime: 20, spatialStartLevel: 2 }
+    };
+    function D() { return DIFF[currentDifficulty]; }
+
     // SVG icons for each game
     const gameIcons = {
         reaction: '<svg viewBox="0 0 48 48" width="48" height="48"><path d="M28 4l-4 18h10L20 44l4-18H14L28 4z" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -298,7 +306,7 @@
     let reactionStartTime = 0;
     let reactionAttempts = [];
     let reactionRound = 0;
-    const REACTION_ROUNDS = 3;
+    // REACTION_ROUNDS now comes from difficulty config
 
     function startReactionGame() {
         reactionAttempts = [];
@@ -311,17 +319,32 @@
         const zone = $('#reaction-zone');
         const text = $('#reaction-text');
         const hint = $('#reaction-hint');
+        const cfg = D();
 
+        zone.style.background = '';
         zone.className = 'reaction-zone waiting';
-        text.textContent = 'Espera al color verde...';
+        text.textContent = currentDifficulty === 'hard' ? '¡Cuidado! Hay trampas...' : 'Espera al color verde...';
         text.className = 'reaction-text';
-        hint.textContent = `Ronda ${reactionRound + 1} de ${REACTION_ROUNDS}`;
+        hint.textContent = `Ronda ${reactionRound + 1} de ${cfg.reactionRounds}`;
 
         const oldResult = zone.querySelector('.reaction-time-result');
         if (oldResult) oldResult.remove();
 
-        const delay = randInt(1500, 4000);
+        const delay = cfg.reactionMinDelay + Math.random() * (cfg.reactionMaxDelay - cfg.reactionMinDelay);
         reactionTimeout = setTimeout(() => {
+            // Hard mode: fake yellow flash to trick the player
+            if (cfg.reactionFakeChance > 0 && Math.random() < cfg.reactionFakeChance) {
+                zone.style.background = 'linear-gradient(135deg,#facc15,#f59e0b)';
+                text.textContent = '¡NO PULSES! ⚠️';
+                text.style.color = '#0f0c29';
+                sfxTooEarly();
+                setTimeout(() => {
+                    zone.style.background = '';
+                    text.style.color = '';
+                    runReactionRound();
+                }, 1000);
+                return;
+            }
             zone.className = 'reaction-zone ready';
             text.textContent = '¡PULSA AHORA!';
             sfxGo();
@@ -332,13 +355,21 @@
     function handleReactionClick() {
         const zone = $('#reaction-zone');
         const text = $('#reaction-text');
+        const cfg = D();
 
         if (zone.classList.contains('waiting')) {
             clearTimeout(reactionTimeout);
+            // Penalise early click
+            reactionAttempts.push(1800);
+            reactionRound++;
             zone.className = 'reaction-zone too-early';
-            text.textContent = '¡Demasiado pronto! Espera al verde.';
+            text.textContent = '¡Demasiado pronto! -1 ronda';
             sfxTooEarly();
-            setTimeout(() => runReactionRound(), 1500);
+            if (reactionRound >= cfg.reactionRounds) {
+                setTimeout(() => finishReaction(), 1200);
+            } else {
+                setTimeout(() => runReactionRound(), 1500);
+            }
             return;
         }
 
@@ -356,11 +387,8 @@
             reactionAttempts.push(elapsed);
             reactionRound++;
 
-            if (reactionRound < REACTION_ROUNDS) {
-                setTimeout(() => {
-                    resultEl.remove();
-                    runReactionRound();
-                }, 1200);
+            if (reactionRound < cfg.reactionRounds) {
+                setTimeout(() => { resultEl.remove(); runReactionRound(); }, 1200);
             } else {
                 setTimeout(() => finishReaction(), 1200);
             }
@@ -385,7 +413,7 @@
     let numberMaxLevel = 0;
 
     function startNumberGame() {
-        numberLevel = 3;
+        numberLevel = D().numberStart;  // Easy=3, Normal=4, Hard=6
         numberMaxLevel = 0;
         showScreen('game-numbers');
         showNumber();
@@ -414,9 +442,9 @@
 
         sfxCountdown();
 
-        const timeMultiplier = currentDifficulty === 'hard' ? 300 : (currentDifficulty === 'easy' ? 600 : 400);
-        const baseTime = currentDifficulty === 'hard' ? 800 : (currentDifficulty === 'easy' ? 1500 : 1200);
-        const showTime = baseTime + (numberLevel * timeMultiplier);
+        const timePerDigit = currentDifficulty === 'hard' ? 280 : currentDifficulty === 'easy' ? 700 : 450;
+        const baseShowTime = currentDifficulty === 'hard' ? 600  : currentDifficulty === 'easy' ? 1400 : 1000;
+        const showTime = baseShowTime + (numberLevel * timePerDigit);
         timerBar.style.transition = 'none';
         timerBar.style.width = '100%';
         setTimeout(() => {
@@ -938,7 +966,7 @@
     function startPatternGame() {
         patternIndex = 0;
         patternCorrect = 0;
-        patternTimeLeft = currentDifficulty === 'hard' ? 20 : (currentDifficulty === 'easy' ? 45 : 30);
+        patternTimeLeft = D().patternTime; // Easy=45s, Normal=30s, Hard=18s
         patternOrder = shuffle([...Array(patternSets.length).keys()]);
         showScreen('game-patterns');
         showPatternRound();
@@ -1071,7 +1099,7 @@
     function startMathGame() {
         mathCorrect = 0;
         mathTotal = 0;
-        mathTimeLeft = currentDifficulty === 'hard' ? 20 : (currentDifficulty === 'easy' ? 45 : 30);
+        mathTimeLeft = D().mathTime; // Easy=45s, Normal=30s, Hard=18s
         showScreen('game-math');
         showMathProblem();
         mathTimer = setInterval(() => {
@@ -1089,7 +1117,7 @@
         const ops = ['+', '-', '×'];
         const op = ops[randInt(0, 2)];
         let a, b, answer;
-        const diffMult = currentDifficulty === 'hard' ? 3 : (currentDifficulty === 'easy' ? 0.5 : 1);
+        const diffMult = currentDifficulty === 'hard' ? 4  : currentDifficulty === 'easy' ? 0.4 : 1;
 
         if (op === '+') {
             a = Math.floor(randInt(5, 50) * diffMult);
@@ -1189,14 +1217,17 @@
 
         await sleep(700);
 
+        const flashMs = D().simonFlashMs; // Easy=550, Normal=420, Hard=260
+        const pauseMs = D().simonPauseMs; // Easy=250, Normal=180, Hard=100
+
         for (let i = 0; i < simonSequence.length; i++) {
             const idx = simonSequence[i];
             const btn = $(`.simon-btn[data-index="${idx}"]`);
             btn.classList.add('flash');
             sfxSimonFlash(idx);
-            await sleep(450);
+            await sleep(flashMs);
             btn.classList.remove('flash');
-            await sleep(200);
+            await sleep(pauseMs);
         }
 
         simonUserIndex = 0;
@@ -1335,7 +1366,7 @@
 
     function startColorGame() {
         colorsScore = 0;
-        colorsTimeLeft = 30;
+        colorsTimeLeft = D().colorsTime; // Easy=40s, Normal=30s, Hard=20s
         $('#colors-score').textContent = 'Aciertos: 0';
         updateTimer('colors-timer', colorsTimeLeft);
         showScreen('game-colors');
@@ -1346,7 +1377,7 @@
             if (colorsTimeLeft <= 0) {
                 clearInterval(colorsInterval);
                 rawMetrics.colorsScore = colorsScore;
-                scores.colors = Math.min(100, Math.round((colorsScore / 25) * 100)); // 25 is excellent score
+                scores.colors = Math.min(100, Math.round((colorsScore / 25) * 100));
                 currentGame++;
                 startNextGame();
             } else if (colorsTimeLeft <= 5) {
@@ -1406,7 +1437,7 @@
 
 
     function startSpatialGame() {
-        spatialLevel = 1;
+        spatialLevel = D().spatialStartLevel; // Easy/Normal=1, Hard=2
         showScreen('game-spatial');
         runSpatialRound();
     }
