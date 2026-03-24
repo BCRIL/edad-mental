@@ -128,6 +128,10 @@
         playTone(523, 0.12, 'sine', 0.12);
         setTimeout(() => playTone(659, 0.12, 'sine', 0.12), 80);
         setTimeout(() => playTone(784, 0.18, 'sine', 0.10), 160);
+        if (typeof setParticlesState === 'function') {
+            setParticlesState('fast');
+            setTimeout(() => setParticlesState('normal'), 600);
+        }
     }
 
     function sfxWrong() {
@@ -1551,8 +1555,25 @@
     document.addEventListener('DOMContentLoaded', initEvents);
 
     // ══════════════════════════════════════════
-    // V3: BACKGROUND PARTICLES (floating neurons)
+    // V3/V4: BACKGROUND PARTICLES (reactive)
     // ══════════════════════════════════════════
+    let particleSpeedMultiplier = 1;
+    let particleColorOverride = null;
+
+    // Exposed to the rest of the IIFE
+    window.setParticlesState = function(state) {
+        if (state === 'fast') {
+            particleSpeedMultiplier = 4;
+            particleColorOverride = 'rgba(34,213,238,'; // Cyan for success
+        } else if (state === 'error') {
+            particleSpeedMultiplier = 2;
+            particleColorOverride = 'rgba(239,68,68,'; // Red for error
+        } else {
+            particleSpeedMultiplier = 1;
+            particleColorOverride = null;
+        }
+    };
+
     function initBgParticles() {
         const canvas = document.getElementById('bg-particles');
         if (!canvas) return;
@@ -1583,15 +1604,16 @@
         function drawParticles() {
             ctx.clearRect(0, 0, w, h);
             particles.forEach(p => {
-                p.x += p.dx;
-                p.y += p.dy;
+                p.x += p.dx * particleSpeedMultiplier;
+                p.y += p.dy * particleSpeedMultiplier;
                 if (p.x < 0) p.x = w;
                 if (p.x > w) p.x = 0;
                 if (p.y < 0) p.y = h;
                 if (p.y > h) p.y = 0;
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                ctx.fillStyle = p.color + p.opacity + ')';
+                const colorPrefix = particleColorOverride || p.color;
+                ctx.fillStyle = colorPrefix + p.opacity + ')';
                 ctx.fill();
             });
             // Lines between nearby particles
@@ -1604,7 +1626,8 @@
                         ctx.beginPath();
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.strokeStyle = `rgba(139, 92, 246, ${0.08 * (1 - dist / 150)})`;
+                        const colorPrefix = particleColorOverride ? particleColorOverride.replace('rgba(','').replace(',','') : '139, 92, 246';
+                        ctx.strokeStyle = `rgba(${colorPrefix}, ${0.08 * (1 - dist / 150)})`;
                         ctx.lineWidth = 0.5;
                         ctx.stroke();
                     }
@@ -1629,8 +1652,267 @@
         }
     }
 
+    // ══════════════════════════════════════════
+    // V4: SINGLE PAGE APPLICATION ROUTER
+    // ══════════════════════════════════════════
+    const spaViews = {
+        home: document.getElementById('view-home'),
+        ranking: document.getElementById('view-ranking'),
+        stats: document.getElementById('view-stats'),
+        profile: document.getElementById('view-profile')
+    };
+
+    let currentRankingFilter = 'all';
+    let statsLoaded = false;
+    let rankChart = null; 
+    let radarChart = null;
+
+    function escapeHTML(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.innerText = str;
+        return div.innerHTML;
+    }
+
+    async function loadRanking(filter) {
+        const tbody = document.getElementById('ranking-body');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="4" class="loading-spinner" style="text-align: center; padding: 40px;">Cargando...</td></tr>';
+
+        if (typeof getTopRankings !== 'function') {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--clr-danger); padding: 30px;">Error: No se pudo conectar con la base de datos.</td></tr>';
+            return;
+        }
+
+        const { data, error } = await getTopRankings(filter);
+
+        if (error || !data) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--clr-danger); padding: 30px;">Error al cargar el ranking.</td></tr>';
+            return;
+        }
+
+        const countEl = document.getElementById('ranking-count');
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 30px;">Aún no hay puntuaciones en esta categoría. ¡Sé el primero!</td></tr>';
+            if (countEl) countEl.textContent = '';
+            return;
+        }
+
+        if (countEl) countEl.textContent = `${data.length} jugador${data.length !== 1 ? 'es' : ''} en el ranking`;
+
+        tbody.innerHTML = '';
+        data.forEach((row, index) => {
+            const tr = document.createElement('tr');
+            const pos = index + 1;
+            let posClass = 'rank-pos';
+            let medal = '';
+            if (pos === 1) { posClass += ' gold'; medal = '🥇'; }
+            else if (pos === 2) { posClass += ' silver'; medal = '🥈'; }
+            else if (pos === 3) { posClass += ' bronze'; medal = '🥉'; }
+
+            const diffMap = {
+                easy: { label: 'Fácil', cls: 'easy' },
+                normal: { label: 'Normal', cls: 'normal' },
+                hard: { label: 'Difícil', cls: 'hard' }
+            };
+            const diff = diffMap[row.difficulty] || diffMap.normal;
+
+            tr.innerHTML = `
+                <td class="${posClass}">${medal ? '<span class="rank-medal">' + medal + '</span>' : ''}#${pos}</td>
+                <td class="rank-name">${escapeHTML(row.player_name)}</td>
+                <td class="rank-age">${row.brain_age} años</td>
+                <td><span class="diff-badge ${diff.cls}">${diff.label}</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function loadStats() {
+        if (statsLoaded || typeof Chart === 'undefined') return;
+        
+        // Chart.js global defaults
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = "'Inter', sans-serif";
+
+        let ageData = [0, 0, 0, 0, 0, 0];
+        let radarData = [0, 0, 0, 0, 0];
+
+        if (typeof getStats === 'function') {
+            const { data, error } = await getStats();
+            if (!error && data && data.length > 0) {
+                data.forEach(row => {
+                    const a = row.brain_age;
+                    if (a < 20) ageData[0]++;
+                    else if (a <= 25) ageData[1]++;
+                    else if (a <= 30) ageData[2]++;
+                    else if (a <= 40) ageData[3]++;
+                    else if (a <= 50) ageData[4]++;
+                    else ageData[5]++;
+                });
+
+                let sumR = 0, sumN = 0, sumP = 0, sumM = 0, sumS = 0;
+                data.forEach(row => {
+                    sumR += row.reaction_score || 0;
+                    sumN += row.numbers_score || 0;
+                    sumP += row.patterns_score || 0;
+                    sumM += row.math_score || 0;
+                    sumS += row.sequence_score || 0;
+                });
+                const count = data.length;
+                radarData = [
+                    Math.round(sumR / count),
+                    Math.round(sumN / count),
+                    Math.round(sumP / count),
+                    Math.round(sumM / count),
+                    Math.round(sumS / count)
+                ];
+            } else {
+                ageData = [12, 35, 25, 18, 7, 3];
+                radarData = [75, 60, 65, 55, 78];
+            }
+        }
+
+        const ctxAge = document.getElementById('ageChart');
+        if (ctxAge) {
+            new Chart(ctxAge.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['< 20', '20-25', '26-30', '31-40', '41-50', '51+'],
+                    datasets: [{
+                        label: 'Usuarios',
+                        data: ageData,
+                        backgroundColor: 'rgba(139, 92, 246, 0.6)',
+                        borderColor: 'rgba(139, 92, 246, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        const ctxRadar = document.getElementById('radarChart');
+        if (ctxRadar) {
+            new Chart(ctxRadar.getContext('2d'), {
+                type: 'radar',
+                data: {
+                    labels: ['Reacción', 'Memoria Nums.', 'Patrones', 'Mates', 'Secuencia'],
+                    datasets: [{
+                        label: 'Puntuación Media',
+                        data: radarData,
+                        backgroundColor: 'rgba(6, 182, 212, 0.2)',
+                        borderColor: 'rgba(6, 182, 212, 1)',
+                        pointBackgroundColor: 'rgba(6, 182, 212, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255,255,255,0.1)' },
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            pointLabels: { color: '#f1f5f9', font: { size: 12 } },
+                            ticks: { display: false, max: 100, min: 0 }
+                        }
+                    },
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+        statsLoaded = true;
+    }
+
+    function navigate(path, push = true) {
+        if (push) history.pushState({ path }, '', path);
+        
+        let viewKey = 'home';
+        const lowerPath = path.toLowerCase();
+        if (lowerPath.includes('ranking')) viewKey = 'ranking';
+        else if (lowerPath.includes('estadistica')) viewKey = 'stats';
+        else if (lowerPath.includes('perfil')) viewKey = 'profile';
+
+        // Update nav styling
+        document.querySelectorAll('.nav-link[data-route]').forEach(link => {
+            link.classList.remove('active-route');
+            if (link.dataset.route === viewKey) {
+                link.classList.add('active-route');
+                // Allow CSS transitions on the active route 
+                link.style.color = "var(--clr-accent-light)";
+            } else {
+                link.style.color = "";
+            }
+        });
+
+        // Hide all views with transition
+        Object.values(spaViews).forEach(v => {
+            if (v && v.style.display !== 'none') {
+                v.style.opacity = '0';
+                setTimeout(() => { if(v.style.opacity === '0') v.style.display = 'none'; }, 300);
+            }
+        });
+
+        // Show target view
+        setTimeout(() => {
+            const targetView = spaViews[viewKey];
+            if (targetView) {
+                targetView.style.display = 'block';
+                // Trigger reflow
+                void targetView.offsetWidth;
+                targetView.style.opacity = '1';
+
+                // Initializers
+                if (viewKey === 'ranking') loadRanking(currentRankingFilter);
+                if (viewKey === 'stats') loadStats();
+                if (viewKey === 'home' && typeof resetGame === 'function') {
+                    // if user navigates back home mid-game we could reset
+                }
+            }
+        }, 300);
+    }
+
+    function setupRouter() {
+        // Intercept link clicks
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('a[data-route]');
+            if (link) {
+                e.preventDefault();
+                const path = link.getAttribute('href');
+                navigate(path);
+            }
+        });
+
+        // Handle back/forward buttons
+        window.addEventListener('popstate', () => {
+            navigate(window.location.pathname, false);
+        });
+
+        // Ranking filter tabs listener
+        const filterTabs = document.getElementById('filter-tabs');
+        if (filterTabs) {
+            filterTabs.addEventListener('click', (e) => {
+                const tab = e.target.closest('.filter-tab');
+                if (!tab) return;
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentRankingFilter = tab.dataset.filter;
+                loadRanking(currentRankingFilter);
+            });
+        }
+    }
+
     window.addEventListener('load', () => {
         initBgParticles();
         loadPlayerCount();
+        setupRouter();
+        // Initial route on load
+        navigate(window.location.pathname, false);
     });
 })();
