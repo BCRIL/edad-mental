@@ -418,6 +418,75 @@
             <p>Los trabajos de Timothy Salthouse (1996) demostraron que la velocidad de procesamiento es la habilidad cognitiva que mas declina con la edad, y que este declive explica gran parte de las diferencias de rendimiento entre adultos jovenes y mayores en diversas tareas.</p>
         </div>
     </div>
+            </main>
+        </div> <!-- end view-home -->
+
+        <!-- VIEW: RANKING -->
+        <div id="view-ranking" class="spa-view" style="display:none; opacity:0; transition: opacity 0.3s ease;">
+            <main class="ranking-container" style="max-width: 800px; margin: 80px auto 40px; padding: 20px;">
+                <h1 class="ranking-title" style="font-family: var(--font-display); font-size: 36px; text-align: center; margin-bottom: 10px; background: linear-gradient(135deg, var(--clr-primary-light), var(--clr-accent-light)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Top Mejores Cerebros</h1>
+                <p class="ranking-subtitle" id="ranking-count" style="text-align: center; color: var(--clr-text-muted); margin-bottom: 24px; font-size: 14px;"></p>
+
+                <div class="filter-tabs" id="filter-tabs" style="display: flex; gap: 8px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap;">
+                    <button class="filter-tab active" data-filter="all" style="font-family: var(--font-body); font-weight: 600; font-size: 13px; padding: 8px 20px; border: 1px solid var(--clr-glass-border); border-radius: 999px; background: var(--clr-surface); color: var(--clr-text-muted); cursor: pointer; transition: all 0.2s;">Todas</button>
+                    <button class="filter-tab" data-filter="easy" style="font-family: var(--font-body); font-weight: 600; font-size: 13px; padding: 8px 20px; border: 1px solid var(--clr-glass-border); border-radius: 999px; background: var(--clr-surface); color: var(--clr-text-muted); cursor: pointer; transition: all 0.2s;">🟢 Fácil</button>
+                    <button class="filter-tab" data-filter="normal" style="font-family: var(--font-body); font-weight: 600; font-size: 13px; padding: 8px 20px; border: 1px solid var(--clr-glass-border); border-radius: 999px; background: var(--clr-surface); color: var(--clr-text-muted); cursor: pointer; transition: all 0.2s;">🔵 Normal</button>
+                    <button class="filter-tab" data-filter="hard" style="font-family: var(--font-body); font-weight: 600; font-size: 13px; padding: 8px 20px; border: 1px solid var(--clr-glass-border); border-radius: 999px; background: var(--clr-surface); color: var(--clr-text-muted); cursor: pointer; transition: all 0.2s;">🔴 Difícil</button>
+                </div>
+
+                <table class="ranking-table" style="width: 100%; border-collapse: collapse; background: var(--clr-surface); backdrop-filter: blur(20px); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-card); border: 1px solid var(--clr-glass-border);">
+                    <thead>
+                        <tr>
+                            <th style="padding: 16px 24px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); font-weight: 700; color: var(--clr-text-muted); font-size: 14px; text-transform: uppercase;">Posición</th>
+                            <th style="padding: 16px 24px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); font-weight: 700; color: var(--clr-text-muted); font-size: 14px; text-transform: uppercase;">Jugador</th>
+                            <th style="padding: 16px 24px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); font-weight: 700; color: var(--clr-text-muted); font-size: 14px; text-transform: uppercase;">Edad Mental</th>
+                            <th style="padding: 16px 24px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); font-weight: 700; color: var(--clr-text-muted); font-size: 14px; text-transform: uppercase;">Dificultad</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ranking-body">
+                        <tr><td colspan="4" class="loading-spinner" style="text-align: center; padding: 40px; color: var(--clr-text-muted);">Cargando puntuaciones...</td></tr>
+                    </tbody>
+                </table>
+            </main>
+        </div> <!-- end view-ranking -->
+
+        <!-- VIEW: ESTADISTICAS -->
+        <div id="view-stats" class="spa-view" style="display:none; opacity:0; transition: opacity 0.3s ease;">
+            <main class="stats-container" style="max-width: 900px; margin: 80px auto 40px; padding: 20px;">
+                <h1 class="stats-title" style="font-family: var(--font-display); font-size: 36px; text-align: center; margin-bottom: 10px; background: linear-gradient(135deg, var(--clr-primary-light), var(--clr-accent-light)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Data y Estadísticas</h1>
+                <p class="stats-subtitle" style="text-align: center; color: var(--clr-text-muted); margin-bottom: 40px;">¿Cómo se compara la población general?</p>
+
+                <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                    <div class="chart-card" style="background: var(--clr-surface); border-radius: var(--radius-lg); padding: 24px; border: 1px solid var(--clr-glass-border);">
+                        <div class="chart-header" style="margin-bottom: 20px; font-weight: 700;">Distribución de Edad Mental Global</div>
+                        <div class="chart-wrapper" style="position: relative; height: 300px;">
+                            <canvas id="ageChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card" style="background: var(--clr-surface); border-radius: var(--radius-lg); padding: 24px; border: 1px solid var(--clr-glass-border);">
+                        <div class="chart-header" style="margin-bottom: 20px; font-weight: 700;">Rendimiento Medio por Prueba</div>
+                        <div class="chart-wrapper" style="position: relative; height: 300px;">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div> <!-- end view-stats -->
+
+        <!-- VIEW: PERFIL -->
+        <div id="view-profile" class="spa-view" style="display:none; opacity:0; transition: opacity 0.3s ease;">
+            <main class="profile-container" style="max-width: 900px; margin: 80px auto 40px; padding: 20px;">
+                <h1 class="profile-title" style="font-family: var(--font-display); font-size: 36px; text-align: center; margin-bottom: 10px; background: linear-gradient(135deg, var(--clr-primary-light), var(--clr-accent-light)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Mi Perfil Cognitivo</h1>
+                <p class="profile-subtitle" style="text-align: center; color: var(--clr-text-muted); margin-bottom: 40px;">Tu evolución y progreso a lo largo del tiempo</p>
+                
+                <div id="profile-content">
+                    <p style="text-align: center; color: var(--clr-text-muted);">Cargando tu perfil...</p>
+                </div>
+            </main>
+        </div> <!-- end view-profile -->
+
+    </div> <!-- end spa-router -->
 
     <footer class="footer">
         <div class="footer-content">
