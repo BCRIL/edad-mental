@@ -15,9 +15,9 @@
 
     // ── Difficulty Config (dramatic differences per level) ──
     const DIFF = {
-        easy:   { reactionFakeChance: 0,    reactionMinDelay: 2000, reactionMaxDelay: 4000, reactionRounds: 2, numberStart: 3,  patternTime: 45, mathTime: 45, simonFlashMs: 550, simonPauseMs: 250, colorsTime: 40, spatialStartLevel: 1 },
-        normal: { reactionFakeChance: 0,    reactionMinDelay: 1000, reactionMaxDelay: 3000, reactionRounds: 3, numberStart: 4,  patternTime: 30, mathTime: 30, simonFlashMs: 420, simonPauseMs: 180, colorsTime: 30, spatialStartLevel: 1 },
-        hard:   { reactionFakeChance: 0.35, reactionMinDelay: 500,  reactionMaxDelay: 1800, reactionRounds: 5, numberStart: 6,  patternTime: 18, mathTime: 18, simonFlashMs: 260, simonPauseMs: 100, colorsTime: 20, spatialStartLevel: 2 }
+        easy: { reactionFakeChance: 0, reactionMinDelay: 2000, reactionMaxDelay: 4000, reactionRounds: 2, numberStart: 3, patternTime: 45, mathTime: 45, simonFlashMs: 550, simonPauseMs: 250, colorsTime: 40, spatialStartLevel: 1 },
+        normal: { reactionFakeChance: 0, reactionMinDelay: 1000, reactionMaxDelay: 3000, reactionRounds: 3, numberStart: 4, patternTime: 30, mathTime: 30, simonFlashMs: 420, simonPauseMs: 180, colorsTime: 30, spatialStartLevel: 1 },
+        hard: { reactionFakeChance: 0.35, reactionMinDelay: 500, reactionMaxDelay: 1800, reactionRounds: 5, numberStart: 6, patternTime: 18, mathTime: 18, simonFlashMs: 260, simonPauseMs: 100, colorsTime: 20, spatialStartLevel: 2 }
     };
     function D() { return DIFF[currentDifficulty]; }
 
@@ -44,7 +44,7 @@
 
     // Seeded Random Number Generator for Daily Tests
     function getSeededRandom(seed) {
-        return function() {
+        return function () {
             let t = seed += 0x6D2B79F5;
             t = Math.imul(t ^ t >>> 15, t | 1);
             t ^= t + Math.imul(t ^ t >>> 7, t | 61);
@@ -127,12 +127,12 @@
             p.style.borderRadius = '50%';
             p.style.transition = 'all 0.6s cubic-bezier(0.25, 1, 0.5, 1)';
             document.body.appendChild(p);
-            
+
             const angle = Math.random() * Math.PI * 2;
             const dist = randInt(40, 120);
             const tx = Math.cos(angle) * dist;
             const ty = Math.sin(angle) * dist - 40;
-            
+
             void p.offsetWidth; // trigger reflow
             p.style.transform = `translate(${tx}px, ${ty}px) scale(0)`;
             p.style.opacity = '0';
@@ -233,7 +233,7 @@
     function renderDailyTestsInfo() {
         const container = $('#daily-tests-info');
         if (!container) return;
-        
+
         const fullDescriptions = {
             'reaction': {
                 desc1: 'Mide cuanto tarda tu sistema nervioso en procesar un estimulo visual y generar una respuesta motora. Segun investigaciones de Der y Deary (2006), el tiempo de reaccion simple promedia 250ms en adultos jovenes y aumenta aproximadamente 1ms por año despues de los 25.',
@@ -445,7 +445,7 @@
         sfxCountdown();
 
         const timePerDigit = currentDifficulty === 'hard' ? 280 : currentDifficulty === 'easy' ? 700 : 450;
-        const baseShowTime = currentDifficulty === 'hard' ? 600  : currentDifficulty === 'easy' ? 1400 : 1000;
+        const baseShowTime = currentDifficulty === 'hard' ? 600 : currentDifficulty === 'easy' ? 1400 : 1000;
         const showTime = baseShowTime + (numberLevel * timePerDigit);
         timerBar.style.transition = 'none';
         timerBar.style.width = '100%';
@@ -571,35 +571,35 @@
             () => {
                 const a = randInt(1, 20);
                 const d = randInt(2, 8) * (Math.random() > 0.3 ? 1 : -1);
-                const seq = [a, a+d, a+2*d, a+3*d];
-                const ans = a + 4*d;
-                const wrongs = [ans + randInt(1,3), ans - randInt(1,3), ans + d].filter(w => w !== ans && w > 0);
+                const seq = [a, a + d, a + 2 * d, a + 3 * d];
+                const ans = a + 4 * d;
+                const wrongs = [ans + randInt(1, 3), ans - randInt(1, 3), ans + d].filter(w => w !== ans && w > 0);
                 return { label: '¿Qué número sigue la secuencia?', type: 'number', seq, answer: ans, wrongs };
             },
             // Geometric: a, a*r, a*r², a*r³ -> a*r⁴
             () => {
                 const a = randInt(1, 4);
                 const r = [2, 3][randInt(0, 1)];
-                const seq = [a, a*r, a*r*r, a*r*r*r];
-                const ans = a*r*r*r*r;
-                const wrongs = [ans + randInt(1,10), ans - randInt(1,5), a*r*r*r + r].filter(w => w !== ans && w > 0);
+                const seq = [a, a * r, a * r * r, a * r * r * r];
+                const ans = a * r * r * r * r;
+                const wrongs = [ans + randInt(1, 10), ans - randInt(1, 5), a * r * r * r + r].filter(w => w !== ans && w > 0);
                 return { label: '¿Qué número sigue la secuencia?', type: 'number', seq, answer: ans, wrongs };
             },
             // Squares: n², (n+1)², (n+2)², (n+3)² -> (n+4)²
             () => {
                 const n = randInt(1, 6);
-                const seq = [n*n, (n+1)*(n+1), (n+2)*(n+2), (n+3)*(n+3)];
-                const ans = (n+4)*(n+4);
-                const wrongs = [ans+1, ans-1, (n+3)*(n+3)+n+4].filter(w => w !== ans && w > 0);
+                const seq = [n * n, (n + 1) * (n + 1), (n + 2) * (n + 2), (n + 3) * (n + 3)];
+                const ans = (n + 4) * (n + 4);
+                const wrongs = [ans + 1, ans - 1, (n + 3) * (n + 3) + n + 4].filter(w => w !== ans && w > 0);
                 return { label: '¿Qué número sigue? (cuadrados)', type: 'number', seq, answer: ans, wrongs };
             },
             // Fibonacci-like: a, b, a+b, a+2b -> a+3b (or true fib)
             () => {
                 const a = randInt(1, 5);
                 const b = randInt(1, 5);
-                const seq = [a, b, a+b, b+a+b];
-                const ans = (a+b) + (b+a+b);
-                const wrongs = [ans+2, ans-2, ans+randInt(3,6)].filter(w => w !== ans && w > 0);
+                const seq = [a, b, a + b, b + a + b];
+                const ans = (a + b) + (b + a + b);
+                const wrongs = [ans + 2, ans - 2, ans + randInt(3, 6)].filter(w => w !== ans && w > 0);
                 return { label: '¿Qué número sigue la serie?', type: 'number', seq, answer: ans, wrongs };
             },
             // Letters with skip: start + skip N
@@ -607,38 +607,38 @@
                 const start = randInt(0, 10);
                 const skip = randInt(1, 3);
                 const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-                const seq = [0,1,2,3].map(i => letters[start + i*skip]);
-                const ans = letters[start + 4*skip];
-                const nearLetters = [letters[start + 4*skip + 1], letters[start + 4*skip - 1], letters[start + 3*skip + 1]].filter(w => w && w !== ans);
+                const seq = [0, 1, 2, 3].map(i => letters[start + i * skip]);
+                const ans = letters[start + 4 * skip];
+                const nearLetters = [letters[start + 4 * skip + 1], letters[start + 4 * skip - 1], letters[start + 3 * skip + 1]].filter(w => w && w !== ans);
                 return { label: '¿Qué letra sigue?', type: 'letter', seq, answer: ans, wrongs: nearLetters };
             },
             // Dots counting
             () => {
                 const start = randInt(1, 3);
                 const step = randInt(1, 3);
-                const colors = ['#f472b6','#06b6d4','#8b5cf6','#f59e0b','#10b981'];
-                const c = colors[randInt(0, colors.length-1)];
-                const seq = [start, start+step, start+2*step, start+3*step];
-                const ans = start + 4*step;
-                const wrongs = [ans+1, ans-1, ans+step].filter(w => w !== ans && w > 0);
+                const colors = ['#f472b6', '#06b6d4', '#8b5cf6', '#f59e0b', '#10b981'];
+                const c = colors[randInt(0, colors.length - 1)];
+                const seq = [start, start + step, start + 2 * step, start + 3 * step];
+                const ans = start + 4 * step;
+                const wrongs = [ans + 1, ans - 1, ans + step].filter(w => w !== ans && w > 0);
                 return { label: '¿Cuántos puntos van a continuación?', type: 'dots', seq, answer: ans, wrongs, color: c };
             },
             // Bar heights
             () => {
                 const start = randInt(5, 15);
                 const step = randInt(5, 12);
-                const colors = ['#34d399','#f59e0b','#06b6d4','#a78bfa','#f472b6'];
-                const c = colors[randInt(0, colors.length-1)];
-                const seq = [start, start+step, start+2*step, start+3*step];
-                const ans = start + 4*step;
-                const wrongs = [ans+step, ans-step, start+2*step].filter(w => w !== ans && w > 0);
+                const colors = ['#34d399', '#f59e0b', '#06b6d4', '#a78bfa', '#f472b6'];
+                const c = colors[randInt(0, colors.length - 1)];
+                const seq = [start, start + step, start + 2 * step, start + 3 * step];
+                const ans = start + 4 * step;
+                const wrongs = [ans + step, ans - step, start + 2 * step].filter(w => w !== ans && w > 0);
                 return { label: '¿Qué barra sigue el patrón?', type: 'bar', seq, answer: ans, wrongs, color: c };
             },
             // Color gradient
             () => {
                 const hue = randInt(0, 360);
-                const seq = [0,1,2,3].map(i => `hsl(${hue}, 70%, ${80 - i*15}%)`);
-                const ans = `hsl(${hue}, 70%, ${80 - 4*15}%)`;
+                const seq = [0, 1, 2, 3].map(i => `hsl(${hue}, 70%, ${80 - i * 15}%)`);
+                const ans = `hsl(${hue}, 70%, ${80 - 4 * 15}%)`;
                 const wrongs = [
                     `hsl(${(hue + 120) % 360}, 70%, 35%)`,
                     `hsl(${hue}, 70%, 75%)`,
@@ -658,28 +658,28 @@
 
         if (type === 'number') {
             patSet.seq = seq.map(v => ({ type: 'number', value: String(v) }));
-            const allOpts = [answer, ...wrongs.slice(0,3)];
-            while (allOpts.length < 4) allOpts.push(answer + randInt(1,8));
+            const allOpts = [answer, ...wrongs.slice(0, 3)];
+            while (allOpts.length < 4) allOpts.push(answer + randInt(1, 8));
             patSet.options = allOpts.map(v => ({ type: 'number', value: String(v) }));
         } else if (type === 'letter') {
             patSet.seq = seq.map(v => ({ type: 'letter', value: v }));
-            const allOpts = [answer, ...wrongs.slice(0,3)];
-            while (allOpts.length < 4) allOpts.push(String.fromCharCode(65 + randInt(0,25)));
+            const allOpts = [answer, ...wrongs.slice(0, 3)];
+            while (allOpts.length < 4) allOpts.push(String.fromCharCode(65 + randInt(0, 25)));
             patSet.options = allOpts.map(v => ({ type: 'letter', value: v }));
         } else if (type === 'dots') {
             patSet.seq = seq.map(v => ({ type: 'dots', count: v, color: color || '#f472b6' }));
-            const allOpts = [answer, ...wrongs.slice(0,3)];
-            while (allOpts.length < 4) allOpts.push(answer + randInt(1,4));
+            const allOpts = [answer, ...wrongs.slice(0, 3)];
+            while (allOpts.length < 4) allOpts.push(answer + randInt(1, 4));
             patSet.options = allOpts.map(v => ({ type: 'dots', count: v, color: color || '#f472b6' }));
         } else if (type === 'bar') {
             patSet.seq = seq.map(v => ({ type: 'bar', height: v, color: color || '#34d399' }));
-            const allOpts = [answer, ...wrongs.slice(0,3)];
-            while (allOpts.length < 4) allOpts.push(answer + randInt(2,10));
+            const allOpts = [answer, ...wrongs.slice(0, 3)];
+            while (allOpts.length < 4) allOpts.push(answer + randInt(2, 10));
             patSet.options = allOpts.map(v => ({ type: 'bar', height: v, color: color || '#34d399' }));
         } else if (type === 'color') {
             patSet.seq = seq.map(v => ({ type: 'color', color: v }));
-            const allOpts = [answer, ...wrongs.slice(0,3)];
-            while (allOpts.length < 4) allOpts.push(`hsl(${randInt(0,360)}, 60%, 50%)`);
+            const allOpts = [answer, ...wrongs.slice(0, 3)];
+            while (allOpts.length < 4) allOpts.push(`hsl(${randInt(0, 360)}, 60%, 50%)`);
             patSet.options = allOpts.map(v => ({ type: 'color', color: v }));
         }
         return patSet;
@@ -849,7 +849,7 @@
         const ops = ['+', '-', '×'];
         const op = ops[randInt(0, 2)];
         let a, b, answer;
-        const diffMult = currentDifficulty === 'hard' ? 4  : currentDifficulty === 'easy' ? 0.4 : 1;
+        const diffMult = currentDifficulty === 'hard' ? 4 : currentDifficulty === 'easy' ? 0.4 : 1;
 
         if (op === '+') {
             a = Math.floor(randInt(5, 50) * diffMult);
@@ -1102,7 +1102,7 @@
         $('#colors-score').textContent = 'Aciertos: 0';
         updateTimer('colors-timer', colorsTimeLeft);
         showScreen('game-colors');
-        
+
         colorsInterval = setInterval(() => {
             colorsTimeLeft--;
             updateTimer('colors-timer', colorsTimeLeft);
@@ -1116,14 +1116,14 @@
                 sfxTimerWarn();
             }
         }, 1000);
-        
+
         runColorRound();
     }
 
     function runColorRound() {
         const words = ['ROJO', 'AZUL', 'VERDE', 'AMARILLO', 'ROSA'];
         const cssColors = ['#ef4444', '#3b82f6', '#10b981', '#eab308', '#f472b6'];
-        
+
         const wIdx = randInt(0, 4);
         let cIdx = randInt(0, 4);
         // 40% chance of matching color/word
@@ -1132,12 +1132,12 @@
         const display = $('#colors-display');
         display.textContent = words[wIdx];
         display.style.color = cssColors[cIdx];
-        
+
         currentColorAnswer = words[cIdx]; // Answer is the COLOR of the ink
 
         const optsContainer = $('#colors-options');
         optsContainer.innerHTML = '';
-        
+
         // Options are names of colors (always white text)
         const opts = shuffle([...words]);
         opts.forEach(opt => {
@@ -1179,17 +1179,17 @@
         $('#spatial-level').textContent = 'Nivel ' + spatialLevel;
         const grid = $('#spatial-grid');
         grid.innerHTML = '';
-        
+
         // Calculate grid size based on level
         const gridSize = spatialLevel < 5 ? 9 : 16;
         spatialGrid = [];
         spatialActiveCells = [];
         spatialUserClicks = [];
-        
+
         grid.style.gridTemplateColumns = gridSize === 9 ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)';
 
         const activeCount = Math.min(2 + Math.floor(spatialLevel / 2), gridSize - 1);
-        
+
         for (let i = 0; i < gridSize; i++) {
             const btn = document.createElement('button');
             btn.className = 'spatial-btn';
@@ -1197,34 +1197,34 @@
             grid.appendChild(btn);
             spatialGrid.push(btn);
         }
-        
+
         // Select random cells
         const indices = shuffle(Array.from(Array(gridSize).keys())).slice(0, activeCount);
         spatialActiveCells = indices;
-        
+
         sfxGo();
-        
+
         // Show cells
         await sleep(500);
         indices.forEach(idx => {
             spatialGrid[idx].classList.add('active-target');
             sfxSimonFlash(5);
         });
-        
+
         // Hide cells
         await sleep(1500 + (activeCount * 200));
         indices.forEach(idx => spatialGrid[idx].classList.remove('active-target'));
-        
+
         $('#spatial-prompt').textContent = '¡Tu turno! Selecciona las ' + activeCount;
-        
+
         // Enable clicks
         spatialGrid.forEach(btn => {
             btn.addEventListener('click', function onClick() {
                 const idx = parseInt(btn.dataset.idx);
                 if (spatialUserClicks.includes(idx)) return;
-                
+
                 spatialUserClicks.push(idx);
-                
+
                 if (spatialActiveCells.includes(idx)) {
                     sfxClick();
                     btn.classList.add('active-target', 'success-pulse'); // Blue/Green
@@ -1242,7 +1242,7 @@
                     spatialActiveCells.forEach(i => {
                         if (!spatialUserClicks.includes(i)) spatialGrid[i].style.borderColor = '#10b981';
                     });
-                    
+
                     setTimeout(() => {
                         rawMetrics.spatialSpan = spatialLevel;
                         scores.spatial = Math.min(100, Math.round(((spatialLevel - 1) / 8) * 100));
@@ -1424,9 +1424,9 @@
     function getShareText() {
         const d = window._shareData;
         const comentario = d.brainAge <= 25 ? '¡Cerebro de élite!' :
-                           d.brainAge <= 35 ? '¡Muy por encima de la media!' :
-                           d.brainAge <= 45 ? 'Rendimiento sólido.' :
-                           d.brainAge <= 55 ? 'Hay margen de mejora.' : 'El cerebro nunca deja de aprender.';
+            d.brainAge <= 35 ? '¡Muy por encima de la media!' :
+                d.brainAge <= 45 ? 'Rendimiento sólido.' :
+                    d.brainAge <= 55 ? 'Hay margen de mejora.' : 'El cerebro nunca deja de aprender.';
         return `Acabo de hacer el Test de Edad Mental.\n\nMi resultado: ${d.brainAge} años mentales.\nArquetipo: ${d.archetype || ''}\n${comentario}\nMejor que el ${d.percentile}% de los jugadores.\n\nHaz el test gratis (3 minutos):\n${window.location.href}`;
     }
 
@@ -1540,7 +1540,7 @@
                     window._sharePlayerName = name;
                     // Show success overlay
                     const overlay = document.getElementById('score-saved-overlay');
-                    const textEl  = document.getElementById('score-saved-text');
+                    const textEl = document.getElementById('score-saved-text');
                     if (textEl) textEl.textContent = `¡Tu puntuación (${window._shareData.brainAge} años mentales) ha sido guardada en el ranking global!`;
                     if (overlay) overlay.style.display = 'flex';
                     btnSubmitScore.textContent = '✓ Guardado';
@@ -1640,11 +1640,11 @@
                 window._shareData = data.shareData;
                 if (data.games) games = data.games;
                 if (data.difficulty) currentDifficulty = data.difficulty;
-                
+
                 // Re-populate DOM
                 $('#results-age').textContent = data.shareData.brainAge;
                 $('#results-percentile').innerHTML = `Tu cerebro funciona mejor que el <strong>${data.shareData.percentile}%</strong> de los usuarios que han hecho este test.`;
-                
+
                 const breakdownContainer = $('.results-breakdown');
                 breakdownContainer.innerHTML = '<h3 class="breakdown-title">Desglose por Prueba</h3>';
                 games.forEach(g => {
@@ -1657,21 +1657,21 @@
                         </div>
                     `;
                 });
-                
+
                 setTimeout(() => {
                     games.forEach(g => {
                         setBar(g.iconKey, data.shareData.scores[g.iconKey], data.shareData.ages[g.iconKey]);
                     });
                 }, 300);
-                
+
                 // Hide modal if open
                 const authModal = document.getElementById('auth-modal');
                 if (authModal) authModal.style.display = 'none';
-                
+
                 showScreen('results');
                 localStorage.removeItem('pendingBrainAgeResult');
             }
-        } catch(e) {}
+        } catch (e) { }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -1686,7 +1686,7 @@
     let particleColorOverride = null;
 
     // Exposed to the rest of the IIFE
-    window.setParticlesState = function(state) {
+    window.setParticlesState = function (state) {
         if (state === 'fast') {
             particleSpeedMultiplier = 4;
             particleColorOverride = 'rgba(34,213,238,'; // Cyan for success
@@ -1751,7 +1751,7 @@
                         ctx.beginPath();
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(particles[j].x, particles[j].y);
-                        const colorPrefix = particleColorOverride ? particleColorOverride.replace('rgba(','').replace(',','') : '139, 92, 246';
+                        const colorPrefix = particleColorOverride ? particleColorOverride.replace('rgba(', '').replace(',', '') : '139, 92, 246';
                         ctx.strokeStyle = `rgba(${colorPrefix}, ${0.08 * (1 - dist / 150)})`;
                         ctx.lineWidth = 0.5;
                         ctx.stroke();
@@ -1789,7 +1789,7 @@
 
     let currentRankingFilter = 'all';
     let statsLoaded = false;
-    let rankChart = null; 
+    let rankChart = null;
     let radarChart = null;
 
     function escapeHTML(str) {
@@ -1831,7 +1831,7 @@
         if (podium && data.length > 0) {
             const top3 = data.slice(0, 3);
             const diffMap = { easy: 'Fácil', normal: 'Normal', hard: 'Difícil' };
-            
+
             // Reorder for visual podium: 2nd, 1st, 3rd
             const podiumOrder = [];
             if (top3[1]) podiumOrder.push({ ...top3[1], pos: 2, height: '120px', bg: 'rgba(226, 232, 240, 0.1)', border: '#94a3b8', medal: '🥈' });
@@ -1887,7 +1887,7 @@
 
     async function loadStats() {
         if (typeof Chart === 'undefined') return;
-        
+
         // Chart.js global defaults
         Chart.defaults.color = '#94a3b8';
         Chart.defaults.font.family = "'Inter', sans-serif";
@@ -1920,7 +1920,7 @@
                     else { diffPerformance[1] += row.brain_age; diffCounts[1]++; }
 
                     // Archetype determination (Simulación por row de DB si no hay campo)
-                    const maxS = Math.max(row.reaction_score||0, row.numbers_score||0, row.patterns_score||0, row.math_score||0);
+                    const maxS = Math.max(row.reaction_score || 0, row.numbers_score || 0, row.patterns_score || 0, row.math_score || 0);
                     if (maxS > 80) archetypeData[0]++;
                     else if (maxS > 60) archetypeData[1]++;
                     else if (maxS > 40) archetypeData[2]++;
@@ -1955,12 +1955,12 @@
         }
 
         const avgAge = Math.round(sumBrainAge / (totalCount || 1));
-        
+
         // Update KPIs
         const totalPlayersEl = document.getElementById('stats-total-players');
         const avgAgeEl = document.getElementById('stats-avg-age');
         const topArchEl = document.getElementById('stats-top-archetype');
-        
+
         if (totalPlayersEl) totalPlayersEl.textContent = totalCount;
         if (avgAgeEl) avgAgeEl.textContent = avgAge + ' años';
         if (topArchEl) {
@@ -2055,7 +2055,7 @@
 
     function navigate(path, push = true) {
         if (push) history.pushState({ path }, '', path);
-        
+
         let viewKey = 'home';
         const lowerPath = path.toLowerCase();
         if (lowerPath.includes('ranking')) viewKey = 'ranking';
@@ -2078,7 +2078,7 @@
         Object.values(spaViews).forEach(v => {
             if (v && v.style.display !== 'none') {
                 v.style.opacity = '0';
-                setTimeout(() => { if(v.style.opacity === '0') v.style.display = 'none'; }, 300);
+                setTimeout(() => { if (v.style.opacity === '0') v.style.display = 'none'; }, 300);
             }
         });
 
@@ -2141,11 +2141,11 @@
     // PHASE 3: localStorage History, Streaks, Profile
     // ══════════════════════════════════════════
     const HISTORY_KEY = 'brainAge_history';
-    const STREAK_KEY  = 'brainAge_streak';
+    const STREAK_KEY = 'brainAge_streak';
 
     function getHistory() {
         try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
-        catch(e) { return []; }
+        catch (e) { return []; }
     }
 
     function saveHistory(history) {
@@ -2155,7 +2155,7 @@
     function updateStreak(todayDateStr) {
         let data;
         try { data = JSON.parse(localStorage.getItem(STREAK_KEY)) || { streak: 0, lastDate: null }; }
-        catch(e) { data = { streak: 0, lastDate: null }; }
+        catch (e) { data = { streak: 0, lastDate: null }; }
         if (data.lastDate === todayDateStr) return; // Already updated today
         const yesterday = new Date(todayDateStr);
         yesterday.setDate(yesterday.getDate() - 1);
@@ -2169,14 +2169,13 @@
         try {
             const d = JSON.parse(localStorage.getItem(STREAK_KEY));
             return d ? (d.streak || 0) : 0;
-        } catch(e) { return 0; }
+        } catch (e) { return 0; }
     }
 
     function saveResultToHistory(brainAge, difficulty, gameLabels, currentScores) {
         const history = getHistory();
         const dateNow = new Date().toISOString().split('T')[0];
         history.unshift({ date: dateNow, brainAge, difficulty, games: gameLabels, scores: { ...currentScores } });
-        if (history.length > 10) history.splice(10);
         saveHistory(history);
         updateStreak(dateNow);
     }
@@ -2213,7 +2212,7 @@
             const sortedH = [...history].reverse();
             let impr = 0;
             for (let i = 1; i < sortedH.length; i++) {
-                if (sortedH[i].brainAge <= sortedH[i-1].brainAge) impr++;
+                if (sortedH[i].brainAge <= sortedH[i - 1].brainAge) impr++;
                 else impr = 0;
             }
             if (impr >= 9) league = { name: 'Diamante', icon: '💎', color: '#06b6d4' };
@@ -2229,18 +2228,18 @@
         const badgeContainer = document.getElementById('profile-badges');
         if (badgeContainer) {
             const BADGES = [
-                { icon:'🎮', label:'Primer Test', achieved: history.length >= 1 },
-                { icon:'🌟', label:'5 Partidas',  achieved: history.length >= 5 },
-                { icon:'💎', label:'Veterano',    achieved: history.length >= 10 },
-                { icon:'🔥', label:'3 días',      achieved: streak >= 3 },
-                { icon:'⚡', label:'7 días',      achieved: streak >= 7 },
-                { icon:'🧠', label:'≤22 años',    achieved: bestAge <= 22 },
-                { icon:'🏆', label:'≤18 años',    achieved: bestAge <= 18 },
+                { icon: '🎮', label: 'Primer Test', achieved: history.length >= 1 },
+                { icon: '🌟', label: '5 Partidas', achieved: history.length >= 5 },
+                { icon: '💎', label: 'Veterano', achieved: history.length >= 10 },
+                { icon: '🔥', label: '3 días', achieved: streak >= 3 },
+                { icon: '⚡', label: '7 días', achieved: streak >= 7 },
+                { icon: '🧠', label: '≤22 años', achieved: bestAge <= 22 },
+                { icon: '🏆', label: '≤18 años', achieved: bestAge <= 18 },
             ];
             badgeContainer.innerHTML = BADGES.map(b => `
-                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px;border-radius:12px;background:${b.achieved?'rgba(139,92,246,0.2)':'rgba(255,255,255,0.03)'};border:1px solid ${b.achieved?'rgba(139,92,246,0.5)':'rgba(255,255,255,0.06)'};min-width:76px;opacity:${b.achieved?1:0.35};">
-                    <span style="font-size:26px;filter:${b.achieved?'none':'grayscale(1)'};">${b.icon}</span>
-                    <span style="font-size:11px;font-weight:600;text-align:center;color:${b.achieved?'#f1f5f9':'var(--clr-text-muted)'};">${b.label}</span>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px;border-radius:12px;background:${b.achieved ? 'rgba(139,92,246,0.2)' : 'rgba(255,255,255,0.03)'};border:1px solid ${b.achieved ? 'rgba(139,92,246,0.5)' : 'rgba(255,255,255,0.06)'};min-width:76px;opacity:${b.achieved ? 1 : 0.35};">
+                    <span style="font-size:26px;filter:${b.achieved ? 'none' : 'grayscale(1)'};">${b.icon}</span>
+                    <span style="font-size:11px;font-weight:600;text-align:center;color:${b.achieved ? '#f1f5f9' : 'var(--clr-text-muted)'};">${b.label}</span>
                 </div>`).join('');
         }
 
@@ -2252,12 +2251,12 @@
             } else {
                 const rows = history.map(h => {
                     const diff = h.difficulty === 'easy' ? '🟢 Fácil' : h.difficulty === 'hard' ? '🔴 Difícil' : '🔵 Normal';
-                    const col  = h.brainAge <= 28 ? '#10b981' : h.brainAge <= 45 ? '#f59e0b' : '#ef4444';
+                    const col = h.brainAge <= 28 ? '#10b981' : h.brainAge <= 45 ? '#f59e0b' : '#ef4444';
                     return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
                         <td style="padding:11px 10px;font-size:13px;">${h.date}</td>
                         <td style="padding:11px 10px;font-weight:800;font-size:18px;color:${col};font-family:var(--font-display);">${h.brainAge}<span style="font-size:11px;font-weight:400;color:var(--clr-text-muted);"> años</span></td>
                         <td style="padding:11px 10px;font-size:13px;">${diff}</td>
-                        <td style="padding:11px 10px;font-size:12px;color:var(--clr-text-muted);">${h.games?h.games.join(', '):'--'}</td>
+                        <td style="padding:11px 10px;font-size:12px;color:var(--clr-text-muted);">${h.games ? h.games.join(', ') : '--'}</td>
                     </tr>`;
                 }).join('');
                 historyDiv.innerHTML = `<table style="width:100%;border-collapse:collapse;">
@@ -2297,8 +2296,8 @@
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { reverse: true, min: 15, max: 75, grid: { color:'rgba(255,255,255,0.05)' }, ticks: { color:'#94a3b8' } },
-                        x: { grid: { display: false }, ticks: { color:'#94a3b8' } }
+                        y: { reverse: true, min: 15, max: 75, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
                     }
                 }
             });
@@ -2309,7 +2308,7 @@
         if (ctxRadarProfile && typeof Chart !== 'undefined' && history.length > 0) {
             let sumScores = { reaction: 0, numbers: 0, patterns: 0, math: 0, sequence: 0 };
             let counts = { reaction: 0, numbers: 0, patterns: 0, math: 0, sequence: 0 };
-            
+
             history.forEach(h => {
                 if (h.scores) {
                     for (const k in sumScores) {
@@ -2407,10 +2406,10 @@
                 canvas.width = 620; canvas.height = 440;
                 const ctx = canvas.getContext('2d');
                 const grd = ctx.createLinearGradient(0, 0, 620, 440);
-                grd.addColorStop(0,'#0f0c29'); grd.addColorStop(0.5,'#1a1145'); grd.addColorStop(1,'#24243e');
-                ctx.fillStyle = grd; ctx.fillRect(0,0,620,440);
+                grd.addColorStop(0, '#0f0c29'); grd.addColorStop(0.5, '#1a1145'); grd.addColorStop(1, '#24243e');
+                ctx.fillStyle = grd; ctx.fillRect(0, 0, 620, 440);
                 ctx.strokeStyle = 'rgba(139,92,246,0.5)'; ctx.lineWidth = 3;
-                ctx.roundRect(10,10,600,420,20); ctx.stroke();
+                ctx.roundRect(10, 10, 600, 420, 20); ctx.stroke();
                 ctx.fillStyle = '#a78bfa'; ctx.font = 'bold 22px Outfit,sans-serif'; ctx.textAlign = 'center';
                 ctx.fillText('Test de Edad Mental', 300, 52);
                 ctx.fillStyle = '#22d3ee'; ctx.font = 'bold 84px Outfit,sans-serif';
@@ -2418,20 +2417,20 @@
                 ctx.fillStyle = '#94a3b8'; ctx.font = '22px Inter,sans-serif';
                 ctx.fillText('años de edad mental', 300, 190);
                 // Bars
-                games.slice(0,5).forEach((g, i) => {
+                games.slice(0, 5).forEach((g, i) => {
                     const y = 225 + i * 36, key = g.iconKey;
                     ctx.fillStyle = '#94a3b8'; ctx.font = '13px Inter,sans-serif'; ctx.textAlign = 'left';
-                    ctx.fillText(g.label, 40, y+4);
-                    ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(150,y-9,280,14);
-                    const score = d.scores[key]||0;
-                    const bg = ctx.createLinearGradient(150,0,430,0);
-                    bg.addColorStop(0,'#8b5cf6'); bg.addColorStop(1,'#06b6d4');
-                    ctx.fillStyle = bg; ctx.fillRect(150,y-9,(score/100)*280,14);
+                    ctx.fillText(g.label, 40, y + 4);
+                    ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(150, y - 9, 280, 14);
+                    const score = d.scores[key] || 0;
+                    const bg = ctx.createLinearGradient(150, 0, 430, 0);
+                    bg.addColorStop(0, '#8b5cf6'); bg.addColorStop(1, '#06b6d4');
+                    ctx.fillStyle = bg; ctx.fillRect(150, y - 9, (score / 100) * 280, 14);
                     ctx.fillStyle = '#f1f5f9'; ctx.textAlign = 'right'; ctx.font = 'bold 13px Outfit,sans-serif';
-                    ctx.fillText((d.ages[key]||'--')+' años', 450, y+4);
+                    ctx.fillText((d.ages[key] || '--') + ' años', 450, y + 4);
                 });
                 // QR
-                const duelUrl = buildDuelUrl(d.brainAge, window._sharePlayerName||'');
+                const duelUrl = buildDuelUrl(d.brainAge, window._sharePlayerName || '');
                 const img = new Image();
                 img.crossOrigin = 'anonymous';
                 const finish = () => {
@@ -2508,23 +2507,23 @@
     let _currentDisplayName = null;
 
     function updateNavForUser(user, displayName) {
-        const btnLogin  = document.getElementById('btn-nav-login');
-        const pill      = document.getElementById('nav-user-pill');
-        const avatar    = document.getElementById('nav-avatar');
-        const nameSpan  = document.getElementById('nav-username');
+        const btnLogin = document.getElementById('btn-nav-login');
+        const pill = document.getElementById('nav-user-pill');
+        const avatar = document.getElementById('nav-avatar');
+        const nameSpan = document.getElementById('nav-username');
         // Ranking save auth gate elements
-        const rankGate  = document.getElementById('ranking-auth-gate');
-        const rankForm  = document.getElementById('ranking-save-form');
+        const rankGate = document.getElementById('ranking-auth-gate');
+        const rankForm = document.getElementById('ranking-save-form');
         const rankLabel = document.getElementById('ranking-user-label');
         // Profile view auth gate elements
-        const profGate  = document.getElementById('profile-auth-gate');
+        const profGate = document.getElementById('profile-auth-gate');
         const profContent = document.getElementById('profile-content');
         // Ranking view auth gate elements
         const rankPageGate = document.getElementById('ranking-page-auth-gate');
         const rankPageContent = document.getElementById('ranking-page-content');
 
         if (user && displayName) {
-            _currentUser        = user;
+            _currentUser = user;
             _currentDisplayName = displayName;
             window._sharePlayerName = displayName;
             if (btnLogin) btnLogin.style.display = 'none';
@@ -2544,7 +2543,7 @@
             if (rankPageGate) rankPageGate.style.display = 'none';
             if (rankPageContent) rankPageContent.style.display = 'block';
         } else {
-            _currentUser        = null;
+            _currentUser = null;
             _currentDisplayName = null;
             if (btnLogin) btnLogin.style.display = '';
             if (pill) pill.style.display = 'none';
@@ -2583,12 +2582,12 @@
     }
 
     // Global functions (called from inline HTML onsubmit / onclick)
-    window.handleLogin = async function(e) {
+    window.handleLogin = async function (e) {
         e.preventDefault();
-        const email    = document.getElementById('login-email').value.trim();
+        const email = document.getElementById('login-email').value.trim();
         const password = document.getElementById('login-password').value;
-        const errEl    = document.getElementById('login-error');
-        const btn      = document.getElementById('btn-login-submit');
+        const errEl = document.getElementById('login-error');
+        const btn = document.getElementById('btn-login-submit');
         errEl.style.display = 'none';
         btn.textContent = 'Entrando...';
         btn.disabled = true;
@@ -2605,14 +2604,14 @@
         }
     };
 
-    window.handleRegister = async function(e) {
+    window.handleRegister = async function (e) {
         e.preventDefault();
-        const name     = document.getElementById('reg-name').value.trim();
-        const email    = document.getElementById('reg-email').value.trim();
+        const name = document.getElementById('reg-name').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
         const password = document.getElementById('reg-password').value;
-        const errEl    = document.getElementById('register-error');
+        const errEl = document.getElementById('register-error');
         const successEl = document.getElementById('register-success');
-        const btn      = document.getElementById('btn-register-submit');
+        const btn = document.getElementById('btn-register-submit');
         errEl.style.display = 'none';
         successEl.style.display = 'none';
         btn.textContent = 'Creando cuenta...';
@@ -2635,50 +2634,50 @@
         }
     };
 
-    window.handleLogout = async function() {
+    window.handleLogout = async function () {
         await authSignOut();
         updateNavForUser(null, null);
     };
 
-    window.switchAuthTab = function(tab) {
-        const loginForm  = document.getElementById('form-login');
-        const regForm    = document.getElementById('form-register');
-        const tabLogin   = document.getElementById('tab-login');
-        const tabReg     = document.getElementById('tab-register');
+    window.switchAuthTab = function (tab) {
+        const loginForm = document.getElementById('form-login');
+        const regForm = document.getElementById('form-register');
+        const tabLogin = document.getElementById('tab-login');
+        const tabReg = document.getElementById('tab-register');
         if (tab === 'login') {
             loginForm.style.display = '';
-            regForm.style.display   = 'none';
+            regForm.style.display = 'none';
             tabLogin.style.background = 'rgba(139,92,246,0.25)';
-            tabLogin.style.color      = '#f1f5f9';
-            tabReg.style.background   = 'transparent';
-            tabReg.style.color        = 'var(--clr-text-muted)';
+            tabLogin.style.color = '#f1f5f9';
+            tabReg.style.background = 'transparent';
+            tabReg.style.color = 'var(--clr-text-muted)';
         } else {
             loginForm.style.display = 'none';
-            regForm.style.display   = '';
-            tabReg.style.background   = 'rgba(139,92,246,0.25)';
-            tabReg.style.color        = '#f1f5f9';
+            regForm.style.display = '';
+            tabReg.style.background = 'rgba(139,92,246,0.25)';
+            tabReg.style.color = '#f1f5f9';
             tabLogin.style.background = 'transparent';
-            tabLogin.style.color      = 'var(--clr-text-muted)';
+            tabLogin.style.color = 'var(--clr-text-muted)';
         }
     };
     // ── Referral System (Growth Loop Demo) ──
     let referrals = 0;
-    
-    window.copyReferralLink = function() {
+
+    window.copyReferralLink = function () {
         let link = window.location.origin + '?ref=demo';
         if (window._shareData) link = window.location.origin + '?ref=' + window._shareData.brainAge + 'y';
         navigator.clipboard.writeText(link);
         const btn = document.getElementById('btn-copy-ref');
         btn.textContent = '¡Copiado!';
         setTimeout(() => btn.textContent = 'Copiar Enlace Privado', 2000);
-        
+
         // Demo simulation: A friend clicks the link after 4 seconds
         if (referrals < 2) {
             setTimeout(() => {
                 referrals++;
                 document.getElementById('ref-count').textContent = referrals;
                 document.getElementById('ref-progress-bar').style.width = (referrals * 50) + '%';
-                
+
                 // Efecto de sonido (opcional)
                 if (typeof playTone === 'function') playTone(880, 0.1, 'sine', 0.1);
 
@@ -2697,7 +2696,7 @@
             }, 4000);
         }
     };
-    
+
     document.addEventListener('DOMContentLoaded', () => {
         const refText = document.getElementById('referral-link-text');
         if (refText) refText.textContent = window.location.origin + '?ref=top';
