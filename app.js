@@ -1597,6 +1597,11 @@
 
         window._shareData = { brainAge, percentile, scores, ages };
 
+        // Save to localStorage history (Phase 3)
+        saveResultToHistory(brainAge, currentDifficulty, games.map(g => g.label));
+        // Show streak notification
+        showStreakNotification();
+
         // V3: Load global comparison
         if (typeof getGlobalAverages === 'function') {
             getGlobalAverages().then(avg => {
@@ -1755,6 +1760,8 @@
                     btnSubmitScore.textContent = 'Guardar';
                     console.error('Supabase Error:', err);
                 } else {
+                    // Save player name for duel URL
+                    window._sharePlayerName = safePlayerName;
                     msgEl.textContent = '¡Puntuación guardada con éxito!';
                     msgEl.style.color = 'var(--clr-success)';
                     btnSubmitScore.textContent = 'Guardado';
@@ -2168,6 +2175,7 @@
                 // Initializers
                 if (viewKey === 'ranking') loadRanking(currentRankingFilter);
                 if (viewKey === 'stats') loadStats();
+                if (viewKey === 'profile') loadProfile();
                 if (viewKey === 'home' && typeof resetGame === 'function') {
                     // if user navigates back home mid-game we could reset
                 }
@@ -2205,12 +2213,281 @@
         }
     }
 
+    // ══════════════════════════════════════════
+    // PHASE 3: localStorage History, Streaks, Profile
+    // ══════════════════════════════════════════
+    const HISTORY_KEY = 'brainAge_history';
+    const STREAK_KEY  = 'brainAge_streak';
+
+    function getHistory() {
+        try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
+        catch(e) { return []; }
+    }
+
+    function saveHistory(history) {
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    }
+
+    function updateStreak(todayDateStr) {
+        let data;
+        try { data = JSON.parse(localStorage.getItem(STREAK_KEY)) || { streak: 0, lastDate: null }; }
+        catch(e) { data = { streak: 0, lastDate: null }; }
+        if (data.lastDate === todayDateStr) return; // Already updated today
+        const yesterday = new Date(todayDateStr);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yStr = yesterday.toISOString().split('T')[0];
+        data.streak = data.lastDate === yStr ? (data.streak || 0) + 1 : 1;
+        data.lastDate = todayDateStr;
+        localStorage.setItem(STREAK_KEY, JSON.stringify(data));
+    }
+
+    function getCurrentStreak() {
+        try {
+            const d = JSON.parse(localStorage.getItem(STREAK_KEY));
+            return d ? (d.streak || 0) : 0;
+        } catch(e) { return 0; }
+    }
+
+    function saveResultToHistory(brainAge, difficulty, gameLabels) {
+        const history = getHistory();
+        const dateNow = new Date().toISOString().split('T')[0];
+        history.unshift({ date: dateNow, brainAge, difficulty, games: gameLabels });
+        if (history.length > 10) history.splice(10);
+        saveHistory(history);
+        updateStreak(dateNow);
+    }
+
+    function showStreakNotification() {
+        const streak = getCurrentStreak();
+        if (streak < 2) return;
+        const notif = document.createElement('div');
+        notif.style.cssText = 'position:fixed;bottom:20px;right:20px;background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;padding:14px 20px;border-radius:12px;font-weight:700;z-index:9999;box-shadow:0 4px 24px rgba(245,158,11,0.4);';
+        notif.innerHTML = `🔥 ¡Racha de ${streak} días! ¡Sigue así!`;
+        document.body.appendChild(notif);
+        setTimeout(() => notif.style.opacity = '0', 3500);
+        setTimeout(() => notif.remove(), 4000);
+    }
+
+    let evolutionChartInstance = null;
+
+    function loadProfile() {
+        const history = getHistory();
+        const streak = getCurrentStreak();
+        document.getElementById('profile-streak').textContent = streak;
+        document.getElementById('profile-total').textContent = history.length;
+
+        if (history.length === 0) {
+            document.getElementById('profile-best').textContent = '--';
+            document.getElementById('profile-no-data').style.display = 'block';
+        } else {
+            document.getElementById('profile-best').textContent = Math.min(...history.map(h => h.brainAge));
+            document.getElementById('profile-no-data').style.display = 'none';
+        }
+
+        // Badges
+        const bestAge = history.length > 0 ? Math.min(...history.map(h => h.brainAge)) : 999;
+        const badgeContainer = document.getElementById('profile-badges');
+        if (badgeContainer) {
+            const BADGES = [
+                { icon:'🎮', label:'Primer Test', achieved: history.length >= 1 },
+                { icon:'🌟', label:'5 Partidas',  achieved: history.length >= 5 },
+                { icon:'💎', label:'Veterano',    achieved: history.length >= 10 },
+                { icon:'🔥', label:'3 días',      achieved: streak >= 3 },
+                { icon:'⚡', label:'7 días',      achieved: streak >= 7 },
+                { icon:'🧠', label:'≤22 años',    achieved: bestAge <= 22 },
+                { icon:'🏆', label:'≤18 años',    achieved: bestAge <= 18 },
+            ];
+            badgeContainer.innerHTML = BADGES.map(b => `
+                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px;border-radius:12px;background:${b.achieved?'rgba(139,92,246,0.2)':'rgba(255,255,255,0.03)'};border:1px solid ${b.achieved?'rgba(139,92,246,0.5)':'rgba(255,255,255,0.06)'};min-width:76px;opacity:${b.achieved?1:0.35};">
+                    <span style="font-size:26px;filter:${b.achieved?'none':'grayscale(1)'};">${b.icon}</span>
+                    <span style="font-size:11px;font-weight:600;text-align:center;color:${b.achieved?'#f1f5f9':'var(--clr-text-muted)'};">${b.label}</span>
+                </div>`).join('');
+        }
+
+        // History table
+        const historyDiv = document.getElementById('profile-history');
+        if (historyDiv) {
+            if (history.length === 0) {
+                historyDiv.innerHTML = '<p style="color:var(--clr-text-muted);text-align:center;padding:20px;">Aún no tienes partidas guardadas.</p>';
+            } else {
+                const rows = history.map(h => {
+                    const diff = h.difficulty === 'easy' ? '🟢 Fácil' : h.difficulty === 'hard' ? '🔴 Difícil' : '🔵 Normal';
+                    const col  = h.brainAge <= 28 ? '#10b981' : h.brainAge <= 45 ? '#f59e0b' : '#ef4444';
+                    return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                        <td style="padding:11px 10px;font-size:13px;">${h.date}</td>
+                        <td style="padding:11px 10px;font-weight:800;font-size:18px;color:${col};font-family:var(--font-display);">${h.brainAge}<span style="font-size:11px;font-weight:400;color:var(--clr-text-muted);"> años</span></td>
+                        <td style="padding:11px 10px;font-size:13px;">${diff}</td>
+                        <td style="padding:11px 10px;font-size:12px;color:var(--clr-text-muted);">${h.games?h.games.join(', '):'--'}</td>
+                    </tr>`;
+                }).join('');
+                historyDiv.innerHTML = `<table style="width:100%;border-collapse:collapse;">
+                    <thead><tr style="border-bottom:1px solid rgba(255,255,255,0.07);">
+                        <th style="padding:10px;text-align:left;font-size:12px;font-weight:600;color:var(--clr-text-muted);text-transform:uppercase;">Fecha</th>
+                        <th style="padding:10px;text-align:left;font-size:12px;font-weight:600;color:var(--clr-text-muted);text-transform:uppercase;">Edad</th>
+                        <th style="padding:10px;text-align:left;font-size:12px;font-weight:600;color:var(--clr-text-muted);text-transform:uppercase;">Nivel</th>
+                        <th style="padding:10px;text-align:left;font-size:12px;font-weight:600;color:var(--clr-text-muted);text-transform:uppercase;">Pruebas</th>
+                    </tr></thead><tbody>${rows}</tbody></table>`;
+            }
+        }
+
+        // Evolution chart
+        const ctxEvo = document.getElementById('evolutionChart');
+        if (ctxEvo && typeof Chart !== 'undefined' && history.length > 0) {
+            const sorted = [...history].reverse();
+            const chartLabels = sorted.map(h => h.date.slice(5));
+            const chartData = sorted.map(h => h.brainAge);
+            if (evolutionChartInstance) evolutionChartInstance.destroy();
+            evolutionChartInstance = new Chart(ctxEvo, {
+                type: 'line',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Edad Mental',
+                        data: chartData,
+                        borderColor: 'rgba(139,92,246,1)',
+                        backgroundColor: 'rgba(139,92,246,0.15)',
+                        pointBackgroundColor: 'rgba(6,182,212,1)',
+                        pointRadius: 5,
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { reverse: true, min: 15, max: 75, grid: { color:'rgba(255,255,255,0.05)' }, ticks: { color:'#94a3b8' } },
+                        x: { grid: { display: false }, ticks: { color:'#94a3b8' } }
+                    }
+                }
+            });
+        }
+    }
+
+    // ══════════════════════════════════════════
+    // PHASE 4: QR Code, Duel URL, Challenge Banner
+    // ══════════════════════════════════════════
+    function buildDuelUrl(brainAge, playerName) {
+        const name = playerName || 'Anónimo';
+        return `https://edadmental.online/?reto=${encodeURIComponent(name)}&edad=${brainAge}`;
+    }
+
+    function generateQrCodeUrl(text) {
+        return `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(text)}&bgcolor=0f0c29&color=a78bfa&format=png`;
+    }
+
+    function checkDuelChallenge() {
+        const params = new URLSearchParams(window.location.search);
+        const challenger = params.get('reto');
+        const age = params.get('edad');
+        if (!challenger || !age) return;
+        const banner = document.getElementById('duel-banner');
+        if (!banner) return;
+        document.getElementById('duel-challenger-name').textContent = escapeHTML(challenger);
+        document.getElementById('duel-challenger-name2').textContent = ' a ' + escapeHTML(challenger);
+        document.getElementById('duel-challenger-age').textContent = parseInt(age, 10);
+        banner.style.display = 'block';
+        document.getElementById('duel-accept-btn').addEventListener('click', () => {
+            banner.style.display = 'none';
+            document.getElementById('btn-start').click();
+        });
+        document.getElementById('duel-close-btn').addEventListener('click', () => {
+            banner.style.display = 'none';
+        });
+    }
+
+    function setupPhase4Buttons() {
+        const btnDownload = document.getElementById('btn-download-card');
+        if (btnDownload) {
+            // Remove previous listener if any
+            btnDownload.replaceWith(btnDownload.cloneNode(true));
+            document.getElementById('btn-download-card').addEventListener('click', () => {
+                const d = window._shareData;
+                if (!d) return;
+                const canvas = document.createElement('canvas');
+                canvas.width = 620; canvas.height = 440;
+                const ctx = canvas.getContext('2d');
+                const grd = ctx.createLinearGradient(0, 0, 620, 440);
+                grd.addColorStop(0,'#0f0c29'); grd.addColorStop(0.5,'#1a1145'); grd.addColorStop(1,'#24243e');
+                ctx.fillStyle = grd; ctx.fillRect(0,0,620,440);
+                ctx.strokeStyle = 'rgba(139,92,246,0.5)'; ctx.lineWidth = 3;
+                ctx.roundRect(10,10,600,420,20); ctx.stroke();
+                ctx.fillStyle = '#a78bfa'; ctx.font = 'bold 22px Outfit,sans-serif'; ctx.textAlign = 'center';
+                ctx.fillText('Test de Edad Mental', 300, 52);
+                ctx.fillStyle = '#22d3ee'; ctx.font = 'bold 84px Outfit,sans-serif';
+                ctx.fillText(d.brainAge, 300, 155);
+                ctx.fillStyle = '#94a3b8'; ctx.font = '22px Inter,sans-serif';
+                ctx.fillText('años de edad mental', 300, 190);
+                // Bars
+                games.slice(0,5).forEach((g, i) => {
+                    const y = 225 + i * 36, key = g.iconKey;
+                    ctx.fillStyle = '#94a3b8'; ctx.font = '13px Inter,sans-serif'; ctx.textAlign = 'left';
+                    ctx.fillText(g.label, 40, y+4);
+                    ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(150,y-9,280,14);
+                    const score = d.scores[key]||0;
+                    const bg = ctx.createLinearGradient(150,0,430,0);
+                    bg.addColorStop(0,'#8b5cf6'); bg.addColorStop(1,'#06b6d4');
+                    ctx.fillStyle = bg; ctx.fillRect(150,y-9,(score/100)*280,14);
+                    ctx.fillStyle = '#f1f5f9'; ctx.textAlign = 'right'; ctx.font = 'bold 13px Outfit,sans-serif';
+                    ctx.fillText((d.ages[key]||'--')+' años', 450, y+4);
+                });
+                // QR
+                const duelUrl = buildDuelUrl(d.brainAge, window._sharePlayerName||'');
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                const finish = () => {
+                    ctx.fillStyle = '#64748b'; ctx.font = '12px Inter,sans-serif'; ctx.textAlign = 'center';
+                    ctx.fillText('edadmental.online', 310, 430);
+                    const link = document.createElement('a');
+                    link.download = `mi-edad-mental-${d.brainAge}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                };
+                img.onload = () => {
+                    ctx.drawImage(img, 498, 208, 112, 112);
+                    ctx.fillStyle = '#64748b'; ctx.font = '11px Inter,sans-serif'; ctx.textAlign = 'center';
+                    ctx.fillText('¡Reta a amigos!', 554, 334);
+                    finish();
+                };
+                img.onerror = finish;
+                img.src = generateQrCodeUrl(duelUrl);
+            });
+        }
+
+        const btnChallenge = document.getElementById('btn-challenge');
+        if (btnChallenge) {
+            btnChallenge.replaceWith(btnChallenge.cloneNode(true));
+            document.getElementById('btn-challenge').addEventListener('click', () => {
+                const d = window._shareData;
+                if (!d) return;
+                const name = window._sharePlayerName || 'Anónimo';
+                const duelUrl = buildDuelUrl(d.brainAge, name);
+                const text = encodeURIComponent(`🧠 Mi edad mental es ${d.brainAge} años. ¿Puedes superarme?\n\n¡Haz el test ahora: ${duelUrl}`);
+                window.open(`https://wa.me/?text=${text}`, '_blank');
+            });
+        }
+    }
+
     window.addEventListener('load', () => {
         initBgParticles();
         loadPlayerCount();
         setupRouter();
+        setupPhase4Buttons();
+        checkDuelChallenge();
         renderDailyTestsInfo();
-        // Initial route on load
         navigate(window.location.pathname, false);
+
+        // Clear history button
+        const btnClearHistory = document.getElementById('btn-clear-history');
+        if (btnClearHistory) {
+            btnClearHistory.addEventListener('click', () => {
+                if (confirm('¿Seguro que quieres borrar tu historial local? Esta acción no se puede deshacer.')) {
+                    localStorage.removeItem(HISTORY_KEY);
+                    localStorage.removeItem(STREAK_KEY);
+                    loadProfile();
+                }
+            });
+        }
     });
 })();
