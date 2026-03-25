@@ -71,13 +71,32 @@ body::before {
 .app-container {
     position: relative;
     z-index: 1;
-    max-width: 640px;
+    max-width: 1000px;
     margin: 0 auto;
     padding: 20px 16px 40px;
     min-height: calc(100vh - 120px);
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.home-layout-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    width: 100%;
+}
+
+@media (min-width: 900px) {
+    .home-layout-grid {
+        grid-template-columns: 1fr 340px;
+        align-items: start;
+    }
+}
+
+.screen:not(#screen-welcome) .card {
+    max-width: 640px;
+    margin: 0 auto;
 }
 
 /* --- Screens --- */

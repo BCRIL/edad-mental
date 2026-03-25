@@ -271,8 +271,9 @@
 
                 <!-- SCREEN: Welcome -->
                 <section class="screen active" id="screen-welcome">
-                    <div class="card welcome-card">
-                        <div class="welcome-icon"><svg class="icon-brain" viewBox="0 0 64 64" width="64" height="64">
+                    <div class="home-layout-grid">
+                        <div class="card welcome-card">
+                            <div class="welcome-icon"><svg class="icon-brain" viewBox="0 0 64 64" width="64" height="64">
                                 <defs>
                                     <linearGradient id="brain-grad" x1="0" y1="0" x2="1" y2="1">
                                         <stop offset="0%" stop-color="#a78bfa" />
@@ -331,18 +332,17 @@
                         <p class="welcome-players" id="welcome-players"
                             style="text-align:center;color:var(--clr-text-muted);font-size:13px;margin-top:8px;opacity:0;transition:opacity 0.5s;">
                             <span id="player-count-number">0</span> personas ya han jugado</p>
-                    </div>
-                </section>
-
-                <!-- Zen Mode / Training -->
-                <section class="screen" id="screen-training" style="display: block; margin-top:24px; padding-bottom: 40px; margin-left: auto; margin-right: auto; max-width: 600px;">
-                    <div class="card zen-card-wrapper" style="padding: 24px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(139, 92, 246, 0.2); box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
-                        <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="m9 15 2 2 4-4"></path></svg>
-                            <h2 style="font-size: 20px; font-family: var(--font-display); color: #f1f5f9; text-align: center; margin:0;">Modo Entrenamiento</h2>
                         </div>
-                        <p style="font-size: 14px; color: var(--clr-text-dim); text-align: center; margin-bottom: 24px; line-height: 1.5;">Practica de forma ilimitada todos los juegos sin afectar tu estadística ni edad mental diaria.</p>
-                        <div id="zen-grid-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px;">
+                        
+                        <!-- Zen Mode / Training -->
+                        <div class="card zen-card-wrapper" style="padding: 24px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(139, 92, 246, 0.2); box-shadow: 0 4px 20px rgba(0,0,0,0.2); height: max-content;">
+                            <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="m9 15 2 2 4-4"></path></svg>
+                                <h2 style="font-size: 20px; font-family: var(--font-display); color: #f1f5f9; text-align: center; margin:0;">Modo Entrenamiento</h2>
+                            </div>
+                            <p style="font-size: 14px; color: var(--clr-text-dim); text-align: center; margin-bottom: 24px; line-height: 1.5;">Practica de forma ilimitada todos los juegos sin afectar tu estadística ni edad mental diaria.</p>
+                            <div id="zen-grid-container" style="display: flex; flex-direction: column; gap: 12px;">
+                            </div>
                         </div>
                     </div>
                 </section>
