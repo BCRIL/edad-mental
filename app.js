@@ -12,6 +12,8 @@
     const rawMetrics = { reactionMs: 0, digitSpan: 0, patternScore: 0, mathRate: 0, sequenceSpan: 0, colorsScore: 0, spatialSpan: 0 };
     let currentGame = 0;
     let currentDifficulty = 'normal';
+    let isTrainingMode = false;
+    let trainingScoreHistory = [];
 
     // ── Difficulty Config (dramatic differences per level) ──
     const DIFF = {
@@ -1442,6 +1444,7 @@
         });
 
         $('#btn-start').addEventListener('click', () => {
+              isTrainingMode = false;
             // Initialize audio context on first user interaction
             getAudioCtx();
             sfxClick();
@@ -2702,7 +2705,48 @@
         if (refText) refText.textContent = window.location.origin + '?ref=top';
     });
 
+    
+    function renderTrainingMode() {
+        const grid = document.getElementById('zen-grid-container');
+        if (!grid) return;
+        grid.innerHTML = '';
+        gamesPool.forEach((g, idx) => {
+            const card = document.createElement('div');
+            card.className = 'zen-card';
+            card.innerHTML = (g.iconKey ? gameIcons[g.iconKey] : '') + '<h3>' + g.title + '</h3><p>' + g.label + '</p>';
+            card.style.cssText = 'background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; text-align: center; display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 10px; transition: all 0.2s;';
+            card.onmouseover = () => { card.style.borderColor = '#8b5cf6'; card.style.transform = 'translateY(-3px)'; card.style.background = 'rgba(255,255,255,0.05)'; };
+            card.onmouseout = () => { card.style.borderColor = 'rgba(255,255,255,0.05)'; card.style.transform = 'none'; card.style.background = 'rgba(0,0,0,0.2)'; };
+            
+            card.onclick = () => {
+                isTrainingMode = true;
+                currentGame = 0; 
+                games[0] = gamesPool[idx];
+                showInstructions(currentGame);
+            };
+            grid.appendChild(card);
+        });
+    }
+
+    function renderDailyGamesList() {
+        const list = document.getElementById('daily-games-list');
+        if (!list) return;
+        list.innerHTML = '';
+        games.forEach((g, idx) => {
+            let svg = g.iconKey ? gameIcons[g.iconKey].replace(/width="48"/g, 'width="18"').replace(/height="48"/g, 'height="18"') : '';
+            list.innerHTML += '<div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); padding:8px 14px; border-radius:30px; font-size:13px; font-weight:500; display:flex; align-items:center; gap:8px; color:#f1f5f9; box-shadow:0 4px 6px rgba(0,0,0,0.1);">' + svg + g.title + '</div>';
+        });
+    }
+
+    
     // START
     initRouter();
     initEvents();
+    renderTrainingMode();
+    renderDailyGamesList();
+
 })();
+
+
+    
+    

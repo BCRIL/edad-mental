@@ -1628,3 +1628,5 @@ body::before {
         width: 100%;
     }
 }
+
+.zen-mode-container { margin-top: 40px; padding: 30px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; text-align: left; } .zen-mode-container h2 { font-size: 24px; color: var(--clr-primary); margin-bottom: 15px; } .zen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; } .zen-card { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); transition: all 0.3s; cursor: pointer; text-align: center; display:flex; flex-direction:column; align-items:center; justify-content:center; } .zen-card:hover { border-color: var(--clr-primary); background: rgba(255,255,255,0.05); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(139,92,246,0.2); } .zen-card svg { margin-bottom: 10px; width: 40px; height: 40px; } .zen-card h3 { font-size: 18px; margin-bottom: 5px; color: var(--clr-text); } .zen-card p { font-size: 13px; color: var(--clr-text-dim); margin-bottom:0; }

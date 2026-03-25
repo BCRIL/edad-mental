@@ -304,6 +304,14 @@
                                 <span class="stat-label">Gratis</span>
                             </div>
                         </div>
+                        
+                        <!-- Daily Games Preview -->
+                        <div id="daily-games-preview" style="margin: 20px 0; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: 12px;">
+                            <p style="font-size: 13px; color: var(--clr-text-dim); margin-bottom: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">📋 Los 5 retos de hoy</p>
+                            <div id="daily-games-list" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;">
+                                <!-- Rendered via app.js -->
+                            </div>
+                        </div>
                         <div class="difficulty-selector">
                             <p class="difficulty-label">Elige tu nivel:</p>
                             <div class="difficulty-options">
@@ -472,7 +480,8 @@
                             box-shadow: 0 0 15px var(--clr-success);
                             border-color: transparent;
                         }
-                    </style>
+                    .zen-mode-container { margin-top: 40px; padding: 30px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; text-align: left; } .zen-mode-container h2 { font-size: 24px; color: var(--clr-primary); margin-bottom: 15px; } .zen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; } .zen-card { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); transition: all 0.3s; cursor: pointer; text-align: center; } .zen-card:hover { border-color: var(--clr-primary); background: rgba(255,255,255,0.05); transform: translateY(-3px); }
+</style>
                     <div class="card game-card">
                         <div class="game-header">
                             <span class="game-badge-small">Memoria Espacial</span>
