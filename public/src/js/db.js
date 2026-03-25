@@ -1,4 +1,4 @@
-// db.js - shared database logic (v6.0 — with Google OAuth)
+// db.js - shared database logic (v7.0 — Perfiles persistentes, datos inmutables)
 const SUPABASE_URL = 'https://owfppbdauqmghpmqrgse.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93ZnBwYmRhdXFtZ2hwbXFyZ3NlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjYyNDEsImV4cCI6MjA4OTk0MjI0MX0.AiW5Pmc8mSqa0Rx-EmWk5nzSrTDqCl99eKLnQg7v9Fw';
 
@@ -39,13 +39,14 @@ async function authSignUp(email, password, displayName) {
             options: { data: { display_name: safeName } }
         });
         if (error) return { user: null, error };
-        // El trigger handle_new_user() crea el perfil automáticamente,
-        // pero hacemos upsert por si el trigger va lento
+        // El trigger handle_new_user() crea el perfil automáticamente.
+        // Hacemos upsert defensivo por si el trigger va lento, pero
+        // con ON CONFLICT DO NOTHING para no sobreescribir datos existentes.
         if (data.user) {
-            await client.from('profiles').upsert({
-                id: data.user.id,
-                display_name: safeName
-            });
+            await client.from('profiles').upsert(
+                { id: data.user.id, display_name: safeName },
+                { onConflict: 'id', ignoreDuplicates: true }
+            );
         }
         return { user: data.user, error: null };
     } catch (err) {
@@ -64,7 +65,6 @@ async function authSignIn(email, password) {
     }
 }
 
-// ── NUEVO: Google OAuth ──
 async function authSignInWithGoogle() {
     const client = getSupabaseClient();
     if (!client) return { error: { message: 'Supabase no disponible.' } };
@@ -75,7 +75,7 @@ async function authSignInWithGoogle() {
                 redirectTo: window.location.origin,
                 queryParams: {
                     access_type: 'offline',
-                    prompt: 'select_account'   // permite cambiar de cuenta Google
+                    prompt: 'select_account'
                 }
             }
         });
@@ -114,20 +114,44 @@ async function getUserDisplayName(userId) {
     }
 }
 
-// ── NUEVO: obtener avatar del perfil (para Google devuelve foto de Google) ──
+// Obtener perfil completo (display_name, avatar_url, estadísticas)
 async function getUserProfile(userId) {
     const client = getSupabaseClient();
     if (!client) return null;
     try {
         const { data, error } = await client
             .from('profiles')
-            .select('display_name, avatar_url')
+            .select('display_name, avatar_url, total_tests, best_brain_age, last_played_at, created_at')
             .eq('id', userId)
             .single();
         if (error || !data) return null;
         return data;
     } catch {
         return null;
+    }
+}
+
+// Actualizar solo display_name y/o avatar_url del perfil
+// NOTA: No se puede borrar el perfil. Esta es la única mutación permitida.
+async function updateUserProfile(userId, { displayName, avatarUrl } = {}) {
+    const client = getSupabaseClient();
+    if (!client) return { error: { message: 'Supabase no disponible.' } };
+    const updates = {};
+    if (displayName !== undefined) {
+        const safeName = sanitizeName(displayName);
+        if (!safeName) return { error: { message: 'Nombre de usuario inválido.' } };
+        updates.display_name = safeName;
+    }
+    if (avatarUrl !== undefined) updates.avatar_url = avatarUrl;
+    if (Object.keys(updates).length === 0) return { error: { message: 'Nada que actualizar.' } };
+    try {
+        const { error } = await client
+            .from('profiles')
+            .update(updates)
+            .eq('id', userId);
+        return { error };
+    } catch (err) {
+        return { error: err };
     }
 }
 
@@ -139,7 +163,7 @@ function onAuthChange(callback) {
     });
 }
 
-// ── NUEVO: obtener historial de rankings del usuario logueado ──
+// ── Historial de resultados del usuario ──
 async function getUserRankings(userId) {
     const client = getSupabaseClient();
     if (!client) return { data: null, error: { message: 'Supabase no disponible.' } };
@@ -149,37 +173,45 @@ async function getUserRankings(userId) {
             .select('brain_age, difficulty, created_at, reaction_score, numbers_score, patterns_score, math_score, sequence_score')
             .eq('user_id', userId)
             .order('created_at', { ascending: false })
-            .limit(20);
+            .limit(50);  // Aumentado a 50 para mostrar más historial
         return { data, error };
     } catch (err) {
         return { data: null, error: err };
     }
 }
 
-// ── NUEVO: Calcular Liga (Gamificación) ──
+// ── Calcular Liga (Gamificación) ──
 function calculateLeague(rankings) {
     if (!rankings || rankings.length === 0) return { name: 'Bronce', icon: '🥉', color: '#b45309' };
-    
-    // Ordenar de más antiguo a más reciente
-    const sorted = [...rankings].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
-    
+
+    const sorted = [...rankings].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
     let consecutiveImprovements = 0;
     for (let i = 1; i < sorted.length; i++) {
-        const prev = sorted[i-1];
-        const curr = sorted[i];
-        
-        // Comprobar si hay mejora en Edad Mental (menor es mejor)
-        if (curr.brain_age <= prev.brain_age) {
+        if (sorted[i].brain_age <= sorted[i - 1].brain_age) {
             consecutiveImprovements++;
         } else {
             consecutiveImprovements = 0;
         }
     }
-    
+
     if (consecutiveImprovements >= 9) return { name: 'Diamante', icon: '💎', color: '#06b6d4' };
-    if (consecutiveImprovements >= 6) return { name: 'Oro', icon: '🥇', color: '#f59e0b' };
-    if (consecutiveImprovements >= 3) return { name: 'Plata', icon: '🥈', color: '#94a3b8' };
+    if (consecutiveImprovements >= 6) return { name: 'Oro',      icon: '🥇', color: '#f59e0b' };
+    if (consecutiveImprovements >= 3) return { name: 'Plata',    icon: '🥈', color: '#94a3b8' };
     return { name: 'Bronce', icon: '🥉', color: '#b45309' };
+}
+
+// ── Calcular tendencia del usuario (últimas N partidas) ──
+function calculateTrend(rankings, lastN = 5) {
+    if (!rankings || rankings.length < 2) return null;
+    const recent = [...rankings]
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, lastN);
+    if (recent.length < 2) return null;
+    const first = recent[recent.length - 1].brain_age;
+    const last  = recent[0].brain_age;
+    const diff  = first - last;  // positivo = mejora (edad mental bajó)
+    return { improving: diff > 0, diff: Math.abs(diff), sessions: recent.length };
 }
 
 // ══════════════════════════════════════
@@ -256,3 +288,54 @@ async function getGlobalAverages() {
         return null;
     }
 }
+
+// ── Obtener posición del usuario en el ranking global ──
+async function getUserRankPosition(userId, difficulty = null) {
+    const client = getSupabaseClient();
+    if (!client) return null;
+    try {
+        // Obtener la mejor puntuación del usuario
+        let userQuery = client
+            .from('rankings')
+            .select('brain_age')
+            .eq('user_id', userId)
+            .order('brain_age', { ascending: true })
+            .limit(1);
+        if (difficulty) userQuery = userQuery.eq('difficulty', difficulty);
+        const { data: userData } = await userQuery;
+        if (!userData || userData.length === 0) return null;
+
+        const bestAge = userData[0].brain_age;
+
+        // Contar cuántos tienen mejor puntuación (edad mental menor)
+        let countQuery = client
+            .from('rankings')
+            .select('*', { count: 'exact', head: true })
+            .lt('brain_age', bestAge);
+        if (difficulty) countQuery = countQuery.eq('difficulty', difficulty);
+        const { count } = await countQuery;
+
+        return { position: (count || 0) + 1, bestBrainAge: bestAge };
+    } catch {
+        return null;
+    }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// NOTA DE ARQUITECTURA — Inmutabilidad de datos
+// ══════════════════════════════════════════════════════════════════
+// Los datos de perfiles y rankings son PERMANENTES por diseño:
+//
+//  • RLS de Supabase: no existe ninguna policy DELETE en profiles ni rankings.
+//    Cualquier intento de borrado desde el cliente devuelve error 403.
+//
+//  • Triggers en BD: prevent_profile_delete() y prevent_ranking_delete()
+//    lanzan EXCEPTION si alguien intenta borrar desde server-side.
+//    prevent_ranking_update() hace que las puntuaciones sean inmutables.
+//
+//  • FK rankings.user_id → auth.users ON DELETE SET NULL:
+//    Si se elimina una cuenta de auth, los rankings quedan con user_id=NULL
+//    pero no se pierden del ranking global.
+//
+//  • Este archivo db.js NO expone ninguna función de borrado intencionalmente.
+// ══════════════════════════════════════════════════════════════════
