@@ -159,7 +159,7 @@ window._loadProfileGoogle = async function() {
 };
 
 function _renderLoginBanner() {
-    const container = document.querySelector('.profile-container') || document.getElementById('view-profile')?.querySelector('main');
+    const container = document.getElementById('profile-content');
     if (!container || document.getElementById('profile-login-banner')) return;
 
     const banner = document.createElement('div');
@@ -191,7 +191,7 @@ function _renderLoginBanner() {
 function _renderAccountSection(user) {
     if (document.getElementById('profile-account-section')) return;
 
-    const container = document.querySelector('.profile-container') || document.getElementById('view-profile')?.querySelector('main');
+    const container = document.getElementById('profile-content');
     if (!container) return;
 
     const provider = user.app_metadata?.provider || 'email';
@@ -201,8 +201,8 @@ function _renderAccountSection(user) {
 
     const section = document.createElement('div');
     section.id = 'profile-account-section';
-    section.className = 'card';
-    section.style.cssText = 'padding:24px;margin-bottom:28px;border:1px solid var(--clr-glass-border);';
+    section.className = 'profile-panel profile-account-card card';
+    section.style.cssText = 'padding:24px;margin-bottom:24px;border:1px solid var(--clr-glass-border);';
     section.innerHTML = `
         <div style="font-weight:700;margin-bottom:16px;font-size:16px;">👤 Mi Cuenta</div>
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
@@ -228,29 +228,30 @@ function _renderAccountSection(user) {
         }
     }
 
-    container.insertBefore(section, container.firstChild);
+    const statsRow = document.getElementById('profile-stats-row');
+    if (statsRow) container.insertBefore(section, statsRow);
+    else container.insertBefore(section, container.firstChild);
 }
 
 async function _renderServerRankings(userId) {
     // Buscar o crear el contenedor de rankings del servidor
     let serverDiv = document.getElementById('profile-server-rankings');
     if (!serverDiv) {
-        const container = document.querySelector('.profile-container') || document.getElementById('view-profile')?.querySelector('main');
+        const container = document.getElementById('profile-content');
         if (!container) return;
 
         serverDiv = document.createElement('div');
         serverDiv.id = 'profile-server-rankings';
-        serverDiv.className = 'card';
-        serverDiv.style.cssText = 'padding:24px;margin-bottom:28px;border:1px solid var(--clr-glass-border);';
+        serverDiv.className = 'profile-panel card';
+        serverDiv.style.cssText = 'padding:24px;margin-bottom:24px;border:1px solid var(--clr-glass-border);';
         serverDiv.innerHTML = `
             <div style="font-weight:700;margin-bottom:16px;font-size:16px;">🌐 Mis Rankings Guardados</div>
             <div id="profile-server-rankings-body" style="color:var(--clr-text-muted);text-align:center;padding:20px;">Cargando...</div>
         `;
 
         // Insertar antes del historial local
-        const historyCard = Array.from(container.querySelectorAll('.card')).find(c =>
-            c.querySelector('#profile-history')
-        );
+        const historyHost = document.getElementById('profile-history');
+        const historyCard = historyHost && historyHost.closest('.profile-panel');
         if (historyCard) {
             container.insertBefore(serverDiv, historyCard);
         } else {

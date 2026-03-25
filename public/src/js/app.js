@@ -1858,6 +1858,7 @@
     const spaViews = {
         home: document.getElementById('view-home'),
         training: document.getElementById('view-training'),
+        faq: document.getElementById('view-faq'),
         ranking: document.getElementById('view-ranking'),
         stats: document.getElementById('view-stats'),
         profile: document.getElementById('view-profile')
@@ -2138,6 +2139,7 @@
         else if (lowerPath.includes('estadistica')) viewKey = 'stats';
         else if (lowerPath.includes('perfil')) viewKey = 'profile';
         else if (lowerPath.includes('entrenamiento')) viewKey = 'training';
+        else if (lowerPath.includes('preguntas-frecuentes') || lowerPath.endsWith('/faq') || lowerPath === '/faq') viewKey = 'faq';
 
         // Update nav styling
         document.querySelectorAll('.nav-link[data-route]').forEach(link => {
@@ -2326,9 +2328,9 @@
                 { icon: '🏆', label: '≤18 años', achieved: bestAge <= 18 },
             ];
             badgeContainer.innerHTML = BADGES.map(b => `
-                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px;border-radius:12px;background:${b.achieved ? 'rgba(139,92,246,0.2)' : 'rgba(255,255,255,0.03)'};border:1px solid ${b.achieved ? 'rgba(139,92,246,0.5)' : 'rgba(255,255,255,0.06)'};min-width:76px;opacity:${b.achieved ? 1 : 0.35};">
-                    <span style="font-size:26px;filter:${b.achieved ? 'none' : 'grayscale(1)'};">${b.icon}</span>
-                    <span style="font-size:11px;font-weight:600;text-align:center;color:${b.achieved ? '#f1f5f9' : 'var(--clr-text-muted)'};">${b.label}</span>
+                <div class="profile-badge-item ${b.achieved ? 'is-unlocked' : 'is-locked'}">
+                    <span class="profile-badge-item__icon" style="filter:${b.achieved ? 'none' : 'grayscale(1)'};">${b.icon}</span>
+                    <span class="profile-badge-item__label">${b.label}</span>
                 </div>`).join('');
         }
 
@@ -2336,7 +2338,7 @@
         const historyDiv = document.getElementById('profile-history');
         if (historyDiv) {
             if (history.length === 0) {
-                historyDiv.innerHTML = '<p style="color:var(--clr-text-muted);text-align:center;padding:20px;">Aún no tienes partidas guardadas.</p>';
+                historyDiv.innerHTML = '<p class="profile-history__empty">Aún no tienes partidas guardadas.</p>';
             } else {
                 const rows = history.map(h => {
                     const diff = h.difficulty === 'easy' ? '🟢 Fácil' : h.difficulty === 'hard' ? '🔴 Difícil' : '🔵 Normal';
@@ -2834,6 +2836,8 @@
             list.innerHTML += '<div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); padding:8px 14px; border-radius:30px; font-size:13px; font-weight:500; display:flex; align-items:center; gap:8px; color:#f1f5f9; box-shadow:0 4px 6px rgba(0,0,0,0.1);">' + svg + g.title + '</div>';
         });
     }
+
+    window.navigate = navigate;
 
 })();
 

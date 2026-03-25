@@ -21,7 +21,7 @@
         rel="stylesheet">
     <link rel="icon" type="image/svg+xml"
         href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%238b5cf6'/%3E%3Cstop offset='100%25' stop-color='%2306b6d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='30' fill='%230f0c29'/%3E%3Cpath d='M32 14c-9.4 0-17 6.8-17 15.2 0 4.5 2.2 8.6 5.7 11.4v5.4c0 1.1.9 2 2 2h18.6c1.1 0 2-.9 2-2v-5.4c3.5-2.8 5.7-6.9 5.7-11.4C49 20.8 41.4 14 32 14zm-3.5 30v-2h7v2h-7zm9.2-5h-11.4c-3-2.3-4.8-5.8-4.8-9.8C21.5 22.5 26.2 18 32 18s10.5 4.5 10.5 11.2c0 4-1.8 7.5-4.8 9.8z' fill='url(%23g)'/%3E%3Cpath d='M28 26c0-1 .8-1.5 1.5-1.5s1.5.7 1.5 1.5-.7 2-1.5 2S28 27 28 26zm5 0c0-1 .7-1.5 1.5-1.5s1.5.7 1.5 1.5-.7 2-1.5 2-1.5-1-1.5-2z' fill='url(%23g)' opacity='.6'/%3E%3C/svg%3E">
-    <link rel="stylesheet" href="src/styles/styles.css?v=4.1">
+    <link rel="stylesheet" href="src/styles/styles.css?v=4.2">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
     <script type="module">
@@ -69,27 +69,20 @@
                         height="16" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M18 20V10M12 20V4M6 20v-4"></path>
                     </svg> Estadísticas</a>
+                <a href="/faq" class="nav-link" data-route="faq"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> FAQ</a>
                 <a href="/perfil" class="nav-link" data-route="profile"><svg viewBox="0 0 24 24" width="16" height="16"
                         fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                         <circle cx="12" cy="7" r="4"></circle>
                     </svg> Mi Perfil</a>
             </nav>
-            <!-- Auth button -->
-            <div id="nav-auth-area" style="display:flex;align-items:center;gap:10px;">
-                <button id="btn-nav-login" onclick="document.getElementById('auth-modal').style.display='flex'"
-                    style="padding:7px 16px;border-radius:999px;border:1px solid rgba(139,92,246,0.5);background:rgba(139,92,246,0.15);color:#f1f5f9;font-family:var(--font-body);font-weight:600;font-size:13px;cursor:pointer;transition:all .2s;">Entrar</button>
-                <div id="nav-user-pill"
-                    style="display:none;align-items:center;gap:8px;padding:6px 14px 6px 8px;border-radius:999px;background:rgba(139,92,246,0.2);border:1px solid rgba(139,92,246,0.4);cursor:pointer;"
-                    onclick="document.getElementById('auth-modal').style.display='flex'">
-                    <div id="nav-avatar"
-                        style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#fff;">
-                        ?</div>
-                    <span id="nav-username"
-                        style="font-size:13px;font-weight:600;color:#f1f5f9;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Usuario</span>
-                    <button id="btn-nav-logout"
-                        style="background:none;border:none;color:var(--clr-text-muted);cursor:pointer;font-size:11px;padding:0;"
-                        onclick="event.stopPropagation();handleLogout();">✕</button>
+            <!-- Auth: espacio fijo para evitar saltos al iniciar sesión -->
+            <div id="nav-auth-area" class="nav-auth-area">
+                <button type="button" id="btn-nav-login" class="btn-nav-login" onclick="document.getElementById('auth-modal').style.display='flex'">Entrar</button>
+                <div id="nav-user-pill" class="nav-user-pill" style="display:none;" onclick="document.getElementById('auth-modal').style.display='flex'">
+                    <div id="nav-avatar" class="nav-avatar">?</div>
+                    <span id="nav-username" class="nav-username">Usuario</span>
+                    <button type="button" id="btn-nav-logout" class="btn-nav-logout" onclick="event.stopPropagation();handleLogout();" aria-label="Cerrar sesión">✕</button>
                 </div>
             </div>
         </div>
@@ -344,8 +337,7 @@
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="m9 15 2 2 4-4"></path></svg>
                                 <h2 id="training-heading-home" class="training-block__title">Modo entrenamiento</h2>
                             </div>
-                            <p class="training-block__intro">Practica cada juego sin límite; no cuenta para tu test diario ni para el historial. También puedes abrir <a href="/entrenamiento" data-route="training">la página de entrenamiento</a> desde el menú.</p>
-                            <div id="zen-grid-container" class="training-games-list" data-training-entry="home"></div>
+                            <div id="zen-grid-container" class="training-games-list training-games-list--home" data-training-entry="home"></div>
                         </div>
                     </div>
                 </section>
@@ -683,80 +675,33 @@
                 <!-- Detailed Test Descriptions -->
                 <div class="info-card">
                     <h2>Pruebas de edad cerebral gratis</h2>
-                    <p style="margin-bottom: 24px; color: var(--clr-text-muted);">El "Test de Edad Mental" evoluciona
-                        constantemente. Usando una semilla aleatoria diaria, el sistema selecciona 5 pruebas de una
-                        biblioteca neurocognitiva en expansión. Hoy te enfrentarás a las siguientes pruebas:</p>
+                    <p class="info-lead">Disponemos de <strong>7 tipos de pruebas</strong> en la biblioteca cognitiva. Cada día, el test oficial elige al azar <strong>5 de esas 7</strong> (combinación distinta). Abajo aparecen solo las que tocan hoy:</p>
                     <div id="daily-tests-info">
                         <!-- Dynamically populated by app.js -->
                     </div>
                 </div>
 
-                <!-- FAQ -->
-                <div class="info-card">
-                    <h2>Test de edad mental y madurez</h2>
-                    <div class="faq-item">
-                        <h3>¿Es cientificamente preciso este test?</h3>
-                        <p>Este test se basa en pruebas neuropsicologicas validadas (WAIS, test de Corsi, mediciones de
-                            tiempo de reaccion). Sin embargo, es una herramienta de entretenimiento educativo, no un
-                            diagnostico clinico. Para una evaluacion completa, consulta a un neuropsicologo.</p>
-                    </div>
-                    <div class="faq-item">
-                        <h3>¿Por que mi edad mental no coincide con mi edad real?</h3>
-                        <p>La edad mental refleja el rendimiento cognitivo comparado con promedios poblacionales por
-                            edad. Factores como el descanso, el estres, la practica y la familiaridad con tecnologia
-                            pueden influir. Un resultado diferente a tu edad real es completamente normal.</p>
-                    </div>
-                    <div class="faq-item">
-                        <h3>¿Puedo mejorar mi edad mental?</h3>
-                        <p>Si. El cerebro tiene neuroplasticidad y puede mejorar con entrenamiento cognitivo regular,
-                            ejercicio fisico, buena alimentacion, sueno adecuado y estimulacion intelectual continua.
-                            Repetir el test periodicamente puede ayudarte a medir tu progreso.</p>
-                    </div>
-                    <div class="faq-item">
-                        <h3>¿Que factores afectan al resultado?</h3>
-                        <p>El cansancio, la hora del dia, el estres, las distracciones y la velocidad de tu dispositivo
-                            pueden afectar tus tiempos de respuesta. Para un resultado mas representativo, realiza el
-                            test en un entorno tranquilo y cuando estes descansado.</p>
-                    </div>
-                    <div class="faq-item">
-                        <h3>¿Que significan los percentiles?</h3>
-                        <p>El percentil indica que porcentaje de usuarios obtuvieron una puntuacion inferior a la tuya.
-                            Por ejemplo, un percentil del 78% significa que tu resultado supera al del 78% de las
-                            personas que han realizado el test. Se calcula usando una distribucion normal estandar.</p>
-                    </div>
-                    <div class="faq-item">
-                        <h3>¿Cuantas veces puedo realizar el test?</h3>
-                        <p>Puedes repetir el test tantas veces como quieras. No guardamos datos personales ni requerimos
-                            registro. Sin embargo, ten en cuenta que la repeticion frecuente puede producir un efecto de
-                            practica que infle artificialmente tus resultados.</p>
-                    </div>
+                <div class="info-card info-card--compact">
+                    <h2 class="info-card__title-inline">¿Dudas sobre el test?</h2>
+                    <p class="info-card__muted">Respuestas rápidas sobre precisión, percentiles, repeticiones y más.</p>
+                    <a href="/faq" class="btn btn-secondary btn-faq-cta" data-route="faq">Ver preguntas frecuentes</a>
                 </div>
 
-                <!-- About the Science -->
-                <div class="info-card">
-                    <h2>La Ciencia Detras del Test</h2>
-                    <p>El concepto de edad mental fue introducido por Alfred Binet en 1905 como parte del primer test de
-                        inteligencia estandarizado. Desde entonces, la neuropsicologia ha avanzado enormemente en la
-                        comprension de como envejecen las distintas funciones cognitivas.</p>
-                    <p>Nuestro test se apoya en cuatro pilares de la investigacion cognitiva:</p>
-                    <h3>Tiempo de reaccion y envejecimiento</h3>
-                    <p>Los estudios de Luce (1986) y Der y Deary (2006) demuestran que el tiempo de reaccion simple es
-                        uno de los biomarcadores cognitivos mas fiables. Aumenta de forma lineal aproximadamente 0.5-1ms
-                        por año despues de los 25, reflejando cambios en la velocidad de conduccion neuronal.</p>
-                    <h3>Memoria de trabajo (Modelo de Baddeley)</h3>
-                    <p>La memoria de trabajo, medida tradicionalmente mediante el span de digitos del WAIS, tiene una
-                        capacidad limitada famosamente descrita como "el numero magico 7 mas o menos 2" por George
-                        Miller (1956). Esta capacidad alcanza su maximo entre los 20 y 30 años.</p>
-                    <h3>Inteligencia fluida vs. cristalizada</h3>
-                    <p>Segun la teoria de Cattell-Horn-Carroll, la inteligencia fluida (resolver problemas nuevos)
-                        alcanza su pico a los 20-25 años, mientras que la inteligencia cristalizada (conocimiento
-                        acumulado) puede seguir creciendo durante toda la vida. Nuestro test mide principalmente la
-                        fluida.</p>
-                    <h3>Velocidad de procesamiento</h3>
-                    <p>Los trabajos de Timothy Salthouse (1996) demostraron que la velocidad de procesamiento es la
-                        habilidad cognitiva que mas declina con la edad, y que este declive explica gran parte de las
-                        diferencias de rendimiento entre adultos jovenes y mayores en diversas tareas.</p>
-                </div>
+                <!-- About the Science (discreto) -->
+                <details class="science-disclosure">
+                    <summary class="science-disclosure__summary">Referencias y base científica (ampliar)</summary>
+                    <div class="science-disclosure__body">
+                        <p class="science-disclosure__lead">El concepto de edad mental se remonta a Alfred Binet (1905). Hoy la neuropsicología estudia cómo envejecen distintas funciones cognitivas; este sitio es divulgativo y no sustituye una evaluación clínica.</p>
+                        <h4 class="science-disclosure__h">Tiempo de reacción</h4>
+                        <p>Trabajos como Luce (1986) y Der y Deary (2006) vinculan el tiempo de reacción simple con la velocidad de procesamiento, que suele cambiar con la edad.</p>
+                        <h4 class="science-disclosure__h">Memoria de trabajo</h4>
+                        <p>El modelo de Baddeley y el span de dígitos del WAIS son referencias habituales; el “7 ± 2” de Miller (1956) describe límites típicos de capacidad.</p>
+                        <h4 class="science-disclosure__h">Inteligencia fluida y cristalizada</h4>
+                        <p>En el marco Cattell-Horn-Carroll, la fluida suele alcanzar un máximo en la adultez joven; la cristalizada puede acumularse más tiempo.</p>
+                        <h4 class="science-disclosure__h">Velocidad de procesamiento</h4>
+                        <p>Investigaciones como las de Salthouse (1996) describen el declive gradual de esta habilidad con la edad en diversas tareas.</p>
+                    </div>
+                </details>
             </div>
         </main>
         </div> <!-- end view-home -->
@@ -769,6 +714,47 @@
                     <p class="training-page-lead">Elige un juego para practicar sin presión. Los resultados no se guardan en tu historial. Durante el juego puedes pulsar <strong>Volver</strong> para regresar aquí.</p>
                 </div>
                 <div id="zen-grid-training" class="training-games-list" data-training-entry="training"></div>
+            </main>
+        </div>
+
+        <!-- VIEW: FAQ -->
+        <div id="view-faq" class="spa-view" style="display:none; opacity:0; transition: opacity 0.3s ease;">
+            <main class="app-container faq-page">
+                <div class="faq-page__hero">
+                    <h1 class="faq-page__title">Preguntas frecuentes</h1>
+                    <p class="faq-page__subtitle">Todo lo que suele preguntarse sobre el test, los resultados y el uso del sitio.</p>
+                </div>
+                <div class="info-card faq-page__card">
+                    <div class="faq-item">
+                        <h3>¿Es científicamente preciso este test?</h3>
+                        <p>Se inspira en tareas parecidas a las de baterías conocidas (por ejemplo, ideas del WAIS, Corsi o medidas de tiempo de reacción). Aun así, es una herramienta de entretenimiento educativo, no un diagnóstico clínico. Para una evaluación completa, consulta a un neuropsicólogo.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>¿Por qué mi edad mental no coincide con mi edad real?</h3>
+                        <p>La “edad mental” aquí es una estimación según tu rendimiento frente a promedios de referencia. Descanso, estrés, práctica y el propio dispositivo pueden influir. Ver un número distinto a tu edad cronológica es normal.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>¿Puedo mejorar mi edad mental?</h3>
+                        <p>El cerebro cambia con el entrenamiento, el ejercicio, el sueño y la estimulación. Repetir el test de vez en cuando puede servir para ver tendencias, no para obsesionarse con un único número.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>¿Qué factores afectan al resultado?</h3>
+                        <p>Cansancio, hora del día, nervios, distracciones y la velocidad de tu pantalla pueden variar tiempos y puntuaciones. Para un resultado más estable, haz el test tranquilo y descansado.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>¿Qué significan los percentiles?</h3>
+                        <p>Indican qué parte de los resultados guardados quedan por debajo del tuyo. Un percentil alto no “certifica” inteligencia; solo sitúa tu puntuación respecto a quienes han jugado aquí.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>¿Cuántas veces puedo realizar el test?</h3>
+                        <p>Las veces que quieras. Si repites mucho seguido, puede aparecer un efecto de práctica que sube artificialmente el resultado.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>¿Por qué el test tiene 5 pruebas si hay más juegos?</h3>
+                        <p>La biblioteca incluye varios tipos de ejercicios; cada día el test elige <strong>5 al azar</strong> para mantener la sesión corta y comparable. En <strong>Entrenamiento</strong> puedes practicar los siete sin límite.</p>
+                    </div>
+                </div>
+                <p class="faq-page__back"><a href="/" class="faq-page__back-link" data-route="home">← Volver al inicio</a></p>
             </main>
         </div>
 
@@ -901,102 +887,68 @@
         <!-- VIEW: PERFIL -->
         <div id="view-profile" class="spa-view" style="display:none; opacity:0; transition: opacity 0.3s ease;">
             <!-- Auth gate for profile -->
-            <div id="profile-auth-gate" style="display:none; max-width:500px; margin:120px auto; text-align:center; padding:40px 20px;">
-                <div style="font-size:64px;margin-bottom:16px;">🔒</div>
-                <h2 style="font-family:var(--font-display);font-size:24px;margin-bottom:12px;color:var(--clr-text);">Perfil Bloqueado</h2>
-                <p style="color:var(--clr-text-muted);font-size:14px;margin-bottom:24px;line-height:1.6;">Necesitas iniciar sesión para acceder a tu perfil cognitivo y ver tu evolución.</p>
-                <button class="btn btn-primary btn-glow" onclick="document.getElementById('auth-modal').style.display='flex'" style="font-size:15px;padding:12px 28px;">🔑 Iniciar Sesión</button>
+            <div id="profile-auth-gate" class="profile-gate" style="display:none;">
+                <div class="profile-gate__icon" aria-hidden="true">🔒</div>
+                <h2 class="profile-gate__title">Perfil</h2>
+                <p class="profile-gate__text">Inicia sesión para ver tu evolución, racha e historial en este dispositivo.</p>
+                <button type="button" class="btn btn-profile-login" onclick="document.getElementById('auth-modal').style.display='flex'">Iniciar sesión</button>
             </div>
             <!-- Profile content (hidden when not logged in) -->
-            <main id="profile-content" class="profile-container" style="max-width: 960px; margin: 80px auto 40px; padding: 20px;">
-                <h1
-                    style="font-family: var(--font-display); font-size: 36px; text-align: center; margin-bottom: 6px; background: linear-gradient(135deg, var(--clr-primary-light), var(--clr-accent-light)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
-                    Mi Perfil Cognitivo</h1>
-                <p style="text-align: center; color: var(--clr-text-muted); margin-bottom: 36px;">Tu evolución mental a
-                    lo largo del tiempo</p>
+            <main id="profile-content" class="profile-page">
+                <header class="profile-page__header">
+                    <h1 class="profile-page__title">Tu perfil</h1>
+                    <p class="profile-page__lead">Resumen de tu actividad y progreso cognitivo.</p>
+                </header>
 
-                <!-- Stats row -->
-                <div id="profile-stats-row"
-                    style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px;">
-                    <div class="card"
-                        style="padding: 24px; text-align:center; border: 1px solid var(--clr-glass-border);">
-                        <div
-                            style="font-size: 13px; color: var(--clr-text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing:.08em;">
-                            🏆 Liga Actual</div>
-                        <div id="profile-league-icon"
-                            style="font-size: 42px; margin-bottom: 4px; line-height: 1;">
-                            --</div>
-                        <div id="profile-league-name" style="font-size: 14px; font-weight: 700; color: var(--clr-text);">Sin Rango</div>
+                <div id="profile-stats-row" class="profile-stats-grid">
+                    <div class="profile-stat-card">
+                        <div class="profile-stat-card__label">Liga</div>
+                        <div id="profile-league-icon" class="profile-stat-card__icon-lg">--</div>
+                        <div id="profile-league-name" class="profile-stat-card__value">Sin rango</div>
                     </div>
-                    <div class="card"
-                        style="padding: 24px; text-align:center; border: 1px solid var(--clr-glass-border);">
-                        <div
-                            style="font-size: 13px; color: var(--clr-text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing:.08em;">
-                            🔥 Racha Actual</div>
-                        <div id="profile-streak"
-                            style="font-size: 42px; font-weight: 900; font-family: var(--font-display); color: var(--clr-accent-light);">
-                            0</div>
-                        <div style="font-size: 12px; color: var(--clr-text-dim);">días consecutivos</div>
+                    <div class="profile-stat-card">
+                        <div class="profile-stat-card__label">Racha</div>
+                        <div id="profile-streak" class="profile-stat-card__num profile-stat-card__num--accent">0</div>
+                        <div class="profile-stat-card__hint">días seguidos</div>
                     </div>
-                    <div class="card"
-                        style="padding: 24px; text-align:center; border: 1px solid var(--clr-glass-border);">
-                        <div
-                            style="font-size: 13px; color: var(--clr-text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing:.08em;">
-                            🧠 Mejor Edad</div>
-                        <div id="profile-best"
-                            style="font-size: 42px; font-weight: 900; font-family: var(--font-display); color: var(--clr-primary-light);">
-                            --</div>
-                        <div style="font-size: 12px; color: var(--clr-text-dim);">años mentales</div>
+                    <div class="profile-stat-card">
+                        <div class="profile-stat-card__label">Mejor edad</div>
+                        <div id="profile-best" class="profile-stat-card__num profile-stat-card__num--primary">--</div>
+                        <div class="profile-stat-card__hint">años mentales</div>
                     </div>
-                    <div class="card"
-                        style="padding: 24px; text-align:center; border: 1px solid var(--clr-glass-border);">
-                        <div
-                            style="font-size: 13px; color: var(--clr-text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing:.08em;">
-                            🎮 Tests Totales</div>
-                        <div id="profile-total"
-                            style="font-size: 42px; font-weight: 900; font-family: var(--font-display); color: var(--clr-success);">
-                            0</div>
-                        <div style="font-size: 12px; color: var(--clr-text-dim);">partidas jugadas</div>
+                    <div class="profile-stat-card">
+                        <div class="profile-stat-card__label">Tests</div>
+                        <div id="profile-total" class="profile-stat-card__num profile-stat-card__num--success">0</div>
+                        <div class="profile-stat-card__hint">partidas</div>
                     </div>
                 </div>
 
-                <!-- Evolution chart & Radar -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 28px;">
-                    <div class="card" style="padding: 24px; border: 1px solid var(--clr-glass-border);">
-                        <div style="font-weight: 700; margin-bottom: 16px; font-size: 16px;">Evolución de tu Edad Mental</div>
-                        <div style="position: relative; height: 250px;">
+                <div class="profile-charts-grid">
+                    <div class="profile-panel">
+                        <h3 class="profile-panel__title">Evolución de edad mental</h3>
+                        <div class="profile-panel__chart">
                             <canvas id="evolutionChart"></canvas>
                         </div>
                     </div>
-                    <div class="card" style="padding: 24px; border: 1px solid var(--clr-glass-border);">
-                        <div style="font-weight: 700; margin-bottom: 16px; font-size: 16px;">Tus Fortalezas Cognitivas</div>
-                        <div style="position: relative; height: 250px;">
+                    <div class="profile-panel">
+                        <h3 class="profile-panel__title">Fortalezas (radar)</h3>
+                        <div class="profile-panel__chart">
                             <canvas id="profileRadarChart"></canvas>
                         </div>
                     </div>
                 </div>
-                    <div id="profile-no-data"
-                        style="display:none; text-align:center; color: var(--clr-text-muted); padding: 40px;">Aún no
-                        tienes resultados guardados. ¡Completa tu primer test!</div>
+                <div id="profile-no-data" class="profile-empty" style="display:none;">Aún no hay resultados guardados. ¡Completa un test!</div>
 
-                <!-- Badges row -->
-                <div class="card"
-                    style="padding: 24px; margin-bottom: 28px; border: 1px solid var(--clr-glass-border);">
-                    <div style="font-weight: 700; margin-bottom: 16px; font-size: 16px;">🏅 Insignias</div>
-                    <div id="profile-badges" style="display: flex; flex-wrap: wrap; gap: 12px;"></div>
+                <div class="profile-panel profile-panel--badges">
+                    <h3 class="profile-panel__title">Insignias</h3>
+                    <div id="profile-badges" class="profile-badges"></div>
                 </div>
 
-                <!-- Last 10 games history -->
-                <div class="card" style="padding: 24px; border: 1px solid var(--clr-glass-border);">
-                    <div style="font-weight: 700; margin-bottom: 16px; font-size: 16px;">Historial de Partidas</div>
-                    <div id="profile-history">
-                        <p style="color: var(--clr-text-muted); text-align: center; padding: 20px;">Aún no tienes
-                            partidas guardadas.</p>
+                <div class="profile-panel">
+                    <h3 class="profile-panel__title">Historial</h3>
+                    <div id="profile-history" class="profile-history">
+                        <p class="profile-history__empty">Aún no tienes partidas guardadas.</p>
                     </div>
-                </div>
-
-                <div style="text-align:center; margin-top: 28px;">
-                    <!-- Historial permanente -->
                 </div>
             </main>
         </div> <!-- end view-profile -->
@@ -1019,6 +971,7 @@
             <p class="footer-brand">Test de Edad Mental &copy; 2026</p>
             <nav class="footer-links">
                 <a href="/ranking" data-route="ranking">Ranking</a>
+                <a href="/faq" data-route="faq">FAQ</a>
                 <a href="/estadisticas" data-route="stats">Estadísticas</a>
                 <a href="/aviso-legal.html">Aviso Legal</a>
                 <a href="/politica-privacidad.html">Privacidad</a>
@@ -1040,7 +993,7 @@
     <!-- Supabase CDN and Shared DB logic -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="src/js/db.js?v=6.0"></script>
-    <script src="src/js/app.js?v=4.0"></script>
+    <script src="src/js/app.js?v=4.2"></script>
     <script src="src/js/auth-google.js?v=1.0"></script>
     <!-- PWA Registration -->
     <script>
