@@ -2739,11 +2739,21 @@
     }
 
     
+    
     // START
-    initRouter();
-    initEvents();
-    renderTrainingMode();
-    renderDailyGamesList();
+    document.addEventListener('DOMContentLoaded', () => {
+        initRouter();
+        initEvents();
+        renderTrainingMode();
+        renderDailyGamesList();
+        
+        // Also ensure UI is correct
+        setTimeout(() => {
+            renderTrainingMode();
+            renderDailyGamesList();
+        }, 100);
+    });
+
 
 })();
 
