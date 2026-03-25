@@ -1,0 +1,14 @@
+{
+  "name": "edad-mental",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Test de edad mental con minijuegos cognitivos y páginas SEO.",
+  "scripts": {
+    "start": "http-server public -p 8080 -c-1",
+    "dev": "http-server public -p 8080 -c-1",
+    "build:landings": "node scripts/build/build-landings.js"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

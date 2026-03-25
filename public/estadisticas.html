@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estadísticas Globales | Test de Edad Mental</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=3.0">
+    <link rel="stylesheet" href="src/styles/styles.css?v=3.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
     <script type="module">
@@ -58,9 +58,21 @@
         </div>
     </main>
 
+    <footer class="footer">
+        <div class="footer-content">
+            <p class="footer-brand">Test de Edad Mental &copy; 2026</p>
+            <nav class="footer-links">
+                <a href="index.html">Inicio</a>
+                <a href="ranking.html">Ranking</a>
+                <a href="terminos-servicio.html">Términos</a>
+                <a href="contacto.html">Contacto</a>
+            </nav>
+        </div>
+    </footer>
+
     <!-- Supabase CDN and Shared DB logic -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="db.js?v=3.0"></script>
+    <script src="src/js/db.js?v=3.0"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // Configuración Global de Chart.js

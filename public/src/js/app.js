@@ -2476,6 +2476,8 @@
         setupPhase4Buttons();
         checkDuelChallenge();
         renderDailyTestsInfo();
+        renderTrainingMode();
+        renderDailyGamesList();
         navigate(window.location.pathname, false);
 
         // Clear history button
@@ -2737,23 +2739,6 @@
             list.innerHTML += '<div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); padding:8px 14px; border-radius:30px; font-size:13px; font-weight:500; display:flex; align-items:center; gap:8px; color:#f1f5f9; box-shadow:0 4px 6px rgba(0,0,0,0.1);">' + svg + g.title + '</div>';
         });
     }
-
-    
-    
-    // START
-    document.addEventListener('DOMContentLoaded', () => {
-        initRouter();
-        initEvents();
-        renderTrainingMode();
-        renderDailyGamesList();
-        
-        // Also ensure UI is correct
-        setTimeout(() => {
-            renderTrainingMode();
-            renderDailyGamesList();
-        }, 100);
-    });
-
 
 })();
 
