@@ -75,6 +75,10 @@
     // Select 5 games for today's test
     const games = shuffleWithSeed(gamesPool, dailyRng).slice(0, 5);
     games.forEach((g, i) => g.id = i + 1);
+    const dailyGame0Backup = { ...games[0] };
+
+    /** 'home' | 'training' — where the user opened training from */
+    let trainingEntryView = 'home';
 
     // ── Helpers ──
     const $ = (sel) => document.querySelector(sel);
@@ -86,6 +90,52 @@
         target.classList.remove('active');
         void target.offsetWidth;
         target.classList.add('active');
+        const backBar = document.getElementById('training-back-bar');
+        if (backBar) {
+            const showBar = isTrainingMode && id !== 'welcome';
+            backBar.style.display = showBar ? 'flex' : 'none';
+            backBar.setAttribute('aria-hidden', showBar ? 'false' : 'true');
+        }
+        const appMain = document.getElementById('app');
+        if (appMain) {
+            if (isTrainingMode && id !== 'welcome') appMain.classList.add('training-bar-pad');
+            else appMain.classList.remove('training-bar-pad');
+        }
+    }
+
+    function cleanupActiveGameTimers() {
+        try {
+            if (typeof reactionTimeout !== 'undefined' && reactionTimeout) clearTimeout(reactionTimeout);
+        } catch (e) { /* noop */ }
+        try {
+            if (typeof patternTimer !== 'undefined' && patternTimer) clearInterval(patternTimer);
+        } catch (e) { /* noop */ }
+        try {
+            if (typeof mathTimer !== 'undefined' && mathTimer) clearInterval(mathTimer);
+        } catch (e) { /* noop */ }
+        try {
+            if (typeof colorsInterval !== 'undefined' && colorsInterval) clearInterval(colorsInterval);
+        } catch (e) { /* noop */ }
+    }
+
+    function exitTrainingFlow() {
+        cleanupActiveGameTimers();
+        isTrainingMode = false;
+        currentGame = 0;
+        games[0] = { ...dailyGame0Backup };
+        const backBar = document.getElementById('training-back-bar');
+        if (backBar) {
+            backBar.style.display = 'none';
+            backBar.setAttribute('aria-hidden', 'true');
+        }
+        const appMainExit = document.getElementById('app');
+        if (appMainExit) appMainExit.classList.remove('training-bar-pad');
+        if (trainingEntryView === 'training') {
+            navigate('/entrenamiento');
+        } else {
+            navigate('/');
+            setTimeout(() => showScreen('welcome'), 330);
+        }
     }
 
     function setProgress(gameIndex) {
@@ -1094,14 +1144,22 @@
     // NEW GAME: Color Perception (Stroop)
     // ══════════════════════════════════════════
     let colorsScore = 0;
+    let colorsFails = 0;
     let colorsTimeLeft = 30;
     let colorsInterval = null;
     let currentColorAnswer = '';
 
+    function updateColorsScoreDisplay() {
+        const el = $('#colors-score');
+        if (!el) return;
+        el.innerHTML = '<span class="colors-stat colors-stat--hits">Aciertos: ' + colorsScore + '</span><span class="colors-stat-sep" aria-hidden="true">·</span><span class="colors-stat colors-stat--miss">Fallos: ' + colorsFails + '</span>';
+    }
+
     function startColorGame() {
         colorsScore = 0;
+        colorsFails = 0;
         colorsTimeLeft = D().colorsTime; // Easy=40s, Normal=30s, Hard=20s
-        $('#colors-score').textContent = 'Aciertos: 0';
+        updateColorsScoreDisplay();
         updateTimer('colors-timer', colorsTimeLeft);
         showScreen('game-colors');
 
@@ -1144,17 +1202,19 @@
         const opts = shuffle([...words]);
         opts.forEach(opt => {
             const btn = document.createElement('button');
-            btn.className = 'btn-math-opt'; // reuse styling
+            btn.type = 'button';
+            btn.className = 'colors-option-btn';
             btn.textContent = opt;
             btn.addEventListener('click', () => {
                 if (opt === currentColorAnswer) {
                     colorsScore++;
                     sfxCorrect();
                 } else {
+                    colorsFails++;
                     colorsScore = Math.max(0, colorsScore - 1);
                     sfxWrong();
                 }
-                $('#colors-score').textContent = 'Aciertos: ' + colorsScore;
+                updateColorsScoreDisplay();
                 runColorRound();
             });
             optsContainer.appendChild(btn);
@@ -1381,10 +1441,11 @@
 
         window._shareData = { brainAge, percentile, scores, ages, archetype };
 
-        // Save to localStorage history (Phase 3)
-        saveResultToHistory(brainAge, currentDifficulty, games.map(g => g.label), scores);
-        // Show streak notification
-        showStreakNotification();
+        // Save to localStorage history (Phase 3) — not when in training mode
+        if (!isTrainingMode) {
+            saveResultToHistory(brainAge, currentDifficulty, games.map(g => g.label), scores);
+            showStreakNotification();
+        }
 
         // V3: Load global comparison
         if (typeof getGlobalAverages === 'function') {
@@ -1444,13 +1505,22 @@
         });
 
         $('#btn-start').addEventListener('click', () => {
-              isTrainingMode = false;
+            isTrainingMode = false;
+            games[0] = { ...dailyGame0Backup };
             // Initialize audio context on first user interaction
             getAudioCtx();
             sfxClick();
             currentGame = 0;
             startNextGame();
         });
+
+        const btnTrainingBack = document.getElementById('btn-training-back');
+        if (btnTrainingBack) {
+            btnTrainingBack.addEventListener('click', () => {
+                sfxClick();
+                exitTrainingFlow();
+            });
+        }
 
         $('#btn-ready').addEventListener('click', () => {
             sfxClick();
@@ -1499,6 +1569,8 @@
 
         $('#btn-retry').addEventListener('click', () => {
             sfxClick();
+            isTrainingMode = false;
+            games[0] = { ...dailyGame0Backup };
             Object.keys(scores).forEach(k => scores[k] = 0);
             Object.keys(rawMetrics).forEach(k => rawMetrics[k] = 0);
             currentGame = 0;
@@ -1785,6 +1857,7 @@
     // ══════════════════════════════════════════
     const spaViews = {
         home: document.getElementById('view-home'),
+        training: document.getElementById('view-training'),
         ranking: document.getElementById('view-ranking'),
         stats: document.getElementById('view-stats'),
         profile: document.getElementById('view-profile')
@@ -2064,6 +2137,7 @@
         if (lowerPath.includes('ranking')) viewKey = 'ranking';
         else if (lowerPath.includes('estadistica')) viewKey = 'stats';
         else if (lowerPath.includes('perfil')) viewKey = 'profile';
+        else if (lowerPath.includes('entrenamiento')) viewKey = 'training';
 
         // Update nav styling
         document.querySelectorAll('.nav-link[data-route]').forEach(link => {
@@ -2098,8 +2172,8 @@
                 if (viewKey === 'ranking') loadRanking(currentRankingFilter);
                 if (viewKey === 'stats') loadStats();
                 if (viewKey === 'profile') loadProfile();
-                if (viewKey === 'home' && typeof resetGame === 'function') {
-                    // if user navigates back home mid-game we could reset
+                if (viewKey === 'home' && !isTrainingMode) {
+                    setTimeout(() => showScreen('welcome'), 50);
                 }
             }
         }, 300);
@@ -2112,6 +2186,18 @@
             if (link) {
                 e.preventDefault();
                 const path = link.getAttribute('href');
+                if (link.dataset.route === 'home') {
+                    cleanupActiveGameTimers();
+                    isTrainingMode = false;
+                    games[0] = { ...dailyGame0Backup };
+                    const appMain = document.getElementById('app');
+                    if (appMain) appMain.classList.remove('training-bar-pad');
+                    const backBar = document.getElementById('training-back-bar');
+                    if (backBar) {
+                        backBar.style.display = 'none';
+                        backBar.setAttribute('aria-hidden', 'true');
+                    }
+                }
                 navigate(path);
                 // Close hamburger menu on mobile
                 const navLinks = document.querySelector('.nav-links');
@@ -2709,24 +2795,33 @@
 
     
     function renderTrainingMode() {
-        const grid = document.getElementById('zen-grid-container');
-        if (!grid) return;
-        grid.innerHTML = '';
-        gamesPool.forEach((g, idx) => {
-            const card = document.createElement('div');
-            card.className = 'zen-card';
-            card.innerHTML = (g.iconKey ? gameIcons[g.iconKey] : '') + '<h3>' + g.title + '</h3><p>' + g.label + '</p>';
-            card.style.cssText = 'background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; text-align: center; display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 10px; transition: all 0.2s;';
-            card.onmouseover = () => { card.style.borderColor = '#8b5cf6'; card.style.transform = 'translateY(-3px)'; card.style.background = 'rgba(255,255,255,0.05)'; };
-            card.onmouseout = () => { card.style.borderColor = 'rgba(255,255,255,0.05)'; card.style.transform = 'none'; card.style.background = 'rgba(0,0,0,0.2)'; };
-            
-            card.onclick = () => {
-                isTrainingMode = true;
-                currentGame = 0; 
-                games[0] = gamesPool[idx];
-                showInstructions(currentGame);
-            };
-            grid.appendChild(card);
+        ['zen-grid-container', 'zen-grid-training'].forEach((gridId) => {
+            const grid = document.getElementById(gridId);
+            if (!grid) return;
+            const entry = grid.dataset.trainingEntry || (gridId === 'zen-grid-training' ? 'training' : 'home');
+            grid.innerHTML = '';
+            gamesPool.forEach((g, idx) => {
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.className = 'training-game-row';
+                const iconHtml = g.iconKey ? gameIcons[g.iconKey].replace(/width="48"/g, 'width="40"').replace(/height="48"/g, 'height="40"') : '';
+                const shortDesc = g.desc.length > 130 ? g.desc.slice(0, 127) + '…' : g.desc;
+                card.innerHTML = '<span class="training-game-row__icon">' + iconHtml + '</span><span class="training-game-row__text"><span class="training-game-row__title">' + g.title + '</span><span class="training-game-row__desc">' + shortDesc + '</span></span><span class="training-game-row__arrow" aria-hidden="true">→</span>';
+                card.addEventListener('click', () => {
+                    trainingEntryView = entry;
+                    isTrainingMode = true;
+                    currentGame = 0;
+                    games[0] = { ...gamesPool[idx], id: games[0].id };
+                    const go = () => showInstructions(currentGame);
+                    if (entry === 'training') {
+                        navigate('/');
+                        setTimeout(go, 330);
+                    } else {
+                        go();
+                    }
+                });
+                grid.appendChild(card);
+            });
         });
     }
 
