@@ -1495,11 +1495,21 @@
 
     // ── Event Listeners ──
     function initEvents() {
+        const diffDescriptions = {
+            'easy': 'Mayor tiempo en pruebas y menor complejidad. Penaliza ligeramente tu edad mental final.',
+            'normal': 'Nivel equilibrado. Ideal para conocer tu edad mental con precisión estándar.',
+            'hard': 'Menos tiempo y secuencias más largas. Una buena puntuación mejora mucho tu resultado final.'
+        };
+
         $$('.btn-diff').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 $$('.btn-diff').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 currentDifficulty = btn.dataset.diff;
+                const descEl = document.getElementById('difficulty-description');
+                if (descEl) {
+                    descEl.textContent = diffDescriptions[currentDifficulty] || diffDescriptions['normal'];
+                }
                 sfxClick();
             });
         });

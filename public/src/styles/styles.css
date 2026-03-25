@@ -72,16 +72,18 @@ body::before {
     position: relative;
     z-index: 1;
     max-width: min(1420px, 96vw);
+    width: 100%;
     margin: 0 auto;
-    padding: 20px 16px 40px;
+    padding: 100px 16px 40px;
     min-height: calc(100vh - 120px);
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 .app-container.training-bar-pad {
-    padding-top: 52px;
+    padding-top: 140px;
 }
 
 .home-welcome-stack {
@@ -194,7 +196,6 @@ body::before {
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
-    padding-top: 32px;
 }
 
 .training-page-hero {
@@ -1669,7 +1670,7 @@ body::before {
 
 @media (min-width: 769px) {
     .app-container {
-        padding: 40px 20px 60px;
+        padding: 100px 20px 60px;
     }
 
     .card {
@@ -1875,7 +1876,7 @@ body::before {
 
     /* App container */
     .app-container {
-        padding: 12px 10px 30px;
+        padding: 90px 10px 30px;
     }
     .card {
         padding: 24px 16px;
@@ -2111,7 +2112,6 @@ body::before {
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
-    padding-top: 28px;
     padding-bottom: 48px;
 }
 
@@ -2212,7 +2212,7 @@ body::before {
 
 .profile-page {
     max-width: 980px;
-    margin: 72px auto 48px;
+    margin: 100px auto 48px;
     padding: 0 20px 40px;
 }
 
