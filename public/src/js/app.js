@@ -96,6 +96,13 @@
             backBar.style.display = showBar ? 'flex' : 'none';
             backBar.setAttribute('aria-hidden', showBar ? 'false' : 'true');
         }
+        
+        // Hide info-sections during games/results to prevent scrolling noise
+        const infoSections = document.querySelector('.info-sections');
+        if (infoSections) {
+            infoSections.style.display = (id === 'welcome' || id === 'results') ? 'block' : 'none';
+        }
+
         const appMain = document.getElementById('app');
         if (appMain) {
             if (isTrainingMode && id !== 'welcome') appMain.classList.add('training-bar-pad');
@@ -2842,8 +2849,8 @@
         if (!list) return;
         list.innerHTML = '';
         games.forEach((g, idx) => {
-            let svg = g.iconKey ? gameIcons[g.iconKey].replace(/width="48"/g, 'width="18"').replace(/height="48"/g, 'height="18"') : '';
-            list.innerHTML += '<div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); padding:8px 14px; border-radius:30px; font-size:13px; font-weight:500; display:flex; align-items:center; gap:8px; color:#f1f5f9; box-shadow:0 4px 6px rgba(0,0,0,0.1);">' + svg + g.title + '</div>';
+            let svg = g.iconKey ? gameIcons[g.iconKey].replace(/width="48"/g, 'width="16"').replace(/height="48"/g, 'height="16"') : '';
+            list.innerHTML += '<div style="font-size:12px; font-weight:500; display:flex; align-items:center; gap:6px; color:var(--clr-text-muted); opacity: 0.9;">' + svg + g.title + '</div>';
         });
     }
 
