@@ -3,11 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estadísticas Globales | Test de Edad Mental</title>
+    <title>Estadísticas - Test de Edad Mental</title>
+    <meta name="description" content="Analiza las estadísticas globales y tendencias del test de edad mental.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="src/styles/styles.css?v=3.0">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%238b5cf6'/%3E%3Cstop offset='100%25' stop-color='%2306b6d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='30' fill='%230f0c29'/%3E%3Cpath d='M32 14c-9.4 0-17 6.8-17 15.2 0 4.5 2.2 8.6 5.7 11.4v5.4c0 1.1.9 2 2 2h18.6c1.1 0 2-.9 2-2v-5.4c3.5-2.8 5.7-6.9 5.7-11.4C49 20.8 41.4 14 32 14zm-3.5 30v-2h7v2h-7zm9.2-5h-11.4c-3-2.3-4.8-5.8-4.8-9.8C21.5 22.5 26.2 18 32 18s10.5 4.5 10.5 11.2c0 4-1.8 7.5-4.8 9.8z' fill='url(%23g)'/%3E%3Cpath d='M28 26c0-1 .8-1.5 1.5-1.5s1.5.7 1.5 1.5-.7 2-1.5 2S28 27 28 26zm5 0c0-1 .7-1.5 1.5-1.5s1.5.7 1.5 1.5-.7 2-1.5 2-1.5-1-1.5-2z' fill='url(%23g)' opacity='.6'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="src/styles/styles.css?v=4.2">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#8b5cf6">
+</head>
+<body>
+    <canvas id="bg-particles" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;"></canvas>
+
+    <header class="main-header">
+        <div class="header-content">
+            <a href="/" class="logo" data-route="home">Edad Mental</a>
+            <button id="hamburger-btn" class="hamburger-btn" onclick="document.querySelector('.nav-links').classList.toggle('open');this.classList.toggle('active');" aria-label="Menú">
+                <span></span><span></span><span></span>
+            </button>
+            <nav class="nav-links">
+                <a href="/" class="nav-link" data-route="home"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> Inicio</a>
+                <a href="/entrenamiento" class="nav-link" data-route="training"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="m9 15 2 2 4-4"></path></svg> Entrenamiento</a>
+                <a href="/ranking" class="nav-link" data-route="ranking"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"></path></svg> Ranking</a>
+                <a href="/estadisticas" class="nav-link active-route" data-route="stats"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-4"></path></svg> Estadísticas</a>
+                <a href="/faq" class="nav-link" data-route="faq"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> FAQ</a>
+                <a href="/perfil" class="nav-link" data-route="profile"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Mi Perfil</a>
+            </nav>
+            <div id="nav-auth-area" class="nav-auth-area">
+                <button type="button" id="btn-nav-login" class="btn-nav-login" onclick="document.getElementById('auth-modal').style.display='flex'">Entrar</button>
+                <div id="nav-user-pill" class="nav-user-pill" style="display:none;" onclick="document.getElementById('auth-modal').style.display='flex'">
+                    <div id="nav-avatar" class="nav-avatar">?</div>
+                    <span id="nav-username" class="nav-username">Usuario</span>
+                    <button type="button" id="btn-nav-logout" class="btn-nav-logout" onclick="event.stopPropagation();handleLogout();" aria-label="Cerrar sesión">✕</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="ad-container ad-top" id="ad-top">
+        <div class="ad-placeholder">Espacio Publicitario</div>
+    </div>
+
+    <!-- AUTH MODAL -->
+    <div id="auth-modal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.7);backdrop-filter:blur(12px);align-items:center;justify-content:center;padding:20px;">
+        <div style="background:var(--clr-surface);border:1px solid var(--clr-glass-border);border-radius:20px;padding:36px;max-width:400px;width:100%;position:relative;box-shadow:0 24px 80px rgba(0,0,0,0.5);">
+            <button onclick="document.getElementById('auth-modal').style.display='none'" style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--clr-text-muted);font-size:20px;cursor:pointer;line-height:1;">✕</button>
+            <div style="display:flex;gap:0;margin-bottom:24px;border-radius:10px;overflow:hidden;border:1px solid var(--clr-glass-border);">
+                <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')" style="flex:1;padding:11px;background:rgba(139,92,246,0.25);border:none;color:#f1f5f9;font-family:var(--font-body);font-weight:700;cursor:pointer;font-size:14px;">Iniciar Sesión</button>
+                <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')" style="flex:1;padding:11px;background:transparent;border:none;color:var(--clr-text-muted);font-family:var(--font-body);font-weight:600;cursor:pointer;font-size:14px;">Crear Cuenta</button>
+            </div>
+            <button id="btn-google-login" onclick="handleGoogleLogin()" style="width:100%;padding:12px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.07);color:#f1f5f9;font-family:var(--font-body);font-weight:700;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:background 0.2s;margin-bottom:20px;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
+                <svg viewBox="0 0 24 24" width="20" height="20" style="flex-shrink:0;"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                Continuar con Google
+            </button>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+                <div style="flex:1;height:1px;background:rgba(255,255,255,0.1);"></div>
+                <span style="font-size:12px;color:var(--clr-text-muted);white-space:nowrap;">o con email</span>
+                <div style="flex:1;height:1px;background:rgba(255,255,255,0.1);"></div>
+            </div>
+            <form id="form-login" onsubmit="handleLogin(event)">
+                <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:13px;color:var(--clr-text-muted);margin-bottom:6px;">Email</label>
+                    <input id="login-email" type="email" required placeholder="tu@email.com" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--clr-glass-border);background:rgba(255,255,255,0.05);color:#f1f5f9;font-family:var(--font-body);font-size:14px;box-sizing:border-box;">
+                </div>
+                <div style="margin-bottom:24px;">
+                    <label style="display:block;font-size:13px;color:var(--clr-text-muted);margin-bottom:6px;">Contraseña</label>
+                    <input id="login-password" type="password" required placeholder="••••••••" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--clr-glass-border);background:rgba(255,255,255,0.05);color:#f1f5f9;font-family:var(--font-body);font-size:14px;box-sizing:border-box;">
+                </div>
+                <div id="login-error" style="margin-bottom:12px;font-size:13px;color:var(--clr-danger);display:none;"></div>
+                <button type="submit" id="btn-login-submit" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8b5cf6,#06b6d4);color:#fff;font-family:var(--font-body);font-weight:700;font-size:15px;cursor:pointer;">Entrar</button>
+            </form>
+            <form id="form-register" style="display:none;" onsubmit="handleRegister(event)">
+                <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:13px;color:var(--clr-text-muted);margin-bottom:6px;">Nombre</label>
+                    <input id="reg-name" type="text" required placeholder="Tu nombre" maxlength="20" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--clr-glass-border);background:rgba(255,255,255,0.05);color:#f1f5f9;font-family:var(--font-body);font-size:14px;box-sizing:border-box;">
+                </div>
+                <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:13px;color:var(--clr-text-muted);margin-bottom:6px;">Email</label>
+                    <input id="reg-email" type="email" required placeholder="tu@email.com" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--clr-glass-border);background:rgba(255,255,255,0.05);color:#f1f5f9;font-family:var(--font-body);font-size:14px;box-sizing:border-box;">
+                </div>
+                <div style="margin-bottom:24px;">
+                    <label style="display:block;font-size:13px;color:var(--clr-text-muted);margin-bottom:6px;">Contraseña (mín. 6 caracteres)</label>
+                    <input id="reg-password" type="password" required placeholder="••••••••" minlength="6" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--clr-glass-border);background:rgba(255,255,255,0.05);color:#f1f5f9;font-family:var(--font-body);font-size:14px;box-sizing:border-box;">
+                </div>
+                <div id="register-error" style="margin-bottom:12px;font-size:13px;color:var(--clr-danger);display:none;"></div>
+                <button type="submit" id="btn-register-submit" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8b5cf6,#06b6d4);color:#fff;font-family:var(--font-body);font-weight:700;font-size:15px;cursor:pointer;">Crear Cuenta</button>
+                <p id="register-success" style="display:none;text-align:center;margin-top:16px;color:var(--clr-success);font-size:14px;">✅ Cuenta creada. Revisa tu email para confirmar.</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- STATISTICS CONTENT -->
+    <main class="stats-container" style="max-width: 900px; margin: 100px auto 40px; padding: 20px;">
+        <h1 class="stats-title" style="font-family: var(--font-display); font-size: 36px; text-align: center; margin-bottom: 10px; background: linear-gradient(135deg, var(--clr-primary-light), var(--clr-accent-light)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+            Data y Estadísticas</h1>
+        <p class="stats-subtitle" style="text-align: center; color: var(--clr-text-muted); margin-bottom: 40px;">¿Cómo se compara la población general?</p>
+
+        <!-- KPIs Globales -->
+        <div id="stats-kpi-row" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px;">
+            <div class="card" style="padding: 20px; text-align:center; border: 1px solid var(--clr-glass-border); background: rgba(0,0,0,0.2);">
+                <div style="font-size: 13px; color: var(--clr-text-muted); margin-bottom: 6px; text-transform: uppercase;">👥 Jugadores Totales</div>
+                <div id="stats-total-players" style="font-size: 28px; font-weight: 800; color: #fff;">--</div>
+            </div>
+            <div class="card" style="padding: 20px; text-align:center; border: 1px solid var(--clr-glass-border); background: rgba(0,0,0,0.2);">
+                <div style="font-size: 13px; color: var(--clr-text-muted); margin-bottom: 6px; text-transform: uppercase;">🌍 Edad Media Global</div>
+                <div id="stats-avg-age" style="font-size: 28px; font-weight: 800; color: var(--clr-primary-light);">--</div>
+            </div>
+            <div class="card" style="padding: 20px; text-align:center; border: 1px solid var(--clr-glass-border); background: rgba(0,0,0,0.2);">
+                <div style="font-size: 13px; color: var(--clr-text-muted); margin-bottom: 6px; text-transform: uppercase;">🔮 Arquetipo Dominante</div>
+                <div id="stats-top-archetype" style="font-size: 16px; font-weight: 700; color: var(--clr-accent-light);">Cargando...</div>
+            </div>
+        </div>
+
+        <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 24px;">
+            <div class="chart-card" style="background: var(--clr-surface); border-radius: var(--radius-lg); padding: 24px; border: 1px solid var(--clr-glass-border);">
+                <div class="chart-header" style="margin-bottom: 20px; font-weight: 700;">Distribución de Edad Mental Global</div>
+                <div class="chart-wrapper" style="position: relative; height: 280px;">
+                    <canvas id="ageChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card" style="background: var(--clr-surface); border-radius: var(--radius-lg); padding: 24px; border: 1px solid var(--clr-glass-border);">
+                <div class="chart-header" style="margin-bottom: 20px; font-weight: 700;">Rendimiento Medio por Prueba</div>
+                <div class="chart-wrapper" style="position: relative; height: 280px;">
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card" style="background: var(--clr-surface); border-radius: var(--radius-lg); padding: 24px; border: 1px solid var(--clr-glass-border);">
+                <div class="chart-header" style="margin-bottom: 20px; font-weight: 700;">Arquetipos Poblacionales</div>
+                <div class="chart-wrapper" style="position: relative; height: 280px; display: flex; align-items: center; justify-content: center;">
+                    <canvas id="archetypeChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card" style="background: var(--clr-surface); border-radius: var(--radius-lg); padding: 24px; border: 1px solid var(--clr-glass-border);">
+                <div class="chart-header" style="margin-bottom: 20px; font-weight: 700;">Rendimiento vs Dificultad</div>
+                <div class="chart-wrapper" style="position: relative; height: 280px;">
+                    <canvas id="difficultyPerformanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="src/js/core.js?v=1.0"></script>
+    <script src="src/js/db.js?v=6.1"></script>
+    <script src="src/js/ui.js?v=1.0"></script>
+    <script src="src/js/profile.js?v=1.0"></script>
+    <script src="src/js/app.js?v=4.4"></script>
+    <script src="src/js/auth-google.js?v=1.0"></script>
+    <script src="src/js/shared-init.js"></script>
+    <script src="src/js/page-init.js"></script>
+</body>
+</html>
     <script type="module">
         import { injectSpeedInsights } from 'https://cdn.jsdelivr.net/npm/@vercel/speed-insights@1/dist/index.js';
         injectSpeedInsights();

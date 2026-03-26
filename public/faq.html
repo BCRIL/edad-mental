@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ranking - Test de Edad Mental</title>
-    <meta name="description" content="Descubre quiénes tienen los mejores cerebros en nuestro ranking global de edad mental.">
+    <title>FAQ - Test de Edad Mental</title>
+    <meta name="description" content="Preguntas frecuentes sobre el test de edad mental. Resuelve todas tus dudas sobre el funcionamiento y resultados.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%238b5cf6'/%3E%3Cstop offset='100%25' stop-color='%2306b6d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='30' fill='%230f0c29'/%3E%3Cpath d='M32 14c-9.4 0-17 6.8-17 15.2 0 4.5 2.2 8.6 5.7 11.4v5.4c0 1.1.9 2 2 2h18.6c1.1 0 2-.9 2-2v-5.4c3.5-2.8 5.7-6.9 5.7-11.4C49 20.8 41.4 14 32 14zm-3.5 30v-2h7v2h-7zm9.2-5h-11.4c-3-2.3-4.8-5.8-4.8-9.8C21.5 22.5 26.2 18 32 18s10.5 4.5 10.5 11.2c0 4-1.8 7.5-4.8 9.8z' fill='url(%23g)'/%3E%3Cpath d='M28 26c0-1 .8-1.5 1.5-1.5s1.5.7 1.5 1.5-.7 2-1.5 2S28 27 28 26zm5 0c0-1 .7-1.5 1.5-1.5s1.5.7 1.5 1.5-.7 2-1.5 2-1.5-1-1.5-2z' fill='url(%23g)' opacity='.6'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%238b5cf6'/%3E%3Cstop offset='100%25' stop-color='%2306b6d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='30' fill='%230f0c29'/%3E%3Cpath d='M32 14c-9.4 0-17 6.8-17 15.2 0 4.5 2.2 8.6 5.7 11.4v5.4c0 1.1.9 2 2 2h18.6c1.1 0 2-.9 2-2v-5.4c3.5-2.8 5.7-6.9 5.7-11.4C49 20.8 41.4 14 32 14zm-3.5 30v-2h7v2h-7zm9.2-1h-11.4c-3-2.3-4.8-5.8-4.8-9.8C21.5 22.5 26.2 18 32 18s10.5 4.5 10.5 11.2c0 4-1.8 7.5-4.8 9.8z' fill='url(%23g)'/%3E%3Cpath d='M28 26c0-1 .8-1.5 1.5-1.5s1.5.7 1.5 1.5-.7 2-1.5 2S28 27 28 26zm5 0c0-1 .7-1.5 1.5-1.5s1.5.7 1.5 1.5-.7 2-1.5 2-1.5-1-1.5-2z' fill='url(%23g)' opacity='.6'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="src/styles/styles.css?v=4.2">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="manifest" href="/manifest.json">
@@ -26,9 +26,9 @@
             <nav class="nav-links">
                 <a href="/" class="nav-link" data-route="home"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> Inicio</a>
                 <a href="/entrenamiento" class="nav-link" data-route="training"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="m9 15 2 2 4-4"></path></svg> Entrenamiento</a>
-                <a href="/ranking" class="nav-link active-route" data-route="ranking"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"></path></svg> Ranking</a>
+                <a href="/ranking" class="nav-link" data-route="ranking"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"></path></svg> Ranking</a>
                 <a href="/estadisticas" class="nav-link" data-route="stats"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-4"></path></svg> Estadísticas</a>
-                <a href="/faq" class="nav-link" data-route="faq"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> FAQ</a>
+                <a href="/faq" class="nav-link active-route" data-route="faq"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> FAQ</a>
                 <a href="/perfil" class="nav-link" data-route="profile"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Mi Perfil</a>
             </nav>
             <div id="nav-auth-area" class="nav-auth-area">
@@ -95,48 +95,43 @@
         </div>
     </div>
 
-    <!-- RANKING CONTENT -->
-    <main class="app-container" id="app">
-        <!-- Auth gate for ranking -->
-        <div id="ranking-page-auth-gate" style="display:none; max-width:500px; margin:120px auto; text-align:center; padding:40px 20px;">
-            <div style="font-size:64px;margin-bottom:16px;">🛑</div>
-            <h2 style="font-family:var(--font-display);font-size:24px;margin-bottom:12px;color:var(--clr-text);">Ranking Privado</h2>
-            <p style="color:var(--clr-text-muted);font-size:14px;margin-bottom:24px;line-height:1.6;">Necesitas iniciar sesión para ver las puntuaciones de otros jugadores y comparar tu edad mental.</p>
-            <button class="btn btn-primary btn-glow" onclick="document.getElementById('auth-modal').style.display='flex'" style="font-size:15px;padding:12px 28px;">🔑 Iniciar Sesión</button>
+    <!-- FAQ CONTENT -->
+    <main class="app-container faq-page" id="app">
+        <div class="faq-page__hero">
+            <h1 class="faq-page__title">Preguntas frecuentes</h1>
+            <p class="faq-page__subtitle">Todo lo que suele preguntarse sobre el test, los resultados y el uso del sitio.</p>
         </div>
-
-        <div id="ranking-page-content" class="ranking-container" style="max-width: 800px; margin: 100px auto 40px; padding: 20px;">
-            <h1 class="ranking-title" style="font-family: var(--font-display); font-size: 36px; text-align: center; margin-bottom: 10px; background: linear-gradient(135deg, var(--clr-primary-light), var(--clr-accent-light)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
-                Top Mejores Cerebros</h1>
-            <p class="ranking-subtitle" id="ranking-count" style="text-align: center; color: var(--clr-text-muted); margin-bottom: 24px; font-size: 14px;"></p>
-
-            <!-- 🏆 PODIUM VISUAL (Top 3) -->
-            <div id="ranking-podium" style="display: flex; justify-content: center; align-items: flex-end; gap: 16px; margin-bottom: 40px; padding: 0 10px;">
-                <!-- Se rellenará dinámicamente -->
+        <div class="info-card faq-page__card">
+            <div class="faq-item">
+                <h3>¿Es científicamente preciso este test?</h3>
+                <p>Se inspira en tareas parecidas a las de baterías conocidas (por ejemplo, ideas del WAIS, Corsi o medidas de tiempo de reacción). Aun así, es una herramienta de entretenimiento educativo, no un diagnóstico clínico. Para una evaluación completa, consulta a un neuropsicólogo.</p>
             </div>
-            <div class="filter-tabs" id="filter-tabs" style="display: flex; gap: 8px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap;">
-                <button class="filter-tab active" data-filter="all" style="font-family: var(--font-body); font-weight: 600; font-size: 13px; padding: 8px 20px; border: 1px solid var(--clr-glass-border); border-radius: 999px; background: var(--clr-surface); color: var(--clr-text-muted); cursor: pointer; transition: all 0.2s;">Todas</button>
-                <button class="filter-tab" data-filter="easy" style="font-family: var(--font-body); font-weight: 600; font-size: 13px; padding: 8px 20px; border: 1px solid var(--clr-glass-border); border-radius: 999px; background: var(--clr-surface); color: var(--clr-text-muted); cursor: pointer; transition: all 0.2s;">🟢 Fácil</button>
-                <button class="filter-tab" data-filter="normal" style="font-family: var(--font-body); font-weight: 600; font-size: 13px; padding: 8px 20px; border: 1px solid var(--clr-glass-border); border-radius: 999px; background: var(--clr-surface); color: var(--clr-text-muted); cursor: pointer; transition: all 0.2s;">🔵 Normal</button>
-                <button class="filter-tab" data-filter="hard" style="font-family: var(--font-body); font-weight: 600; font-size: 13px; padding: 8px 20px; border: 1px solid var(--clr-glass-border); border-radius: 999px; background: var(--clr-surface); color: var(--clr-text-muted); cursor: pointer; transition: all 0.2s;">🔴 Difícil</button>
+            <div class="faq-item">
+                <h3>¿Por qué mi edad mental no coincide con mi edad real?</h3>
+                <p>La "edad mental" aquí es una estimación según tu rendimiento frente a promedios de referencia. Descanso, estrés, práctica y el propio dispositivo pueden influir. Ver un número distinto a tu edad cronológica es normal.</p>
             </div>
-            <table class="ranking-table" style="width: 100%; border-collapse: collapse; background: var(--clr-surface); backdrop-filter: blur(20px); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-card); border: 1px solid var(--clr-glass-border);">
-                <thead>
-                    <tr>
-                        <th style="padding: 16px 24px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); font-weight: 700; color: var(--clr-text-muted); font-size: 14px; text-transform: uppercase;">Posición</th>
-                        <th style="padding: 16px 24px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); font-weight: 700; color: var(--clr-text-muted); font-size: 14px; text-transform: uppercase;">Jugador</th>
-                        <th style="padding: 16px 24px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); font-weight: 700; color: var(--clr-text-muted); font-size: 14px; text-transform: uppercase;">Edad Mental</th>
-                        <th style="padding: 16px 24px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); font-weight: 700; color: var(--clr-text-muted); font-size: 14px; text-transform: uppercase;">Dificultad</th>
-                        <th style="padding: 16px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); font-weight: 700; color: var(--clr-text-muted); font-size: 14px; text-transform: uppercase;">Liga</th>
-                    </tr>
-                </thead>
-                <tbody id="ranking-body">
-                    <tr>
-                        <td colspan="5" class="loading-spinner" style="text-align: center; padding: 40px; color: var(--clr-text-muted);">Cargando puntuaciones...</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="faq-item">
+                <h3>¿Puedo mejorar mi edad mental?</h3>
+                <p>El cerebro cambia con el entrenamiento, el ejercicio, el sueño y la estimulación. Repetir el test de vez en cuando puede servir para ver tendencias, no para obsesionarse con un único número.</p>
+            </div>
+            <div class="faq-item">
+                <h3>¿Qué factores afectan al resultado?</h3>
+                <p>Cansancio, hora del día, nervios, distracciones y la velocidad de tu pantalla pueden variar tiempos y puntuaciones. Para un resultado más estable, haz el test tranquilo y descansado.</p>
+            </div>
+            <div class="faq-item">
+                <h3>¿Qué significan los percentiles?</h3>
+                <p>Indican qué parte de los resultados guardados quedan por debajo del tuyo. Un percentil alto no "certifica" inteligencia; solo sitúa tu puntuación respecto a quienes han jugado aquí.</p>
+            </div>
+            <div class="faq-item">
+                <h3>¿Cuántas veces puedo realizar el test?</h3>
+                <p>Las veces que quieras. Si repites mucho seguido, puede aparecer un efecto de práctica que sube artificialmente el resultado.</p>
+            </div>
+            <div class="faq-item">
+                <h3>¿Por qué el test tiene 5 pruebas si hay más juegos?</h3>
+                <p>La biblioteca incluye varios tipos de ejercicios; cada día el test elige <strong>5 al azar</strong> para mantener la sesión corta y comparable. En <strong>Entrenamiento</strong> puedes practicar los siete sin límite.</p>
+            </div>
         </div>
+        <p class="faq-page__back"><a href="/" class="faq-page__back-link" data-route="home">← Volver al inicio</a></p>
     </main>
 
     <!-- Scripts -->
