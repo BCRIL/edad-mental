@@ -7,21 +7,28 @@
         const path = window.location.pathname;
 
         if (path.includes('/entrenamiento')) {
-            loadTrainingPageContent();
+            initTrainingPage();
         } else if (path.includes('/perfil')) {
-            loadProfilePageContent();
+            initProfilePage();
         }
     }
 
     // ═══════════════════════════════════════════════════════════
     // TRAINING PAGE
     // ═══════════════════════════════════════════════════════════
-    function loadTrainingPageContent() {
-        // Las pantallas de entrenamiento están en el index.html
-        // Cargamos solo lo necesario para entrenamientos
+    function initTrainingPage() {
+        // Mostrar el grid de entrenamientos
+        setTimeout(() => {
+            if (typeof renderTrainingMode === 'function') {
+                renderTrainingMode();
+            }
+            // También cargar las pantallas de juegos para cuando sean necesarias
+            loadGameScreens();
+        }, 100);
+    }
 
-        // Esta es una simplificación - idealmente traerías el HTML de index.html
-        const trainingScreensHTML = `
+    function loadGameScreens() {
+        const gameScreensHTML = `
             <!-- SCREEN: Game Instructions -->
             <section class="screen" id="screen-instructions" style="display:none;">
                 <div class="card instruction-card">
@@ -40,7 +47,7 @@
             <section class="screen" id="screen-game-reaction" style="display:none;">
                 <div class="card game-card game-reaction">
                     <div class="game-header">
-                        <span class="game-badge-small">Prueba 1/5 — Reacción</span>
+                        <span class="game-badge-small">Entrenamiento — Reacción</span>
                     </div>
                     <div class="reaction-zone" id="reaction-zone">
                         <div class="reaction-content" id="reaction-content">
@@ -55,8 +62,8 @@
             <section class="screen" id="screen-game-numbers" style="display:none;">
                 <div class="card game-card">
                     <div class="game-header">
-                        <span class="game-badge-small">Prueba 2/5 — Números</span>
-                       <span class="game-level" id="number-level">Nivel 1</span>
+                        <span class="game-badge-small">Entrenamiento — Números</span>
+                        <span class="game-level" id="number-level">Nivel 1</span>
                     </div>
                     <div class="number-display-area">
                         <div class="number-display" id="number-display">384</div>
@@ -75,8 +82,8 @@
             <section class="screen" id="screen-game-patterns" style="display:none;">
                 <div class="card game-card">
                     <div class="game-header">
-                        <span class="game-badge-small">Prueba 3/5 — Patrones</span>
-                        <span class="game-timer" id="pattern-timer">30s</span>
+                        <span class="game-badge-small">Entrenamiento — Patrones</span>
+                        <span class="game-timer" id="pattern-timer">∞</span>
                     </div>
                     <p class="game-prompt" id="pattern-prompt">¿Qué figura completa el patrón?</p>
                     <div class="pattern-sequence" id="pattern-sequence"></div>
@@ -89,8 +96,8 @@
             <section class="screen" id="screen-game-math" style="display:none;">
                 <div class="card game-card">
                     <div class="game-header">
-                        <span class="game-badge-small">Prueba 4/5 — Matemáticas</span>
-                        <span class="game-timer" id="math-timer">30s</span>
+                        <span class="game-badge-small">Entrenamiento — Matemáticas</span>
+                        <span class="game-timer" id="math-timer">∞</span>
                     </div>
                     <div class="math-problem" id="math-problem">12 + 7 = ?</div>
                     <div class="math-options" id="math-options"></div>
@@ -102,7 +109,7 @@
             <section class="screen" id="screen-game-sequence" style="display:none;">
                 <div class="card game-card">
                     <div class="game-header">
-                        <span class="game-badge-small">Prueba 5/5 — Secuencia</span>
+                        <span class="game-badge-small">Entrenamiento — Secuencia</span>
                         <span class="game-level" id="simon-level">Nivel 1</span>
                     </div>
                     <p class="game-prompt" id="simon-prompt">Observa la secuencia...</p>
@@ -124,8 +131,8 @@
             <section class="screen" id="screen-game-colors" style="display:none;">
                 <div class="card game-card">
                     <div class="game-header">
-                        <span class="game-badge-small">Percepción de Colores</span>
-                        <span class="game-timer" id="colors-timer">30s</span>
+                        <span class="game-badge-small">Entrenamiento — Colores</span>
+                        <span class="game-timer" id="colors-timer">∞</span>
                     </div>
                     <p class="game-prompt" id="colors-prompt">¿De qué COLOR está pintada la palabra?</p>
                     <div class="colors-display" id="colors-display"></div>
@@ -138,80 +145,31 @@
             <section class="screen" id="screen-game-spatial" style="display:none;">
                 <div class="card game-card">
                     <div class="game-header">
-                        <span class="game-badge-small">Memoria Espacial</span>
+                        <span class="game-badge-small">Entrenamiento — Espacial</span>
                         <span class="game-level" id="spatial-level">Nivel 1</span>
                     </div>
                     <p class="game-prompt" id="spatial-prompt">Memoriza las celdas...</p>
                     <div class="spatial-grid" id="spatial-grid" style="display:grid; gap:12px; margin:24px auto; max-width:280px; width:100%;"></div>
                 </div>
             </section>
-
-            <!-- SCREEN: Results -->
-            <section class="screen" id="screen-results" style="display:none;">
-                <div class="card results-card">
-                    <div class="results-header">
-                        <div class="results-icon"></div>
-                        <h2 class="results-label">Tu Edad Mental es</h2>
-                        <div class="results-age" id="results-age">24</div>
-                        <p class="results-age-label">años</p>
-                    </div>
-                    <div class="results-percentile" id="results-percentile">
-                        ¡Tu cerebro funciona mejor que el <strong id="percentile-num">78</strong>% de los usuarios!
-                    </div>
-                    <div class="results-breakdown">
-                        <h3 class="breakdown-title">Desglose por Prueba</h3>
-                        <div class="breakdown-item">
-                            <span class="breakdown-label">Reacción</span>
-                            <div class="breakdown-bar-bg"><div class="breakdown-bar" id="bar-reaction"></div></div>
-                            <span class="breakdown-value" id="val-reaction">--</span>
-                        </div>
-                        <div class="breakdown-item">
-                            <span class="breakdown-label">Números</span>
-                            <div class="breakdown-bar-bg"><div class="breakdown-bar" id="bar-numbers"></div></div>
-                            <span class="breakdown-value" id="val-numbers">--</span>
-                        </div>
-                        <div class="breakdown-item">
-                            <span class="breakdown-label">Patrones</span>
-                            <div class="breakdown-bar-bg"><div class="breakdown-bar" id="bar-patterns"></div></div>
-                            <span class="breakdown-value" id="val-patterns">--</span>
-                        </div>
-                        <div class="breakdown-item">
-                            <span class="breakdown-label">Matemáticas</span>
-                            <div class="breakdown-bar-bg"><div class="breakdown-bar" id="bar-math"></div></div>
-                            <span class="breakdown-value" id="val-math">--</span>
-                        </div>
-                        <div class="breakdown-item">
-                            <span class="breakdown-label">Secuencia</span>
-                            <div class="breakdown-bar-bg"><div class="breakdown-bar" id="bar-sequence"></div></div>
-                            <span class="breakdown-value" id="val-sequence">--</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
         `;
 
         const container = document.getElementById('training-screens-container');
         if (container) {
-            container.innerHTML = trainingScreensHTML;
-            // Inicializar el modo entrenamiento después de que se inyecte el HTML
-            setTimeout(() => {
-                if (typeof initUI === 'function') {
-                    // Los scripts de app.js manejarán la lógica
-                }
-            }, 100);
+            container.innerHTML = gameScreensHTML;
         }
     }
 
     // ═══════════════════════════════════════════════════════════
     // PROFILE PAGE
     // ═══════════════════════════════════════════════════════════
-    function loadProfilePageContent() {
-        // El perfil será cargado por profile.js
-        // Solo aseguramos que el contenedor exista
-        const container = document.getElementById('profile-content-container');
-        if (container) {
-            // Se rellenará vía loadAndSyncProfile()
-        }
+    function initProfilePage() {
+        // El perfil ya está cargado en el HTML, solo necesitamos inicializarlo
+        setTimeout(() => {
+            if (typeof loadAndSyncProfile === 'function') {
+                loadAndSyncProfile();
+            }
+        }, 100);
     }
 
     // Iniciar cuando el DOM esté listo

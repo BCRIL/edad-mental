@@ -111,10 +111,16 @@
         </div>
     </div>
 
-    <!-- TRAINING CONTENT - Cargar desde index.html -->
-    <main class="app-container" id="app">
-        <!-- Las pantallas se cargarán aquí vía iframe o script include -->
-        <div id="training-screens-container" style="min-height: 100vh;"></div>
+    <!-- TRAINING CONTENT -->
+    <main class="app-container app-container--wide training-page-main" id="app">
+        <div class="card training-page-hero">
+            <h1 class="training-page-title">Entrenamiento cognitivo</h1>
+            <p class="training-page-lead">Elige un juego para practicar sin presión. Los resultados no se guardan en tu historial. Durante el juego puedes pulsar <strong>Volver</strong> para regresar aquí.</p>
+        </div>
+        <div id="zen-grid-training" class="training-games-list" data-training-entry="training"></div>
+
+        <!-- Las pantallas de los juegos se cargarán aquí cuando sea necesario -->
+        <div id="training-screens-container" style="display: none;"></div>
     </main>
 
     <!-- Scripts -->

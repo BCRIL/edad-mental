@@ -96,9 +96,83 @@
     </div>
 
     <!-- PROFILE CONTENT -->
-    <main class="app-container" id="app" style="padding: 40px 20px; max-width: 1200px; margin: 0 auto;">
-        <div id="profile-content-container" style="min-height: 100vh;">
-            <!-- Profile content será cargado aquí -->
+    <main class="app-container" id="app">
+        <!-- Auth gate for profile -->
+        <div id="profile-auth-gate" class="profile-gate" style="display:none;">
+            <div class="profile-gate__icon" aria-hidden="true">🔒</div>
+            <h2 class="profile-gate__title">Perfil</h2>
+            <p class="profile-gate__text">Inicia sesión para ver tu evolución, racha e historial en este dispositivo.</p>
+            <button type="button" class="btn btn-profile-login" onclick="document.getElementById('auth-modal').style.display='flex'">Iniciar sesión</button>
+        </div>
+
+        <!-- Profile content (hidden when not logged in) -->
+        <div id="profile-content" class="profile-page">
+            <header class="profile-page__header">
+                <h1 class="profile-page__title">Tu perfil</h1>
+                <p class="profile-page__lead">Resumen de tu actividad y progreso cognitivo.</p>
+            </header>
+
+            <div id="profile-stats-row" class="profile-stats-grid">
+                <div class="profile-stat-card">
+                    <div class="profile-stat-card__label">Liga</div>
+                    <div id="profile-league-icon" class="profile-stat-card__icon-lg">--</div>
+                    <div id="profile-league-name" class="profile-stat-card__value">Sin rango</div>
+                </div>
+                <div class="profile-stat-card">
+                    <div class="profile-stat-card__label">Racha 🔥</div>
+                    <div id="profile-streak" class="profile-stat-card__num profile-stat-card__num--accent">0</div>
+                    <div class="profile-stat-card__hint">días seguidos</div>
+                </div>
+                <div class="profile-stat-card">
+                    <div class="profile-stat-card__label">Mejor edad</div>
+                    <div id="profile-best" class="profile-stat-card__num profile-stat-card__num--primary">--</div>
+                    <div class="profile-stat-card__hint">años mentales</div>
+                </div>
+                <div class="profile-stat-card">
+                    <div class="profile-stat-card__label">Edad promedio</div>
+                    <div id="profile-avg" class="profile-stat-card__num profile-stat-card__num--info">--</div>
+                    <div class="profile-stat-card__hint">años mentales</div>
+                </div>
+                <div class="profile-stat-card">
+                    <div class="profile-stat-card__label">Racha máxima</div>
+                    <div id="profile-highest-streak" class="profile-stat-card__num profile-stat-card__num--warning">0</div>
+                    <div class="profile-stat-card__hint">días máximo</div>
+                </div>
+                <div class="profile-stat-card">
+                    <div class="profile-stat-card__label">Tests</div>
+                    <div id="profile-total" class="profile-stat-card__num profile-stat-card__num--success">0</div>
+                    <div class="profile-stat-card__hint">partidas</div>
+                </div>
+            </div>
+
+            <div class="profile-charts-grid">
+                <div class="profile-panel">
+                    <h3 class="profile-panel__title">Evolución de edad mental</h3>
+                    <div class="profile-panel__chart">
+                        <canvas id="evolutionChart"></canvas>
+                    </div>
+                </div>
+                <div class="profile-panel">
+                    <h3 class="profile-panel__title">Fortalezas (radar)</h3>
+                    <div class="profile-panel__chart">
+                        <canvas id="profileRadarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div id="profile-no-data" class="profile-empty" style="display:none;">Aún no hay resultados guardados. ¡Completa un test!</div>
+
+            <div class="profile-panel profile-panel--badges">
+                <h3 class="profile-panel__title">Insignias</h3>
+                <div id="profile-badges" class="profile-badges"></div>
+            </div>
+
+            <div class="profile-panel">
+                <h3 class="profile-panel__title">Historial</h3>
+                <div id="profile-history" class="profile-history">
+                    <p class="profile-history__empty">Aún no tienes partidas guardadas.</p>
+                </div>
+            </div>
         </div>
     </main>
 
