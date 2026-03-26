@@ -193,13 +193,14 @@
             Chart.defaults.color = '#94a3b8';
             Chart.defaults.font.family = "'Inter', sans-serif";
 
-            // Datos por defecto
-            let ageData = [12, 35, 25, 18, 7, 3];
-            let radarData = [75, 60, 65, 55, 78];
-            let archetypeData = [25, 35, 20, 20]; // Estratega, Intuitivo, Analítico, Equilibrado
-            let difficultyData = { easy: 32, normal: 28, hard: 35 };
+            // Variables para almacenar datos
+            let ageData = [0, 0, 0, 0, 0, 0];
+            let radarData = [0, 0, 0, 0, 0];
+            let archetypeData = [0, 0, 0, 0]; // Estratega, Intuitivo, Analítico, Equilibrado
+            let difficultyData = { easy: 0, normal: 0, hard: 0 };
             let totalPlayers = 0;
-            let avgBrainAge = 28;
+            let avgBrainAge = 0;
+            let hasRealData = false;
 
             try {
                 // Obtener datos de la base de datos
@@ -208,9 +209,7 @@
 
                 if (!error && data && data.length > 0) {
                     console.log(`✅ Datos cargados: ${data.length} registros`);
-
-                    // Resetear contadores
-                    ageData = [0, 0, 0, 0, 0, 0];
+                    hasRealData = true;
                     totalPlayers = data.length;
 
                     // Calcular distribución de edades mentales
@@ -248,7 +247,7 @@
                         Math.round(sumS / count)
                     ];
 
-                    // Calcular arquetipos basados en fortalezas
+                    // Calcular arquetipos basados en fortalezas reales
                     const arquetipos = [0, 0, 0, 0]; // [Estratega, Intuitivo, Analítico, Equilibrado]
                     data.forEach(row => {
                         const scores = [
@@ -275,22 +274,52 @@
 
                     archetypeData = arquetipos;
 
-                    console.log('📈 Estadísticas calculadas:', { totalPlayers, avgBrainAge, arquetipos });
+                    // Calcular rendimiento por dificultad desde datos reales
+                    const easyScores = [], normalScores = [], hardScores = [];
+                    data.forEach(row => {
+                        if (row.difficulty === 'easy') easyScores.push(row.brain_age);
+                        else if (row.difficulty === 'normal') normalScores.push(row.brain_age);
+                        else if (row.difficulty === 'hard') hardScores.push(row.brain_age);
+                    });
+
+                    difficultyData = {
+                        easy: easyScores.length > 0 ? Math.round(easyScores.reduce((a, b) => a + b) / easyScores.length) : avgBrainAge - 5,
+                        normal: normalScores.length > 0 ? Math.round(normalScores.reduce((a, b) => a + b) / normalScores.length) : avgBrainAge,
+                        hard: hardScores.length > 0 ? Math.round(hardScores.reduce((a, b) => a + b) / hardScores.length) : avgBrainAge + 5
+                    };
+
+                    console.log('📈 Estadísticas reales calculadas:', {
+                        totalPlayers,
+                        avgBrainAge,
+                        arquetipos: archetypeData,
+                        difficulty: difficultyData
+                    });
 
                 } else {
-                    console.warn('⚠️ No hay datos disponibles, usando datos de ejemplo');
+                    console.warn('⚠️ No hay datos disponibles en la base de datos');
+                    hasRealData = false;
+                    totalPlayers = 0;
+                    avgBrainAge = 0;
                 }
             } catch (err) {
                 console.error('❌ Error cargando estadísticas:', err);
+                hasRealData = false;
             }
 
             // Actualizar KPIs
-            document.getElementById('stats-total-players').textContent = totalPlayers.toLocaleString();
-            document.getElementById('stats-avg-age').textContent = avgBrainAge + ' años';
+            if (hasRealData) {
+                document.getElementById('stats-total-players').textContent = totalPlayers.toLocaleString();
+                document.getElementById('stats-avg-age').textContent = avgBrainAge + ' años';
 
-            const archetypeNames = ['Estratega', 'Intuitivo', 'Analítico', 'Equilibrado'];
-            const dominantIndex = archetypeData.indexOf(Math.max(...archetypeData));
-            document.getElementById('stats-top-archetype').textContent = archetypeNames[dominantIndex];
+                const archetypeNames = ['Estratega', 'Intuitivo', 'Analítico', 'Equilibrado'];
+                const maxArchetype = Math.max(...archetypeData);
+                const dominantIndex = maxArchetype > 0 ? archetypeData.indexOf(maxArchetype) : 3;
+                document.getElementById('stats-top-archetype').textContent = archetypeNames[dominantIndex];
+            } else {
+                document.getElementById('stats-total-players').textContent = '0';
+                document.getElementById('stats-avg-age').textContent = 'Sin datos';
+                document.getElementById('stats-top-archetype').textContent = 'Sin datos';
+            }
 
             // 📊 GRÁFICO 1: Distribución de Edad Mental
             const ctxAge = document.getElementById('ageChart').getContext('2d');
@@ -299,8 +328,8 @@
                 data: {
                     labels: ['< 20', '20-25', '26-30', '31-40', '41-50', '51+'],
                     datasets: [{
-                        label: 'Usuarios',
-                        data: ageData,
+                        label: hasRealData ? 'Usuarios' : 'Sin datos disponibles',
+                        data: hasRealData ? ageData : [0, 0, 0, 0, 0, 0],
                         backgroundColor: [
                             'rgba(34, 197, 94, 0.8)',   // Verde - Excelente
                             'rgba(59, 130, 246, 0.8)',  // Azul - Muy bueno
@@ -328,7 +357,11 @@
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
-                                label: (context) => `${context.parsed.y} usuarios (${Math.round(context.parsed.y / totalPlayers * 100)}%)`
+                                label: (context) => {
+                                    if (!hasRealData) return 'Sin datos disponibles';
+                                    const percentage = totalPlayers > 0 ? Math.round(context.parsed.y / totalPlayers * 100) : 0;
+                                    return `${context.parsed.y} usuarios (${percentage}%)`;
+                                }
                             }
                         }
                     },
@@ -353,8 +386,8 @@
                 data: {
                     labels: ['Reacción', 'Memoria Nums.', 'Patrones', 'Matemáticas', 'Secuencia'],
                     datasets: [{
-                        label: 'Puntuación Media',
-                        data: radarData,
+                        label: hasRealData ? 'Puntuación Media' : 'Sin datos',
+                        data: hasRealData ? radarData : [0, 0, 0, 0, 0],
                         backgroundColor: 'rgba(6, 182, 212, 0.2)',
                         borderColor: 'rgba(6, 182, 212, 1)',
                         pointBackgroundColor: 'rgba(6, 182, 212, 1)',
@@ -378,6 +411,14 @@
                         legend: {
                             position: 'bottom',
                             labels: { color: '#f1f5f9', font: { size: 12 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    if (!hasRealData) return 'Sin datos disponibles';
+                                    return `${context.dataset.label}: ${context.parsed.r}`;
+                                }
+                            }
                         }
                     }
                 }
@@ -390,7 +431,7 @@
                 data: {
                     labels: ['🎯 Estratega', '🎨 Intuitivo', '🔬 Analítico', '⚖️ Equilibrado'],
                     datasets: [{
-                        data: archetypeData,
+                        data: hasRealData ? archetypeData : [1, 1, 1, 1], // Mostrar distribución equilibrada si no hay datos
                         backgroundColor: [
                             'rgba(239, 68, 68, 0.8)',   // Rojo - Estratega
                             'rgba(139, 92, 246, 0.8)',  // Púrpura - Intuitivo
@@ -421,6 +462,7 @@
                         tooltip: {
                             callbacks: {
                                 label: (context) => {
+                                    if (!hasRealData) return `${context.label}: Sin datos disponibles`;
                                     const total = context.dataset.data.reduce((a, b) => a + b);
                                     const percentage = Math.round(context.parsed / total * 100);
                                     return `${context.label}: ${context.parsed} usuarios (${percentage}%)`;
@@ -439,8 +481,8 @@
                 data: {
                     labels: ['Fácil', 'Normal', 'Difícil'],
                     datasets: [{
-                        label: 'Edad Mental Promedio',
-                        data: [difficultyData.easy, difficultyData.normal, difficultyData.hard],
+                        label: hasRealData ? 'Edad Mental Promedio' : 'Sin datos',
+                        data: hasRealData ? [difficultyData.easy, difficultyData.normal, difficultyData.hard] : [0, 0, 0],
                         backgroundColor: 'rgba(245, 158, 11, 0.2)',
                         borderColor: 'rgba(245, 158, 11, 1)',
                         pointBackgroundColor: 'rgba(245, 158, 11, 1)',
@@ -461,15 +503,18 @@
                         },
                         tooltip: {
                             callbacks: {
-                                label: (context) => `Edad Mental: ${context.parsed.y} años`
+                                label: (context) => {
+                                    if (!hasRealData) return 'Sin datos disponibles';
+                                    return `Edad Mental: ${context.parsed.y} años`;
+                                }
                             }
                         }
                     },
                     scales: {
                         y: {
                             beginAtZero: false,
-                            min: 15,
-                            max: 50,
+                            min: hasRealData ? Math.max(15, Math.min(...Object.values(difficultyData)) - 5) : 0,
+                            max: hasRealData ? Math.max(...Object.values(difficultyData)) + 5 : 50,
                             grid: { color: 'rgba(255,255,255,0.05)' },
                             ticks: {
                                 color: '#94a3b8',
@@ -484,7 +529,11 @@
                 }
             });
 
-            console.log('✅ Todos los gráficos de estadísticas inicializados');
+            if (hasRealData) {
+                console.log('✅ Gráficos inicializados con datos reales de la base de datos');
+            } else {
+                console.log('⚠️ Gráficos inicializados en modo sin datos - esperando datos reales');
+            }
         });
     </script>
 </body>
