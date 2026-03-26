@@ -14,6 +14,18 @@
     let currentDifficulty = 'normal';
     let isTrainingMode = false;
     let trainingScoreHistory = [];
+    let currentRankingFilter = 'all';
+    let statsLoaded = false;
+
+    // SPA Views mapping
+    const spaViews = {
+        home: document.getElementById('screen-welcome'),
+        ranking: document.getElementById('screen-ranking'),
+        stats: document.getElementById('screen-stats'),
+        profile: document.getElementById('screen-profile'),
+        training: document.getElementById('screen-training'),
+        faq: document.getElementById('screen-faq')
+    };
 
     // ── Difficulty Config (dramatic differences per level) ──
     const DIFF = {
@@ -2615,7 +2627,8 @@
         configurable: false
     });
 
-})();
+
+
 
 
     
@@ -2636,11 +2649,11 @@ function escapeHTML(str) {
         const tbody = document.getElementById('ranking-body');
         const podium = document.getElementById('ranking-podium');
 
-        // En p├íginas individuales, mostrar auth gate si no hay autenticaci├│n
+        // En páginas individuales, mostrar auth gate si no hay autenticación
         const authGate = document.getElementById('ranking-page-auth-gate');
         const rankingContent = document.getElementById('ranking-page-content');
 
-        // Verificar si el usuario est├í autenticado
+        // Verificar si el usuario está autenticado
         if (typeof getCurrentUser === 'function') {
             const user = await getCurrentUser();
             if (!user && authGate && rankingContent) {
@@ -2673,7 +2686,7 @@ function escapeHTML(str) {
 
         const countEl = document.getElementById('ranking-count');
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 30px;">A├║n no hay puntuaciones en esta categor├¡a. ┬íS├® el primero!</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 30px;">Aún no hay puntuaciones en esta categoría. ¡Sé el primero!</td></tr>';
             if (countEl) countEl.textContent = '';
             return;
         }
@@ -2683,19 +2696,19 @@ function escapeHTML(str) {
         // ­ƒÅå Render Podium (Top 3)
         if (podium && data.length > 0) {
             const top3 = data.slice(0, 3);
-            const diffMap = { easy: 'F├ícil', normal: 'Normal', hard: 'Dif├¡cil' };
+            const diffMap = { easy: 'Fácil', normal: 'Normal', hard: 'Difícil' };
 
             // Reorder for visual podium: 2nd, 1st, 3rd
             const podiumOrder = [];
-            if (top3[1]) podiumOrder.push({ ...top3[1], pos: 2, height: '120px', bg: 'rgba(226, 232, 240, 0.1)', border: '#94a3b8', medal: '­ƒÑê' });
-            if (top3[0]) podiumOrder.push({ ...top3[0], pos: 1, height: '150px', bg: 'rgba(234, 179, 8, 0.15)', border: '#eab308', medal: '­ƒÑç' });
-            if (top3[2]) podiumOrder.push({ ...top3[2], pos: 3, height: '100px', bg: 'rgba(180, 83, 9, 0.1)', border: '#b45309', medal: '­ƒÑë' });
+            if (top3[1]) podiumOrder.push({ ...top3[1], pos: 2, height: '120px', bg: 'rgba(226, 232, 240, 0.1)', border: '#94a3b8', medal: '🥈' });
+            if (top3[0]) podiumOrder.push({ ...top3[0], pos: 1, height: '150px', bg: 'rgba(234, 179, 8, 0.15)', border: '#eab308', medal: '🥇' });
+            if (top3[2]) podiumOrder.push({ ...top3[2], pos: 3, height: '100px', bg: 'rgba(180, 83, 9, 0.1)', border: '#b45309', medal: '🥉' });
 
             podium.innerHTML = podiumOrder.map(p => `
                 <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;">
                     <div style="font-size: 24px; margin-bottom: 4px;">${p.medal}</div>
                     <div style="font-size: 14px; font-weight: 700; color: #fff; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80px;">${escapeHTML(p.player_name)}</div>
-                    <div style="font-size: 12px; color: var(--clr-text-muted); margin-bottom: 8px;">${p.brain_age} a├▒os</div>
+                    <div style="font-size: 12px; color: var(--clr-text-muted); margin-bottom: 8px;">${p.brain_age} años</div>
                     <div style="width: 100%; height: ${p.height}; background: ${p.bg}; border: 2px solid ${p.border}; border-bottom: none; border-radius: 12px 12px 0 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 24px; font-weight: 900; color: ${p.border};">
                         #${p.pos}
                     </div>
@@ -2715,22 +2728,22 @@ function escapeHTML(str) {
             // No medals since they are in the podium view
 
             const diffMap = {
-                easy: { label: 'F├ícil', cls: 'easy' },
+                easy: { label: 'Fácil', cls: 'easy' },
                 normal: { label: 'Normal', cls: 'normal' },
-                hard: { label: 'Dif├¡cil', cls: 'hard' }
+                hard: { label: 'Difícil', cls: 'hard' }
             };
             const diff = diffMap[row.difficulty] || diffMap.normal;
 
             // Visual Gamification Demo League
-            let leagueIcon = '­ƒÑë'; let leagueName = 'Bronce'; let leagueColor = '#b45309';
-            if (pos <= 5 || index <= 2) { leagueIcon = '­ƒÆÄ'; leagueName = 'Diamante'; leagueColor = '#06b6d4'; }
-            else if (pos <= 20) { leagueIcon = '­ƒÑç'; leagueName = 'Oro'; leagueColor = '#f59e0b'; }
-            else if (pos <= 50) { leagueIcon = '­ƒÑê'; leagueName = 'Plata'; leagueColor = '#94a3b8'; }
+            let leagueIcon = '🥉'; let leagueName = 'Bronce'; let leagueColor = '#b45309';
+            if (pos <= 5 || index <= 2) { leagueIcon = '💎'; leagueName = 'Diamante'; leagueColor = '#06b6d4'; }
+            else if (pos <= 20) { leagueIcon = '🥇'; leagueName = 'Oro'; leagueColor = '#f59e0b'; }
+            else if (pos <= 50) { leagueIcon = '🥈'; leagueName = 'Plata'; leagueColor = '#94a3b8'; }
 
             tr.innerHTML = `
                 <td class="${posClass}">#${pos}</td>
                 <td class="rank-name">${escapeHTML(row.player_name)}</td>
-                <td class="rank-age">${row.brain_age} a├▒os</td>
+                <td class="rank-age">${row.brain_age} años</td>
                 <td><span class="diff-badge ${diff.cls}">${diff.label}</span></td>
                 <td style="text-align:center;"><span style="background:${leagueColor}40; color:${leagueColor}; padding:4px 10px; border-radius:12px; font-weight:700; font-size:12px; border:1px solid ${leagueColor}60;">${leagueIcon} ${leagueName}</span></td>
             `;
@@ -2772,7 +2785,7 @@ function escapeHTML(str) {
                     else if (row.difficulty === 'hard') { diffPerformance[2] += row.brain_age; diffCounts[2]++; }
                     else { diffPerformance[1] += row.brain_age; diffCounts[1]++; }
 
-                    // Archetype determination (Simulaci├│n por row de DB si no hay campo)
+                    // Archetype determination (Simulación por row de DB si no hay campo)
                     const maxS = Math.max(row.reaction_score || 0, row.numbers_score || 0, row.patterns_score || 0, row.math_score || 0);
                     if (maxS > 80) archetypeData[0]++;
                     else if (maxS > 60) archetypeData[1]++;
@@ -2815,9 +2828,9 @@ function escapeHTML(str) {
         const topArchEl = document.getElementById('stats-top-archetype');
 
         if (totalPlayersEl) totalPlayersEl.textContent = totalCount;
-        if (avgAgeEl) avgAgeEl.textContent = avgAge + ' a├▒os';
+        if (avgAgeEl) avgAgeEl.textContent = avgAge + ' años';
         if (topArchEl) {
-            const arches = ['Francotirador ­ƒÄ»', 'Ajedrecista ÔÖƒ´©Å', 'Calculadora ­ƒº«', 'Equilibrada ÔÜû´©Å'];
+            const arches = ['Francotirador 🎯', 'Ajedrecista ♟️', 'Calculadora 🧮', 'Equilibrada ⚖️'];
             const maxIdx = archetypeData.indexOf(Math.max(...archetypeData));
             topArchEl.textContent = arches[maxIdx];
         }
@@ -2848,9 +2861,9 @@ function escapeHTML(str) {
             new Chart(ctxRadar.getContext('2d'), {
                 type: 'radar',
                 data: {
-                    labels: ['Reacci├│n', 'Memoria Nums.', 'Patrones', 'Mates', 'Secuencia'],
+                    labels: ['Reacción', 'Memoria Nums.', 'Patrones', 'Mates', 'Secuencia'],
                     datasets: [{
-                        label: 'Puntuaci├│n Media',
+                        label: 'Puntuación Media',
                         data: radarData,
                         backgroundColor: 'rgba(6, 182, 212, 0.2)',
                         borderColor: 'rgba(6, 182, 212, 1)',
@@ -2889,7 +2902,7 @@ function escapeHTML(str) {
             new Chart(ctxDiff.getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: ['F├ícil', 'Normal', 'Dif├¡cil'],
+                    labels: ['Fácil', 'Normal', 'Difícil'],
                     datasets: [{
                         label: 'Edad Mental Media',
                         data: finalPerformance,
@@ -3008,3 +3021,12 @@ function escapeHTML(str) {
         });
 
         // Handle back/forward buttons
+        window.addEventListener('popstate', (e) => {
+            if (e.state && e.state.path) navigate(e.state.path, false);
+            else navigate(window.location.pathname, false);
+        });
+    }
+
+    setupRouter();
+
+})();
