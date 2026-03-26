@@ -137,11 +137,31 @@
         }
         const appMainExit = document.getElementById('app');
         if (appMainExit) appMainExit.classList.remove('training-bar-pad');
-        if (trainingEntryView === 'training') {
-            navigate('/entrenamiento');
+
+        // Detectar si estamos en SPA o página individual
+        const isSPA = document.getElementById('view-welcome') !== null;
+
+        if (isSPA) {
+            // Estamos en index.html - usar router SPA
+            if (trainingEntryView === 'training') {
+                navigate('/entrenamiento');
+            } else {
+                navigate('/');
+                setTimeout(() => showScreen('welcome'), 330);
+            }
         } else {
-            navigate('/');
-            setTimeout(() => showScreen('welcome'), 330);
+            // Estamos en página individual - ocultar game screens y mostrar lista
+            const screens = ['screen-instructions', 'screen-game-reaction', 'screen-game-numbers',
+                'screen-game-patterns', 'screen-game-math', 'screen-game-sequence',
+                'screen-game-colors', 'screen-game-spatial'];
+            screens.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+
+            // Mostrar la lista de entrenamientos nuevamente
+            const trainingList = document.querySelector('.training-page-main');
+            if (trainingList) trainingList.style.display = 'block';
         }
     }
 
@@ -2587,13 +2607,21 @@
     window.addEventListener('load', () => {
         initBgParticles();
         loadPlayerCount();
-        setupRouter();
+
+        // Solo configurar router SPA si estamos en index.html (tiene todos los views)
+        const isSPA = document.getElementById('view-welcome') !== null;
+
+        if (isSPA) {
+            // Estamos en index.html - usar router SPA
+            setupRouter();
+            navigate(window.location.pathname, false);
+        }
+
         setupPhase4Buttons();
         checkDuelChallenge();
         renderDailyTestsInfo();
         renderTrainingMode();
         renderDailyGamesList();
-        navigate(window.location.pathname, false);
 
         // Clear history button
         const btnClearHistory = document.getElementById('btn-clear-history');
@@ -2932,8 +2960,15 @@
                     games[0] = { ...gamesPool[idx], id: games[0].id };
                     const go = () => showInstructions(currentGame);
                     if (entry === 'training') {
-                        navigate('/');
-                        setTimeout(go, 330);
+                        // Si estamos en página individual de entrenamiento, no navegar
+                        const isSPA = document.getElementById('view-welcome') !== null;
+                        if (isSPA) {
+                            navigate('/');
+                            setTimeout(go, 330);
+                        } else {
+                            // Página individual - ejecutar directamente
+                            go();
+                        }
                     } else {
                         go();
                     }

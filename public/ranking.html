@@ -19,17 +19,17 @@
 
     <header class="main-header">
         <div class="header-content">
-            <a href="/" class="logo" data-route="home">Edad Mental</a>
+            <a href="/" class="logo">Edad Mental</a>
             <button id="hamburger-btn" class="hamburger-btn" onclick="document.querySelector('.nav-links').classList.toggle('open');this.classList.toggle('active');" aria-label="Menú">
                 <span></span><span></span><span></span>
             </button>
             <nav class="nav-links">
-                <a href="/" class="nav-link" data-route="home"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> Inicio</a>
-                <a href="/entrenamiento" class="nav-link" data-route="training"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="m9 15 2 2 4-4"></path></svg> Entrenamiento</a>
-                <a href="/ranking" class="nav-link active-route" data-route="ranking"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"></path></svg> Ranking</a>
-                <a href="/estadisticas" class="nav-link" data-route="stats"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-4"></path></svg> Estadísticas</a>
-                <a href="/faq" class="nav-link" data-route="faq"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> FAQ</a>
-                <a href="/perfil" class="nav-link" data-route="profile"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Mi Perfil</a>
+                <a href="/" class="nav-link"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> Inicio</a>
+                <a href="/entrenamiento" class="nav-link"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="m9 15 2 2 4-4"></path></svg> Entrenamiento</a>
+                <a href="/ranking" class="nav-link active-route" aria-current="page"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"></path></svg> Ranking</a>
+                <a href="/estadisticas" class="nav-link"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-4"></path></svg> Estadísticas</a>
+                <a href="/faq" class="nav-link"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> FAQ</a>
+                <a href="/perfil" class="nav-link"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Mi Perfil</a>
             </nav>
             <div id="nav-auth-area" class="nav-auth-area">
                 <button type="button" id="btn-nav-login" class="btn-nav-login" onclick="document.getElementById('auth-modal').style.display='flex'">Entrar</button>
@@ -147,6 +147,5 @@
     <script src="src/js/app.js?v=4.4"></script>
     <script src="src/js/auth-google.js?v=1.0"></script>
     <script src="src/js/shared-init.js"></script>
-    <script src="src/js/page-init.js"></script>
 </body>
 </html>

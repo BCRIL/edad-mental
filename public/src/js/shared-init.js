@@ -1,22 +1,7 @@
 // shared-init.js - Inicialización de componentes compartidos en todas las páginas
-// Carga el header, navegación, modal auth, y otros elementos comunes
-
+// Version 2.0 - Simplificado para arquitectura multi-página
 (function() {
     'use strict';
-
-    // ═══════════════════════════════════════════════════════════
-    // ACTIVE ROUTE INDICATOR
-    // ═══════════════════════════════════════════════════════════
-    function initActiveRoute() {
-        const currentPath = window.location.pathname;
-        document.querySelectorAll('a[data-route]').forEach(link => {
-            link.classList.remove('active-route');
-            const href = link.getAttribute('href');
-            if (href === currentPath || (currentPath === '/' && href === '/')) {
-                link.classList.add('active-route');
-            }
-        });
-    }
 
     // ═══════════════════════════════════════════════════════════
     // HAMBURGER MENU
@@ -26,12 +11,6 @@
         const navLinks = document.querySelector('.nav-links');
 
         if (hamburgerBtn && navLinks) {
-            hamburgerBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                navLinks.classList.toggle('open');
-                hamburgerBtn.classList.toggle('active');
-            });
-
             // Cerrar al hacer clic en un enlace
             navLinks.querySelectorAll('a').forEach(link => {
                 link.addEventListener('click', () => {
@@ -126,7 +105,6 @@
     // INITIALIZATION
     // ═══════════════════════════════════════════════════════════
     document.addEventListener('DOMContentLoaded', function() {
-        initActiveRoute();
         initHamburger();
         initAuthUI();
 

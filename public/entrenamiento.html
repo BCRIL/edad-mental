@@ -19,17 +19,17 @@
 
     <header class="main-header">
         <div class="header-content">
-            <a href="/" class="logo" data-route="home">Edad Mental</a>
+            <a href="/" class="logo">Edad Mental</a>
             <button id="hamburger-btn" class="hamburger-btn" onclick="document.querySelector('.nav-links').classList.toggle('open');this.classList.toggle('active');" aria-label="Menú">
                 <span></span><span></span><span></span>
             </button>
             <nav class="nav-links">
-                <a href="/" class="nav-link" data-route="home"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> Inicio</a>
-                <a href="/entrenamiento" class="nav-link active-route" data-route="training"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="m9 15 2 2 4-4"></path></svg> Entrenamiento</a>
-                <a href="/ranking" class="nav-link" data-route="ranking"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"></path></svg> Ranking</a>
-                <a href="/estadisticas" class="nav-link" data-route="stats"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-4"></path></svg> Estadísticas</a>
-                <a href="/faq" class="nav-link" data-route="faq"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> FAQ</a>
-                <a href="/perfil" class="nav-link" data-route="profile"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Mi Perfil</a>
+                <a href="/" class="nav-link"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> Inicio</a>
+                <a href="/entrenamiento" class="nav-link active-route" aria-current="page"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="m9 15 2 2 4-4"></path></svg> Entrenamiento</a>
+                <a href="/ranking" class="nav-link"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"></path></svg> Ranking</a>
+                <a href="/estadisticas" class="nav-link"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-4"></path></svg> Estadísticas</a>
+                <a href="/faq" class="nav-link"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> FAQ</a>
+                <a href="/perfil" class="nav-link"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Mi Perfil</a>
             </nav>
             <div id="nav-auth-area" class="nav-auth-area">
                 <button type="button" id="btn-nav-login" class="btn-nav-login" onclick="document.getElementById('auth-modal').style.display='flex'">Entrar</button>
@@ -119,8 +119,132 @@
         </div>
         <div id="zen-grid-training" class="training-games-list" data-training-entry="training"></div>
 
-        <!-- Las pantallas de los juegos se cargarán aquí cuando sea necesario -->
-        <div id="training-screens-container" style="display: none;"></div>
+        <!-- Game Screens (hidden by default, shown when playing) -->
+        <div id="training-screens-container">
+            <!-- SCREEN: Game Instructions -->
+            <section class="screen" id="screen-instructions" style="display:none;">
+                <div class="card instruction-card">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progress-bar"></div>
+                    </div>
+                    <span class="game-badge" id="game-badge">Prueba 1 de 5</span>
+                    <div class="instruction-icon" id="instruction-icon"></div>
+                    <h2 class="instruction-title" id="instruction-title">Game Title</h2>
+                    <p class="instruction-text" id="instruction-text">Game Description</p>
+                    <button class="btn btn-primary" id="btn-ready">¡Estoy listo!</button>
+                </div>
+            </section>
+
+            <!-- SCREEN: Game Reaction -->
+            <section class="screen" id="screen-game-reaction" style="display:none;">
+                <div class="card game-card game-reaction">
+                    <div class="game-header">
+                        <span class="game-badge-small">Entrenamiento — Reacción</span>
+                    </div>
+                    <div class="reaction-zone" id="reaction-zone">
+                        <div class="reaction-content" id="reaction-content">
+                            <p class="reaction-text" id="reaction-text">Espera al color verde...</p>
+                        </div>
+                    </div>
+                    <p class="game-hint" id="reaction-hint">Pulsa la zona coloreada cuando cambie a verde</p>
+                </div>
+            </section>
+
+            <!-- SCREEN: Game Numbers -->
+            <section class="screen" id="screen-game-numbers" style="display:none;">
+                <div class="card game-card">
+                    <div class="game-header">
+                        <span class="game-badge-small">Entrenamiento — Números</span>
+                        <span class="game-level" id="number-level">Nivel 1</span>
+                    </div>
+                    <div class="number-display-area">
+                        <div class="number-display" id="number-display">384</div>
+                        <div class="number-timer-bar" id="number-timer-bar"></div>
+                    </div>
+                    <div class="number-input-area" id="number-input-area" style="display:none;">
+                        <p class="game-prompt">¿Qué número era?</p>
+                        <input type="number" class="number-input" id="number-input" placeholder="Escribe el número..." autocomplete="off">
+                        <button class="btn btn-primary" id="btn-number-submit">Comprobar</button>
+                    </div>
+                    <div class="number-feedback" id="number-feedback" style="display:none;"></div>
+                </div>
+            </section>
+
+            <!-- SCREEN: Game Patterns -->
+            <section class="screen" id="screen-game-patterns" style="display:none;">
+                <div class="card game-card">
+                    <div class="game-header">
+                        <span class="game-badge-small">Entrenamiento — Patrones</span>
+                        <span class="game-timer" id="pattern-timer">∞</span>
+                    </div>
+                    <p class="game-prompt" id="pattern-prompt">¿Qué figura completa el patrón?</p>
+                    <div class="pattern-sequence" id="pattern-sequence"></div>
+                    <div class="pattern-options" id="pattern-options"></div>
+                    <div class="pattern-score" id="pattern-score">Aciertos: 0</div>
+                </div>
+            </section>
+
+            <!-- SCREEN: Game Math -->
+            <section class="screen" id="screen-game-math" style="display:none;">
+                <div class="card game-card">
+                    <div class="game-header">
+                        <span class="game-badge-small">Entrenamiento — Matemáticas</span>
+                        <span class="game-timer" id="math-timer">∞</span>
+                    </div>
+                    <div class="math-problem" id="math-problem">12 + 7 = ?</div>
+                    <div class="math-options" id="math-options"></div>
+                    <div class="math-score" id="math-score">Aciertos: 0</div>
+                </div>
+            </section>
+
+            <!-- SCREEN: Game Sequence -->
+            <section class="screen" id="screen-game-sequence" style="display:none;">
+                <div class="card game-card">
+                    <div class="game-header">
+                        <span class="game-badge-small">Entrenamiento — Secuencia</span>
+                        <span class="game-level" id="simon-level">Nivel 1</span>
+                    </div>
+                    <p class="game-prompt" id="simon-prompt">Observa la secuencia...</p>
+                    <div class="simon-grid" id="simon-grid">
+                        <button class="simon-btn" data-index="0"></button>
+                        <button class="simon-btn" data-index="1"></button>
+                        <button class="simon-btn" data-index="2"></button>
+                        <button class="simon-btn" data-index="3"></button>
+                        <button class="simon-btn" data-index="4"></button>
+                        <button class="simon-btn" data-index="5"></button>
+                        <button class="simon-btn" data-index="6"></button>
+                        <button class="simon-btn" data-index="7"></button>
+                        <button class="simon-btn" data-index="8"></button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SCREEN: Game Colors -->
+            <section class="screen" id="screen-game-colors" style="display:none;">
+                <div class="card game-card">
+                    <div class="game-header">
+                        <span class="game-badge-small">Entrenamiento — Colores</span>
+                        <span class="game-timer" id="colors-timer">∞</span>
+                    </div>
+                    <p class="game-prompt" id="colors-prompt">¿De qué COLOR está pintada la palabra?</p>
+                    <div class="colors-display" id="colors-display"></div>
+                    <div class="colors-options" id="colors-options"></div>
+                    <div class="colors-score" id="colors-score" role="status" aria-live="polite"></div>
+                </div>
+            </section>
+
+            <!-- SCREEN: Game Spatial -->
+            <section class="screen" id="screen-game-spatial" style="display:none;">
+                <div class="card game-card">
+                    <div class="game-header">
+                        <span class="game-badge-small">Entrenamiento — Espacial</span>
+                        <span class="game-level" id="spatial-level">Nivel 1</span>
+                    </div>
+                    <p class="game-prompt" id="spatial-prompt">Memoriza las celdas...</p>
+                    <div class="spatial-grid" id="spatial-grid" style="display:grid; gap:12px; margin:24px auto; max-width:280px; width:100%;"></div>
+                </div>
+            </section>
+        </div>
     </main>
 
     <!-- Scripts -->
@@ -131,6 +255,5 @@
     <script src="src/js/app.js?v=4.4"></script>
     <script src="src/js/auth-google.js?v=1.0"></script>
     <script src="src/js/shared-init.js"></script>
-    <script src="src/js/page-init.js"></script>
 </body>
 </html>
