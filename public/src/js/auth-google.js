@@ -17,6 +17,8 @@ if (typeof window.updateTimer === 'undefined') {
 // ══════════════════════════════════════════════════
 
 window.handleGoogleLogin = async function() {
+    console.log('🔄 Iniciando login con Google...');
+
     // Save pending score if we are currently on the results screen
     if (window._shareData) {
         localStorage.setItem('pendingBrainAgeResult', JSON.stringify({
@@ -29,8 +31,32 @@ window.handleGoogleLogin = async function() {
     const btn = document.getElementById('btn-google-login');
     if (btn) {
         btn.disabled = true;
+        btn.innerHTML = `<svg style="animation:spin 1s linear infinite;display:inline-block;vertical-align:middle;margin-right:8px;" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>Verificando Supabase...`;
+    }
+
+    // Verificar que Supabase esté disponible primero
+    if (typeof waitForSupabase === 'function') {
+        const isReady = await waitForSupabase();
+        if (!isReady) {
+            console.error('❌ Supabase no se pudo cargar después de 5 segundos');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `${googleIconSvg()} Continuar con Google`;
+            }
+            const errEl = document.getElementById('login-error') || document.getElementById('register-error');
+            if (errEl) {
+                errEl.textContent = 'Error: No se pudo conectar con el servidor. Recarga la página e intenta de nuevo.';
+                errEl.style.display = 'block';
+            }
+            return;
+        }
+    }
+
+    if (btn) {
         btn.innerHTML = `<svg style="animation:spin 1s linear infinite;display:inline-block;vertical-align:middle;margin-right:8px;" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>Conectando con Google...`;
     }
+
+    console.log('✓ Supabase verificado, procediendo con Google OAuth...');
     const { error } = await authSignInWithGoogle();
     if (error) {
         if (btn) {

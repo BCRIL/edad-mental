@@ -1,8 +1,35 @@
-// db.js - shared database logic (v7.0 — Perfiles persistentes, datos inmutables)
+// db.js - shared database logic (v8.0 — Auth con waitForSupabase)
 const SUPABASE_URL = 'https://owfppbdauqmghpmqrgse.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93ZnBwYmRhdXFtZ2hwbXFyZ3NlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjYyNDEsImV4cCI6MjA4OTk0MjI0MX0.AiW5Pmc8mSqa0Rx-EmWk5nzSrTDqCl99eKLnQg7v9Fw';
 
 let _supabase = null;
+let _supabasePromise = null;
+
+// Esperar a que Supabase esté disponible
+function waitForSupabase() {
+    if (_supabasePromise) return _supabasePromise;
+
+    _supabasePromise = new Promise((resolve) => {
+        let attempts = 0;
+        const maxAttempts = 50; // 5 segundos (50 * 100ms)
+
+        const checkSupabase = () => {
+            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                resolve(true);
+            } else if (attempts < maxAttempts) {
+                attempts++;
+                setTimeout(checkSupabase, 100);
+            } else {
+                console.warn('Supabase no cargó después de 5 segundos');
+                resolve(false);
+            }
+        };
+
+        checkSupabase();
+    });
+
+    return _supabasePromise;
+}
 
 function getSupabaseClient() {
     if (_supabase) return _supabase;
@@ -28,6 +55,9 @@ function sanitizeName(name) {
 // ══════════════════════════════════════
 
 async function authSignUp(email, password, displayName) {
+    const isReady = await waitForSupabase();
+    if (!isReady) return { user: null, error: { message: 'Supabase no disponible.' } };
+
     const client = getSupabaseClient();
     if (!client) return { user: null, error: { message: 'Supabase no disponible.' } };
     const safeName = sanitizeName(displayName);
@@ -55,6 +85,9 @@ async function authSignUp(email, password, displayName) {
 }
 
 async function authSignIn(email, password) {
+    const isReady = await waitForSupabase();
+    if (!isReady) return { user: null, error: { message: 'Supabase no disponible.' } };
+
     const client = getSupabaseClient();
     if (!client) return { user: null, error: { message: 'Supabase no disponible.' } };
     try {
@@ -66,6 +99,9 @@ async function authSignIn(email, password) {
 }
 
 async function authSignInWithGoogle() {
+    const isReady = await waitForSupabase();
+    if (!isReady) return { error: { message: 'Supabase no disponible.' } };
+
     const client = getSupabaseClient();
     if (!client) return { error: { message: 'Supabase no disponible.' } };
     try {
@@ -86,6 +122,9 @@ async function authSignInWithGoogle() {
 }
 
 async function authSignOut() {
+    const isReady = await waitForSupabase();
+    if (!isReady) return;
+
     const client = getSupabaseClient();
     if (!client) return;
     await client.auth.signOut();
@@ -362,3 +401,35 @@ async function getUserRankPosition(userId, difficulty = null) {
 //
 //  • Este archivo db.js NO expone ninguna función de borrado intencionalmente.
 // ══════════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════
+// GLOBAL EXPORTS
+// ══════════════════════════════════════
+
+// Core functions
+window.waitForSupabase = waitForSupabase;
+window.getSupabaseClient = getSupabaseClient;
+
+// Auth functions
+window.authSignUp = authSignUp;
+window.authSignIn = authSignIn;
+window.authSignInWithGoogle = authSignInWithGoogle;
+window.authSignOut = authSignOut;
+window.getCurrentUser = getCurrentUser;
+window.onAuthChange = onAuthChange;
+
+// Profile functions
+window.getUserDisplayName = getUserDisplayName;
+window.getUserProfile = getUserProfile;
+window.updateUserProfile = updateUserProfile;
+window.getUserRankings = getUserRankings;
+window.getUserRankPosition = getUserRankPosition;
+window.calculateLeague = calculateLeague;
+window.calculateTrend = calculateTrend;
+
+// Ranking functions
+window.saveRanking = saveRanking;
+window.getTopRankings = getTopRankings;
+window.getStats = getStats;
+window.getPlayerCount = getPlayerCount;
+window.getGlobalAverages = getGlobalAverages;

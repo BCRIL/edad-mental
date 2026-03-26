@@ -2,13 +2,45 @@
 (function() {
     'use strict';
 
+    // Primero, esperar a que Supabase esté disponible
+    async function ensureSupabaseReady() {
+        let attempts = 0;
+        const maxAttempts = 50; // 5 segundos (50 * 100ms)
+
+        while (attempts < maxAttempts) {
+            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                console.log('✓ Supabase disponible');
+                return true;
+            }
+            attempts++;
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+        console.warn('⚠ Supabase no cargó después de 5 segundos');
+        return false;
+    }
+
     // Esperar a que el DOM esté listo Y app.js esté cargado
-    function initPageData() {
+    async function initPageData() {
         const path = window.location.pathname.toLowerCase();
 
         // Solo ejecutar en páginas individuales (no en index.html)
         if (document.getElementById('view-welcome') !== null) {
             return; // Es SPA, no hacer nada
+        }
+
+        // Esperar a que Supabase esté listo usando la función centralizada de db.js
+        if (typeof window.waitForSupabase === 'function') {
+            console.log('⏳ Esperando Supabase...');
+            const isReady = await window.waitForSupabase();
+            if (!isReady) {
+                console.error('❌ Supabase no se pudo cargar');
+                return;
+            }
+            console.log('✅ Supabase listo para páginas individuales');
+        } else {
+            console.warn('⚠ Función waitForSupabase no disponible, intentando método alternativo');
+            await ensureSupabaseReady();
         }
 
         console.log('Inicializando página individual:', path);
