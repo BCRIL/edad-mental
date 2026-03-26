@@ -1,17 +1,17 @@
-// profile.js — Perfil de usuario con persistencia en Supabase
+﻿// profile.js â€” Perfil de usuario con persistencia en Supabase
 (function () {
     'use strict';
 
-    // ═══════════════════════════════════════════════════════════
-    // CARGA Y SINCRONIZACIÓN DE PERFIL
-    // ═══════════════════════════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    // CARGA Y SINCRONIZACIÃ“N DE PERFIL
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
     window.loadAndSyncProfile = async () => {
-        const history = getHistory();
-        const streak = getCurrentStreak();
-        const highestStreak = typeof getHighestStreak === 'function' ? getHighestStreak() : 0;
+        let history = getHistory();
+        let streak = getCurrentStreak();
+        let highestStreak = typeof getHighestStreak === 'function' ? getHighestStreak() : 0;
 
-        // Verificar si el usuario está autenticado y mostrar/ocultar auth gate
+        // Verificar si el usuario esta autenticado y mostrar/ocultar auth gate
         let isLoggedIn = false;
         let user = null;
 
@@ -34,17 +34,60 @@
             profileContent.style.display = 'block';
         }
 
-        // Renderizar estadísticas locales primero
+        // Si el usuario esta autenticado, sincronizamos DESDE Supabase para unificar dispositivos
+        if (user) {
+            try {
+                // Obtener perfil y stats remotos
+                const profileData = await window.getUserProfile(user.id);
+                const { data: remoteRankings, error } = await window.getUserRankings(user.id);
+
+                if (remoteRankings && remoteRankings.length > 0 && Array.isArray(remoteRankings)) {
+                    history = remoteRankings.map(row => ({
+                        date: row.created_at ? row.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+                        brainAge: row.brain_age,
+                        difficulty: row.difficulty || 'normal',
+                        scores: {
+                            reaction: row.reaction_score || 0,
+                            numbers: row.numbers_score || 0,
+                            patterns: row.patterns_score || 0,
+                            math: row.math_score || 0,
+                            sequence: row.sequence_score || 0
+                        }
+                    }));
+                    // Actualizar localStorage para mantener sincronizado este dispositivo
+                    localStorage.setItem('brainAge_history', JSON.stringify(history));
+                }
+
+                if (profileData) {
+                    if (profileData.current_streak !== undefined && profileData.current_streak !== null) {
+                        streak = profileData.current_streak;
+                    }
+                    if (profileData.highest_streak !== undefined && profileData.highest_streak !== null) {
+                        highestStreak = Math.max(highestStreak, profileData.highest_streak);
+                    }
+                    
+                    // Sincronizar racha remota en local
+                    const today = new Date().toISOString().split('T')[0];
+                    let streakData = { streak: streak, lastDate: profileData.last_played_at || today, highest_streak: highestStreak };
+                    localStorage.setItem('brainAge_streak', JSON.stringify(streakData));
+                }
+            } catch (e) {
+                console.error('Error sincronizando desde Supabase:', e);
+            }
+        }
+
+        // Renderizar estadisticas locales / remotas unificadas
         const bestAge = history.length > 0 ? Math.min(...history.map(h => h.brainAge)) : null;
         const avgAge = history.length > 0 ? Math.round(history.reduce((sum, h) => sum + h.brainAge, 0) / history.length) : null;
+
         $('#profile-streak').textContent = streak;
         $('#profile-total').textContent = history.length;
         $('#profile-best').textContent = bestAge ? bestAge : '--';
 
-        // Si el usuario está autenticado, sincronizar con Supabase
+        // Si el usuario esta autenticado, sincronizar HACIA Supabase
         if (user && typeof updateUserProfile === 'function') {
             try {
-                // Actualizar estadísticas en el servidor si hay cambios
+                // Actualizar estadisticas en el servidor
                 const result = await updateUserProfile(user.id, {
                     displayName: APP_STATE.currentDisplayName,
                     stats: {
@@ -69,10 +112,10 @@
     };
 
     window.renderProfileContent = (history, streak, bestAge, avgAge, highestStreak) => {
-        // ─────────────────────────────────────────────────────────
-        // LIGAS (Gamificación)
-        // ─────────────────────────────────────────────────────────
-        let league = { name: 'Bronce', icon: '🥉', color: '#b45309' };
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // LIGAS (GamificaciÃ³n)
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        let league = { name: 'Bronce', icon: 'ðŸ¥‰', color: '#b45309' };
         if (history.length > 0) {
             const sortedH = [...history].reverse();
             let impr = 0;
@@ -80,9 +123,9 @@
                 if (sortedH[i].brainAge <= sortedH[i - 1].brainAge) impr++;
                 else impr = 0;
             }
-            if (impr >= 9) league = { name: 'Diamante', icon: '💎', color: '#06b6d4' };
-            else if (impr >= 6) league = { name: 'Oro', icon: '🥇', color: '#f59e0b' };
-            else if (impr >= 3) league = { name: 'Plata', icon: '🥈', color: '#94a3b8' };
+            if (impr >= 9) league = { name: 'Diamante', icon: 'ðŸ’Ž', color: '#06b6d4' };
+            else if (impr >= 6) league = { name: 'Oro', icon: 'ðŸ¥‡', color: '#f59e0b' };
+            else if (impr >= 3) league = { name: 'Plata', icon: 'ðŸ¥ˆ', color: '#94a3b8' };
         }
         const leagueIcon = $('#profile-league-icon');
         const leagueName = $('#profile-league-name');
@@ -92,28 +135,28 @@
             leagueName.style.color = league.color;
         }
 
-        // ─────────────────────────────────────────────────────────
-        // ACTUALIZAR ESTADÍSTICAS
-        // ─────────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ACTUALIZAR ESTADÃSTICAS
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         const avgEl = $('#profile-avg');
         if (avgEl) avgEl.textContent = avgAge ? avgAge : '--';
 
         const highestStreakEl = $('#profile-highest-streak');
         if (highestStreakEl) highestStreakEl.textContent = highestStreak || 0;
 
-        // ─────────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         // INSIGNIAS
-        // ─────────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         const badgeContainer = $('#profile-badges');
         if (badgeContainer) {
             const BADGES = [
-                { icon: '🎮', label: 'Primer Test', achieved: history.length >= 1 },
-                { icon: '🌟', label: '5 Partidas', achieved: history.length >= 5 },
-                { icon: '💎', label: 'Veterano', achieved: history.length >= 10 },
-                { icon: '🔥', label: '3 días', achieved: streak >= 3 },
-                { icon: '⚡', label: '7 días', achieved: streak >= 7 },
-                { icon: '🧠', label: '≤22 años', achieved: bestAge && bestAge <= 22 },
-                { icon: '🏆', label: '≤18 años', achieved: bestAge && bestAge <= 18 }
+                { icon: 'ðŸŽ®', label: 'Primer Test', achieved: history.length >= 1 },
+                { icon: 'ðŸŒŸ', label: '5 Partidas', achieved: history.length >= 5 },
+                { icon: 'ðŸ’Ž', label: 'Veterano', achieved: history.length >= 10 },
+                { icon: 'ðŸ”¥', label: '3 dÃ­as', achieved: streak >= 3 },
+                { icon: 'âš¡', label: '7 dÃ­as', achieved: streak >= 7 },
+                { icon: 'ðŸ§ ', label: 'â‰¤22 aÃ±os', achieved: bestAge && bestAge <= 22 },
+                { icon: 'ðŸ†', label: 'â‰¤18 aÃ±os', achieved: bestAge && bestAge <= 18 }
             ];
             badgeContainer.innerHTML = BADGES.map(b => `
                 <div class="profile-badge-item ${b.achieved ? 'is-unlocked' : 'is-locked'}">
@@ -122,20 +165,20 @@
                 </div>`).join('');
         }
 
-        // ─────────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         // TABLA DE HISTORIAL
-        // ─────────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         const historyDiv = $('#profile-history');
         if (historyDiv) {
             if (history.length === 0) {
-                historyDiv.innerHTML = '<p class="profile-history__empty">Aún no tienes partidas guardadas.</p>';
+                historyDiv.innerHTML = '<p class="profile-history__empty">AÃºn no tienes partidas guardadas.</p>';
             } else {
                 const rows = history.map(h => {
-                    const diff = h.difficulty === 'easy' ? '🟢 Fácil' : h.difficulty === 'hard' ? '🔴 Difícil' : '🔵 Normal';
+                    const diff = h.difficulty === 'easy' ? 'ðŸŸ¢ FÃ¡cil' : h.difficulty === 'hard' ? 'ðŸ”´ DifÃ­cil' : 'ðŸ”µ Normal';
                     const col = h.brainAge <= 28 ? '#10b981' : h.brainAge <= 45 ? '#f59e0b' : '#ef4444';
                     return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
                         <td style="padding:11px 10px;font-size:13px;">${h.date}</td>
-                        <td style="padding:11px 10px;font-weight:800;font-size:18px;color:${col};font-family:var(--font-display);">${h.brainAge}<span style="font-size:11px;font-weight:400;color:var(--clr-text-muted);"> años</span></td>
+                        <td style="padding:11px 10px;font-weight:800;font-size:18px;color:${col};font-family:var(--font-display);">${h.brainAge}<span style="font-size:11px;font-weight:400;color:var(--clr-text-muted);"> aÃ±os</span></td>
                         <td style="padding:11px 10px;font-size:13px;">${diff}</td>
                         <td style="padding:11px 10px;font-size:12px;color:var(--clr-text-muted);">${h.games ? h.games.join(', ') : '--'}</td>
                     </tr>`;
@@ -150,9 +193,9 @@
             }
         }
 
-        // ─────────────────────────────────────────────────────────
-        // GRÁFICO DE EVOLUCIÓN
-        // ─────────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // GRÃFICO DE EVOLUCIÃ“N
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         const ctxEvo = document.getElementById('evolutionChart');
         if (ctxEvo && typeof Chart !== 'undefined' && history.length > 0) {
             const sorted = [...history].reverse();
@@ -186,9 +229,9 @@
             });
         }
 
-        // ─────────────────────────────────────────────────────────
-        // GRÁFICO RADAR DE FORTALEZAS
-        // ─────────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // GRÃFICO RADAR DE FORTALEZAS
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         const ctxRadarProfile = document.getElementById('profileRadarChart');
         if (ctxRadarProfile && typeof Chart !== 'undefined' && history.length > 0) {
             let sumScores = { reaction: 0, numbers: 0, patterns: 0, math: 0, sequence: 0, colors: 0, spatial: 0 };
@@ -222,9 +265,9 @@
             window._profileRadarChartInstance = new Chart(ctxRadarProfile.getContext('2d'), {
                 type: 'radar',
                 data: {
-                    labels: ['Reacción', 'Memoria Nums.', 'Patrones', 'Mates', 'Secuencia', 'Colores', 'Espacial'],
+                    labels: ['ReacciÃ³n', 'Memoria Nums.', 'Patrones', 'Mates', 'Secuencia', 'Colores', 'Espacial'],
                     datasets: [{
-                        label: 'Tu Puntuación',
+                        label: 'Tu PuntuaciÃ³n',
                         data: finalData,
                         backgroundColor: 'rgba(6, 182, 212, 0.2)',
                         borderColor: 'rgba(6, 182, 212, 1)',
@@ -248,9 +291,9 @@
         }
     };
 
-    // ═══════════════════════════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
     // GUARDAR RESULTADO AL HISTORIAL
-    // ═══════════════════════════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
     window.saveResultToHistory = (brainAge, difficulty, games, scores) => {
         const history = getHistory();
@@ -268,11 +311,12 @@
     window.showStreakNotification = () => {
         const streak = getCurrentStreak();
         if (streak > 1 && streak % 3 === 0) {
-            // Mostrar notificación cada 3 días
-            const msg = `🔥 ¡Racha de ${streak} días! Sigue así.`;
+            // Mostrar notificaciÃ³n cada 3 dÃ­as
+            const msg = `ðŸ”¥ Â¡Racha de ${streak} dÃ­as! Sigue asÃ­.`;
             if (typeof alert !== 'undefined') console.log(msg);
         }
     };
 
-    console.log('✅ profile.js loaded');
+    console.log('âœ… profile.js loaded');
 })();
+

@@ -160,7 +160,7 @@ async function getUserProfile(userId) {
     try {
         const { data, error } = await client
             .from('profiles')
-            .select('display_name, avatar_url, total_tests, best_brain_age, last_played_at, created_at')
+            .select('display_name, avatar_url, total_tests, best_brain_age, average_brain_age, current_streak, highest_streak, last_played_at, created_at')
             .eq('id', userId)
             .single();
         if (error || !data) return null;
