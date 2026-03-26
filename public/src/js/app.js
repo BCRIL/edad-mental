@@ -85,9 +85,25 @@
     const $$ = (sel) => document.querySelectorAll(sel);
 
     function showScreen(id) {
-        $$('.screen').forEach(s => s.classList.remove('active'));
+        $$('.screen').forEach(s => {
+            s.classList.remove('active');
+            s.style.display = 'none'; // Ensure inline hidden styles are removed
+        });
         const target = $(`#screen-${id}`);
-        target.classList.remove('active');
+        if (!target) return; // Prevent error if target doesn't exist
+
+        // If in individual training page, hide the game grid when showing a game screen
+        const trainingList = document.querySelector('.training-page-main');
+        if (trainingList && document.getElementById('view-welcome') === null) {
+            if (id === 'welcome') {
+                // Should not happen on single page, but safe fallback
+                trainingList.style.display = 'block';
+            } else {
+                trainingList.style.display = 'none';
+            }
+        }
+
+        target.style.display = 'block'; // Ensure inline display is set
         void target.offsetWidth;
         target.classList.add('active');
         const backBar = document.getElementById('training-back-bar');
