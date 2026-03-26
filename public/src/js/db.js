@@ -1,4 +1,4 @@
-// db.js - shared database logic (v8.0 — Auth con waitForSupabase)
+// db.js - shared database logic (v8.1 — getStats con waitForSupabase + difficulty)
 const SUPABASE_URL = 'https://owfppbdauqmghpmqrgse.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93ZnBwYmRhdXFtZ2hwbXFyZ3NlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjYyNDEsImV4cCI6MjA4OTk0MjI0MX0.AiW5Pmc8mSqa0Rx-EmWk5nzSrTDqCl99eKLnQg7v9Fw';
 
@@ -313,14 +313,35 @@ async function getTopRankings(difficultyFilter) {
 }
 
 async function getStats() {
+    // Esperar a que Supabase esté listo
+    await waitForSupabase();
+
     const client = getSupabaseClient();
-    if (!client) return { data: null, error: { message: 'Supabase no disponible.' } };
+    if (!client) {
+        console.error('❌ Supabase client no disponible en getStats()');
+        return { data: null, error: { message: 'Supabase no disponible.' } };
+    }
+
     try {
+        console.log('🔍 Ejecutando getStats desde rankings...');
         const { data, error } = await client
             .from('rankings')
-            .select('brain_age, reaction_score, numbers_score, patterns_score, math_score, sequence_score');
-        return { data, error };
+            .select('brain_age, reaction_score, numbers_score, patterns_score, math_score, sequence_score, colors_score, spatial_score, difficulty, created_at');
+
+        if (error) {
+            console.error('❌ Error en getStats:', error);
+            return { data: null, error };
+        }
+
+        if (!data) {
+            console.warn('⚠️ getStats retornó sin datos');
+            return { data: [], error: null };
+        }
+
+        console.log(`✅ getStats retornó ${data.length} registros`);
+        return { data, error: null };
     } catch (err) {
+        console.error('❌ Excepción en getStats:', err);
         return { data: null, error: err };
     }
 }
