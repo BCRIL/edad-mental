@@ -92,14 +92,17 @@
         const target = $(`#screen-${id}`);
         if (!target) return; // Prevent error if target doesn't exist
 
-        // If in individual training page, hide the game grid when showing a game screen
-        const trainingList = document.querySelector('.training-page-main');
-        if (trainingList && document.getElementById('view-welcome') === null) {
-            if (id === 'welcome') {
-                // Should not happen on single page, but safe fallback
-                trainingList.style.display = 'block';
+        // In training standalone page, conditionally hide the list but keep layout wrapper
+        const isStandaloneTraining = document.getElementById('zen-grid-training') && document.getElementById('view-welcome') === null;
+        if (isStandaloneTraining) {
+            const trainingHero = document.querySelector('.training-page-hero');
+            const trainingGrid = document.getElementById('zen-grid-training');
+            if (id === 'welcome' || id === '') {
+                if (trainingHero) trainingHero.style.display = 'block';
+                if (trainingGrid) trainingGrid.style.display = 'grid';
             } else {
-                trainingList.style.display = 'none';
+                if (trainingHero) trainingHero.style.display = 'none';
+                if (trainingGrid) trainingGrid.style.display = 'none';
             }
         }
 
@@ -154,30 +157,26 @@
         const appMainExit = document.getElementById('app');
         if (appMainExit) appMainExit.classList.remove('training-bar-pad');
 
-        // Detectar si estamos en SPA o página individual
-        const isSPA = document.getElementById('view-welcome') !== null;
-
-        if (isSPA) {
-            // Estamos en index.html - usar router SPA
-            if (trainingEntryView === 'training') {
-                navigate('/entrenamiento');
-            } else {
-                navigate('/');
-                setTimeout(() => showScreen('welcome'), 330);
-            }
-        } else {
-            // Estamos en página individual - ocultar game screens y mostrar lista
+        // Check if we are on standalone training page
+        if (document.getElementById('zen-grid-training')) {
             const screens = ['screen-instructions', 'screen-game-reaction', 'screen-game-numbers',
                 'screen-game-patterns', 'screen-game-math', 'screen-game-sequence',
-                'screen-game-colors', 'screen-game-spatial'];
+                'screen-game-colors', 'screen-game-spatial', 'screen-results'];
             screens.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
 
             // Mostrar la lista de entrenamientos nuevamente
-            const trainingList = document.querySelector('.training-page-main');
-            if (trainingList) trainingList.style.display = 'block';
+            const trainingHero = document.querySelector('.training-page-hero');
+            const trainingGrid = document.getElementById('zen-grid-training');
+            if (trainingHero) trainingHero.style.display = 'block';
+            if (trainingGrid) trainingGrid.style.display = 'grid';
+            
+            document.body.classList.remove('game-active');
+        } else {
+            // We are on index.html but in training mode? Shouldn't happen anymore. But fallback:
+            window.location.href = '/entrenamiento';
         }
     }
 
@@ -1909,413 +1908,6 @@
     }
 
     // ══════════════════════════════════════════
-    // V4: SINGLE PAGE APPLICATION ROUTER
-    // ══════════════════════════════════════════
-    const spaViews = {
-        home: document.getElementById('view-home'),
-        training: document.getElementById('view-training'),
-        faq: document.getElementById('view-faq'),
-        ranking: document.getElementById('view-ranking'),
-        stats: document.getElementById('view-stats'),
-        profile: document.getElementById('view-profile')
-    };
-
-    let currentRankingFilter = 'all';
-    let statsLoaded = false;
-    let rankChart = null;
-    let radarChart = null;
-
-    function escapeHTML(str) {
-        if (!str) return '';
-        const div = document.createElement('div');
-        div.innerText = str;
-        return div.innerHTML;
-    }
-
-    async function loadRanking(filter) {
-        const tbody = document.getElementById('ranking-body');
-        const podium = document.getElementById('ranking-podium');
-
-        // En páginas individuales, mostrar auth gate si no hay autenticación
-        const authGate = document.getElementById('ranking-page-auth-gate');
-        const rankingContent = document.getElementById('ranking-page-content');
-
-        // Verificar si el usuario está autenticado
-        if (typeof getCurrentUser === 'function') {
-            const user = await getCurrentUser();
-            if (!user && authGate && rankingContent) {
-                // Usuario no autenticado - mostrar auth gate
-                authGate.style.display = 'block';
-                rankingContent.style.display = 'none';
-                return;
-            } else if (user && authGate && rankingContent) {
-                // Usuario autenticado - mostrar contenido
-                authGate.style.display = 'none';
-                rankingContent.style.display = 'block';
-            }
-        }
-
-        if (!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="5" class="loading-spinner" style="text-align: center; padding: 40px;">Cargando...</td></tr>';
-        if (podium) podium.innerHTML = '';
-
-        if (typeof getTopRankings !== 'function') {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--clr-danger); padding: 30px;">Error: No se pudo conectar con la base de datos.</td></tr>';
-            return;
-        }
-
-        const { data, error } = await getTopRankings(filter);
-
-        if (error || !data) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--clr-danger); padding: 30px;">Error al cargar el ranking.</td></tr>';
-            return;
-        }
-
-        const countEl = document.getElementById('ranking-count');
-        if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 30px;">Aún no hay puntuaciones en esta categoría. ¡Sé el primero!</td></tr>';
-            if (countEl) countEl.textContent = '';
-            return;
-        }
-
-        if (countEl) countEl.textContent = `${data.length} jugador${data.length !== 1 ? 'es' : ''} en el ranking`;
-
-        // 🏆 Render Podium (Top 3)
-        if (podium && data.length > 0) {
-            const top3 = data.slice(0, 3);
-            const diffMap = { easy: 'Fácil', normal: 'Normal', hard: 'Difícil' };
-
-            // Reorder for visual podium: 2nd, 1st, 3rd
-            const podiumOrder = [];
-            if (top3[1]) podiumOrder.push({ ...top3[1], pos: 2, height: '120px', bg: 'rgba(226, 232, 240, 0.1)', border: '#94a3b8', medal: '🥈' });
-            if (top3[0]) podiumOrder.push({ ...top3[0], pos: 1, height: '150px', bg: 'rgba(234, 179, 8, 0.15)', border: '#eab308', medal: '🥇' });
-            if (top3[2]) podiumOrder.push({ ...top3[2], pos: 3, height: '100px', bg: 'rgba(180, 83, 9, 0.1)', border: '#b45309', medal: '🥉' });
-
-            podium.innerHTML = podiumOrder.map(p => `
-                <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;">
-                    <div style="font-size: 24px; margin-bottom: 4px;">${p.medal}</div>
-                    <div style="font-size: 14px; font-weight: 700; color: #fff; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80px;">${escapeHTML(p.player_name)}</div>
-                    <div style="font-size: 12px; color: var(--clr-text-muted); margin-bottom: 8px;">${p.brain_age} años</div>
-                    <div style="width: 100%; height: ${p.height}; background: ${p.bg}; border: 2px solid ${p.border}; border-bottom: none; border-radius: 12px 12px 0 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 24px; font-weight: 900; color: ${p.border};">
-                        #${p.pos}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        tbody.innerHTML = '';
-        const tableData = podium ? data.slice(3) : data; // Si hay podio, ocultar los 3 primeros de la tabla
-        const startIndex = podium ? 3 : 0;
-
-        tableData.forEach((row, index) => {
-            const tr = document.createElement('tr');
-            const pos = index + 1 + startIndex;
-            let posClass = 'rank-pos';
-            let medal = '';
-            // No medals since they are in the podium view
-
-            const diffMap = {
-                easy: { label: 'Fácil', cls: 'easy' },
-                normal: { label: 'Normal', cls: 'normal' },
-                hard: { label: 'Difícil', cls: 'hard' }
-            };
-            const diff = diffMap[row.difficulty] || diffMap.normal;
-
-            // Visual Gamification Demo League
-            let leagueIcon = '🥉'; let leagueName = 'Bronce'; let leagueColor = '#b45309';
-            if (pos <= 5 || index <= 2) { leagueIcon = '💎'; leagueName = 'Diamante'; leagueColor = '#06b6d4'; }
-            else if (pos <= 20) { leagueIcon = '🥇'; leagueName = 'Oro'; leagueColor = '#f59e0b'; }
-            else if (pos <= 50) { leagueIcon = '🥈'; leagueName = 'Plata'; leagueColor = '#94a3b8'; }
-
-            tr.innerHTML = `
-                <td class="${posClass}">#${pos}</td>
-                <td class="rank-name">${escapeHTML(row.player_name)}</td>
-                <td class="rank-age">${row.brain_age} años</td>
-                <td><span class="diff-badge ${diff.cls}">${diff.label}</span></td>
-                <td style="text-align:center;"><span style="background:${leagueColor}40; color:${leagueColor}; padding:4px 10px; border-radius:12px; font-weight:700; font-size:12px; border:1px solid ${leagueColor}60;">${leagueIcon} ${leagueName}</span></td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    async function loadStats() {
-        if (typeof Chart === 'undefined') return;
-
-        // Chart.js global defaults
-        Chart.defaults.color = '#94a3b8';
-        Chart.defaults.font.family = "'Inter', sans-serif";
-
-        let ageData = [0, 0, 0, 0, 0, 0];
-        let radarData = [0, 0, 0, 0, 0];
-        let archetypeData = [0, 0, 0, 1]; // [Francotirador, Ajedrecista, Calculadora, Equilibrada]
-        let diffPerformance = [0, 0, 0]; // [Fácil, Normal, Difícil]
-        let diffCounts = [0, 0, 0];
-        let totalCount = 0;
-        let sumBrainAge = 0;
-
-        if (typeof getStats === 'function') {
-            const { data, error } = await getStats();
-            if (!error && data && data.length > 0) {
-                totalCount = data.length;
-                data.forEach(row => {
-                    sumBrainAge += row.brain_age;
-                    const a = row.brain_age;
-                    if (a < 20) ageData[0]++;
-                    else if (a <= 25) ageData[1]++;
-                    else if (a <= 30) ageData[2]++;
-                    else if (a <= 40) ageData[3]++;
-                    else if (a <= 50) ageData[4]++;
-                    else ageData[5]++;
-
-                    // Performance vs Difficulty
-                    if (row.difficulty === 'easy') { diffPerformance[0] += row.brain_age; diffCounts[0]++; }
-                    else if (row.difficulty === 'hard') { diffPerformance[2] += row.brain_age; diffCounts[2]++; }
-                    else { diffPerformance[1] += row.brain_age; diffCounts[1]++; }
-
-                    // Archetype determination (Simulación por row de DB si no hay campo)
-                    const maxS = Math.max(row.reaction_score || 0, row.numbers_score || 0, row.patterns_score || 0, row.math_score || 0);
-                    if (maxS > 80) archetypeData[0]++;
-                    else if (maxS > 60) archetypeData[1]++;
-                    else if (maxS > 40) archetypeData[2]++;
-                    else archetypeData[3]++;
-                });
-
-                let sumR = 0, sumN = 0, sumP = 0, sumM = 0, sumS = 0;
-                data.forEach(row => {
-                    sumR += row.reaction_score || 0;
-                    sumN += row.numbers_score || 0;
-                    sumP += row.patterns_score || 0;
-                    sumM += row.math_score || 0;
-                    sumS += row.sequence_score || 0;
-                });
-                radarData = [
-                    Math.round(sumR / totalCount),
-                    Math.round(sumN / totalCount),
-                    Math.round(sumP / totalCount),
-                    Math.round(sumM / totalCount),
-                    Math.round(sumS / totalCount)
-                ];
-            } else {
-                // Mock fallback
-                totalCount = 100;
-                sumBrainAge = 3200;
-                ageData = [12, 35, 25, 18, 7, 3];
-                radarData = [75, 60, 65, 55, 78];
-                archetypeData = [20, 30, 15, 35];
-                diffPerformance = [28, 34, 40];
-                diffCounts = [1, 1, 1];
-            }
-        }
-
-        const avgAge = Math.round(sumBrainAge / (totalCount || 1));
-
-        // Update KPIs
-        const totalPlayersEl = document.getElementById('stats-total-players');
-        const avgAgeEl = document.getElementById('stats-avg-age');
-        const topArchEl = document.getElementById('stats-top-archetype');
-
-        if (totalPlayersEl) totalPlayersEl.textContent = totalCount;
-        if (avgAgeEl) avgAgeEl.textContent = avgAge + ' años';
-        if (topArchEl) {
-            const arches = ['Francotirador 🎯', 'Ajedrecista ♟️', 'Calculadora 🧮', 'Equilibrada ⚖️'];
-            const maxIdx = archetypeData.indexOf(Math.max(...archetypeData));
-            topArchEl.textContent = arches[maxIdx];
-        }
-
-        // 1. Age Chart
-        const ctxAge = document.getElementById('ageChart');
-        if (ctxAge) {
-            new Chart(ctxAge.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: ['< 20', '20-25', '26-30', '31-40', '41-50', '51+'],
-                    datasets: [{
-                        label: 'Usuarios',
-                        data: ageData,
-                        backgroundColor: 'rgba(139, 92, 246, 0.6)',
-                        borderColor: 'rgba(139, 92, 246, 1)',
-                        borderWidth: 1,
-                        borderRadius: 4
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-        }
-
-        // 2. Radar Chart
-        const ctxRadar = document.getElementById('radarChart');
-        if (ctxRadar) {
-            new Chart(ctxRadar.getContext('2d'), {
-                type: 'radar',
-                data: {
-                    labels: ['Reacción', 'Memoria Nums.', 'Patrones', 'Mates', 'Secuencia'],
-                    datasets: [{
-                        label: 'Puntuación Media',
-                        data: radarData,
-                        backgroundColor: 'rgba(6, 182, 212, 0.2)',
-                        borderColor: 'rgba(6, 182, 212, 1)',
-                        pointBackgroundColor: 'rgba(6, 182, 212, 1)',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    scales: { r: { angleLines: { color: 'rgba(255,255,255,0.1)' }, grid: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#f1f5f9' }, ticks: { display: false } } }
-                }
-            });
-        }
-
-        // 3. Archetype Chart (Donut)
-        const ctxArch = document.getElementById('archetypeChart');
-        if (ctxArch) {
-            new Chart(ctxArch.getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['Francotirador', 'Ajedrecista', 'Calculadora', 'Equilibrada'],
-                    datasets: [{
-                        data: archetypeData,
-                        backgroundColor: ['rgba(244, 63, 94, 0.7)', 'rgba(139, 92, 246, 0.7)', 'rgba(16, 185, 129, 0.7)', 'rgba(245, 158, 11, 0.7)'],
-                        borderWidth: 0
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } } }
-            });
-        }
-
-        // 4. Performance vs Dificultad (Bar)
-        const ctxDiff = document.getElementById('difficultyPerformanceChart');
-        if (ctxDiff) {
-            const finalPerformance = diffCounts.map((c, i) => c > 0 ? Math.round(diffPerformance[i] / c) : 0);
-            new Chart(ctxDiff.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: ['Fácil', 'Normal', 'Difícil'],
-                    datasets: [{
-                        label: 'Edad Mental Media',
-                        data: finalPerformance,
-                        backgroundColor: ['rgba(16, 185, 129, 0.6)', 'rgba(14, 165, 233, 0.6)', 'rgba(244, 63, 94, 0.6)'],
-                        borderColor: ['#10b981', '#0ea5e9', '#f43f5e'],
-                        borderWidth: 1,
-                        borderRadius: 6
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-        }
-
-        statsLoaded = true;
-    }
-
-    function navigate(path, push = true) {
-        if (push) history.pushState({ path }, '', path);
-
-        let viewKey = 'home';
-        const lowerPath = path.toLowerCase();
-        if (lowerPath.includes('ranking')) viewKey = 'ranking';
-        else if (lowerPath.includes('estadistica')) viewKey = 'stats';
-        else if (lowerPath.includes('perfil')) viewKey = 'profile';
-        else if (lowerPath.includes('entrenamiento')) viewKey = 'training';
-        else if (lowerPath.includes('preguntas-frecuentes') || lowerPath.endsWith('/faq') || lowerPath === '/faq') viewKey = 'faq';
-
-        // Update nav styling
-        document.querySelectorAll('.nav-link[data-route]').forEach(link => {
-            link.classList.remove('active-route');
-            if (link.dataset.route === viewKey) {
-                link.classList.add('active-route');
-                // Allow CSS transitions on the active route 
-                link.style.color = "var(--clr-accent-light)";
-            } else {
-                link.style.color = "";
-            }
-        });
-
-        // Hide all views with transition
-        Object.values(spaViews).forEach(v => {
-            if (v && v.style.display !== 'none') {
-                v.style.opacity = '0';
-                setTimeout(() => { if (v.style.opacity === '0') v.style.display = 'none'; }, 300);
-            }
-        });
-
-        // Show target view
-        setTimeout(() => {
-            const targetView = spaViews[viewKey];
-            if (targetView) {
-                targetView.style.display = 'block';
-                // Trigger reflow
-                void targetView.offsetWidth;
-                targetView.style.opacity = '1';
-
-                // Initializers
-                if (viewKey === 'ranking') loadRanking(currentRankingFilter);
-                if (viewKey === 'stats') loadStats();
-                if (viewKey === 'profile') {
-                    // Cargar y sincronizar perfil con Supabase si está disponible
-                    if (typeof loadAndSyncProfile === 'function') {
-                        loadAndSyncProfile();
-                    } else if (typeof loadProfile === 'function') {
-                        loadProfile();
-                    }
-                }
-                if (viewKey === 'home' && !isTrainingMode) {
-                    setTimeout(() => showScreen('welcome'), 50);
-                }
-            }
-        }, 300);
-    }
-
-    function setupRankingFilters() {
-        // Ranking filter tabs listener
-        const filterTabs = document.getElementById('filter-tabs');
-        if (filterTabs) {
-            filterTabs.addEventListener('click', (e) => {
-                const tab = e.target.closest('.filter-tab');
-                if (!tab) return;
-                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                currentRankingFilter = tab.dataset.filter;
-                loadRanking(currentRankingFilter);
-            });
-        }
-    }
-
-    function setupRouter() {
-        // Intercept link clicks
-        document.addEventListener('click', (e) => {
-            const link = e.target.closest('a[data-route]');
-            if (link) {
-                e.preventDefault();
-                const path = link.getAttribute('href');
-                if (link.dataset.route === 'home') {
-                    cleanupActiveGameTimers();
-                    isTrainingMode = false;
-                    games[0] = { ...dailyGame0Backup };
-                    const appMain = document.getElementById('app');
-                    if (appMain) appMain.classList.remove('training-bar-pad');
-                    const backBar = document.getElementById('training-back-bar');
-                    if (backBar) {
-                        backBar.style.display = 'none';
-                        backBar.setAttribute('aria-hidden', 'true');
-                    }
-                }
-                navigate(path);
-                // Close hamburger menu on mobile
-                const navLinks = document.querySelector('.nav-links');
-                const hamburger = document.getElementById('hamburger-btn');
-                if (navLinks) navLinks.classList.remove('open');
-                if (hamburger) hamburger.classList.remove('active');
-            }
-        });
-
-        // Handle back/forward buttons
-        window.addEventListener('popstate', () => {
-            navigate(window.location.pathname, false);
-        });
-
-        setupRankingFilters();
-    }
-
-    // ══════════════════════════════════════════
     // PHASE 3: localStorage History, Streaks, Profile
     // ══════════════════════════════════════════
     const HISTORY_KEY = 'brainAge_history';
@@ -2648,16 +2240,7 @@
         initBgParticles();
         loadPlayerCount();
 
-        // Solo configurar router SPA si estamos en index.html (tiene todos los views)
-        const isSPA = document.getElementById('view-welcome') !== null;
-
-        if (isSPA) {
-            // Estamos en index.html - usar router SPA
-            setupRouter();
-            navigate(window.location.pathname, false);
-        }
-        // Las páginas individuales serán inicializadas por page-loader.js
-
+        // Inicialización de botones V4
         setupPhase4Buttons();
         checkDuelChallenge();
         renderDailyTestsInfo();
@@ -2686,7 +2269,7 @@
         if (btnSeeRanking) {
             btnSeeRanking.addEventListener('click', () => {
                 document.getElementById('score-saved-overlay').style.display = 'none';
-                navigate('/ranking');
+                window.location.href = '/ranking';
             });
         }
 
@@ -3000,19 +2583,7 @@
                     currentGame = 0;
                     games[0] = { ...gamesPool[idx], id: games[0].id };
                     const go = () => showInstructions(currentGame);
-                    if (entry === 'training') {
-                        // Si estamos en página individual de entrenamiento, no navegar
-                        const isSPA = document.getElementById('view-welcome') !== null;
-                        if (isSPA) {
-                            navigate('/');
-                            setTimeout(go, 330);
-                        } else {
-                            // Página individual - ejecutar directamente
-                            go();
-                        }
-                    } else {
-                        go();
-                    }
+                    go();
                 });
                 grid.appendChild(card);
             });
@@ -3030,7 +2601,6 @@
     }
 
     // Exponer funciones críticas al scope global para páginas individuales
-    window.navigate = navigate;
     window.loadRanking = loadRanking;
     window.loadStats = loadStats;
     window.showScreen = showScreen;
@@ -3050,3 +2620,5 @@
 
     
     
+
+
