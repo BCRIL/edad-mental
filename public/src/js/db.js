@@ -326,7 +326,7 @@ async function getStats() {
         console.log('🔍 Ejecutando getStats desde rankings...');
         const { data, error } = await client
             .from('rankings')
-            .select('brain_age, reaction_score, numbers_score, patterns_score, math_score, sequence_score, colors_score, spatial_score, difficulty, created_at');
+            .select('brain_age, reaction_score, numbers_score, patterns_score, math_score, sequence_score, difficulty, created_at');
 
         if (error) {
             console.error('❌ Error en getStats:', error);
