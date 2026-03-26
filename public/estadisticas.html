@@ -186,12 +186,36 @@
 
     <!-- Statistics Chart Logic -->
     <script>
+        console.log('📊 Script de estadísticas iniciado');
+
+        // Esperar a que getStats esté disponible
+        async function waitForGetStats(maxAttempts = 50) {
+            let attempts = 0;
+            while (attempts < maxAttempts) {
+                if (typeof window.getStats === 'function') {
+                    console.log('✅ getStats disponible');
+                    return true;
+                }
+                attempts++;
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            console.error('❌ getStats no estuvo disponible después de 5 segundos');
+            return false;
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log('📊 Inicializando página de estadísticas...');
+            console.log('📊 DOMContentLoaded - inicializando estadísticas');
 
             // Configuración Global de Chart.js
             Chart.defaults.color = '#94a3b8';
             Chart.defaults.font.family = "'Inter', sans-serif";
+
+            // Esperar a que getStats esté disponible
+            const getStatsReady = await waitForGetStats();
+            if (!getStatsReady) {
+                console.error('❌ getStats no está disponible, abortando...');
+                return;
+            }
 
             // Variables para almacenar datos
             let ageData = [0, 0, 0, 0, 0, 0];
@@ -204,17 +228,23 @@
 
             try {
                 // Obtener datos de la base de datos
-                console.log('🔄 Cargando datos de estadísticas...');
-                const { data, error } = await getStats();
+                console.log('🔄 Cargando datos de estadísticas con getStats()...');
+                const result = await window.getStats();
+                console.log('📝 Resultado de getStats():', result);
 
-                if (!error && data && data.length > 0) {
-                    console.log(`✅ Datos cargados: ${data.length} registros`);
+                const { data, error } = result;
+
+                if (error) {
+                    console.error('❌ Error en getStats():', error);
+                } else if (data && Array.isArray(data) && data.length > 0) {
+                    console.log(`✅ Datos cargados exitosamente: ${data.length} registros`);
+                    console.log('🔍 Primeros 3 registros:', data.slice(0, 3));
                     hasRealData = true;
                     totalPlayers = data.length;
 
                     // Calcular distribución de edades mentales
                     let sumAge = 0;
-                    data.forEach(row => {
+                    data.forEach((row, idx) => {
                         const a = row.brain_age;
                         sumAge += a;
 
@@ -288,21 +318,23 @@
                         hard: hardScores.length > 0 ? Math.round(hardScores.reduce((a, b) => a + b) / hardScores.length) : avgBrainAge + 5
                     };
 
-                    console.log('📈 Estadísticas reales calculadas:', {
+                    console.log('📈 Estadísticas finales calculadas:', {
                         totalPlayers,
                         avgBrainAge,
                         arquetipos: archetypeData,
-                        difficulty: difficultyData
+                        difficulty: difficultyData,
+                        ageDistribution: ageData,
+                        radarScores: radarData
                     });
 
                 } else {
-                    console.warn('⚠️ No hay datos disponibles en la base de datos');
+                    console.warn('⚠️ No hay datos disponibles. Data:', data, 'Error:', error);
                     hasRealData = false;
                     totalPlayers = 0;
                     avgBrainAge = 0;
                 }
             } catch (err) {
-                console.error('❌ Error cargando estadísticas:', err);
+                console.error('❌ Excepción cargando estadísticas:', err);
                 hasRealData = false;
             }
 
