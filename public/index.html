@@ -911,7 +911,7 @@
                         <div id="profile-league-name" class="profile-stat-card__value">Sin rango</div>
                     </div>
                     <div class="profile-stat-card">
-                        <div class="profile-stat-card__label">Racha</div>
+                        <div class="profile-stat-card__label">Racha 🔥</div>
                         <div id="profile-streak" class="profile-stat-card__num profile-stat-card__num--accent">0</div>
                         <div class="profile-stat-card__hint">días seguidos</div>
                     </div>
@@ -919,6 +919,16 @@
                         <div class="profile-stat-card__label">Mejor edad</div>
                         <div id="profile-best" class="profile-stat-card__num profile-stat-card__num--primary">--</div>
                         <div class="profile-stat-card__hint">años mentales</div>
+                    </div>
+                    <div class="profile-stat-card">
+                        <div class="profile-stat-card__label">Edad promedio</div>
+                        <div id="profile-avg" class="profile-stat-card__num profile-stat-card__num--info">--</div>
+                        <div class="profile-stat-card__hint">años mentales</div>
+                    </div>
+                    <div class="profile-stat-card">
+                        <div class="profile-stat-card__label">Racha máxima</div>
+                        <div id="profile-highest-streak" class="profile-stat-card__num profile-stat-card__num--warning">0</div>
+                        <div class="profile-stat-card__hint">días máximo</div>
                     </div>
                     <div class="profile-stat-card">
                         <div class="profile-stat-card__label">Tests</div>
@@ -996,8 +1006,13 @@
 
     <!-- Supabase CDN and Shared DB logic -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="src/js/db.js?v=6.0"></script>
-    <script src="src/js/app.js?v=4.2"></script>
+    <!-- Módulos principales (en orden de dependencias) -->
+    <script src="src/js/core.js?v=1.0"></script>
+    <script src="src/js/db.js?v=6.1"></script>
+    <script src="src/js/ui.js?v=1.0"></script>
+    <script src="src/js/profile.js?v=1.0"></script>
+    <!-- Motor de juegos (debe venir después de core) -->
+    <script src="src/js/app.js?v=4.3"></script>
     <script src="src/js/auth-google.js?v=1.0"></script>
     <!-- PWA Registration -->
     <script>

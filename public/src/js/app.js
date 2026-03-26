@@ -1452,6 +1452,9 @@
         if (!isTrainingMode) {
             saveResultToHistory(brainAge, currentDifficulty, games.map(g => g.label), scores);
             showStreakNotification();
+
+            // Sincronizar con Supabase si usuario está autenticado
+            syncProfileWithSupabase(brainAge);
         }
 
         // V3: Load global comparison
@@ -2190,7 +2193,14 @@
                 // Initializers
                 if (viewKey === 'ranking') loadRanking(currentRankingFilter);
                 if (viewKey === 'stats') loadStats();
-                if (viewKey === 'profile') loadProfile();
+                if (viewKey === 'profile') {
+                    // Cargar y sincronizar perfil con Supabase si está disponible
+                    if (typeof loadAndSyncProfile === 'function') {
+                        loadAndSyncProfile();
+                    } else if (typeof loadProfile === 'function') {
+                        loadProfile();
+                    }
+                }
                 if (viewKey === 'home' && !isTrainingMode) {
                     setTimeout(() => showScreen('welcome'), 50);
                 }
@@ -2592,7 +2602,12 @@
                 if (confirm('¿Seguro que quieres borrar tu historial local? Esta acción no se puede deshacer.')) {
                     localStorage.removeItem(HISTORY_KEY);
                     localStorage.removeItem(STREAK_KEY);
-                    loadProfile();
+                    // Recargar perfil y sincronizar
+                    if (typeof loadAndSyncProfile === 'function') {
+                        loadAndSyncProfile();
+                    } else if (typeof loadProfile === 'function') {
+                        loadProfile();
+                    }
                 }
             });
         }
@@ -2804,6 +2819,90 @@
                     };
                 }
             }, 4000);
+        }
+    };
+
+    // ── Sincronización de Perfil con Supabase ──
+    window.syncProfileWithSupabase = async (brainAge) => {
+        try {
+            // Verificar si el usuario está autenticado
+            if (typeof getCurrentUser !== 'function') return;
+            const user = await getCurrentUser();
+            if (!user) return;
+
+            // Obtener historial para calcular estadísticas
+            const history = getHistory();
+            const today = new Date().toISOString().split('T')[0];
+
+            // Calcular mejor edad mental (mínima)
+            const bestBrainAge = Math.min(...history.map(h => h.brainAge));
+
+            // Calcular promedio de edad mental
+            const averageBrainAge = history.length > 0
+                ? Math.round(history.reduce((sum, h) => sum + h.brainAge, 0) / history.length)
+                : 0;
+
+            // Calcular promedios por tipo de juego
+            const gameAverages = { reaction: [], numbers: [], patterns: [], math: [], sequence: [], colors: [], spatial: [] };
+            history.forEach(h => {
+                if (h.scores) {
+                    if (h.scores.reaction !== undefined) gameAverages.reaction.push(h.scores.reaction);
+                    if (h.scores.numbers !== undefined) gameAverages.numbers.push(h.scores.numbers);
+                    if (h.scores.patterns !== undefined) gameAverages.patterns.push(h.scores.patterns);
+                    if (h.scores.math !== undefined) gameAverages.math.push(h.scores.math);
+                    if (h.scores.sequence !== undefined) gameAverages.sequence.push(h.scores.sequence);
+                    if (h.scores.colors !== undefined) gameAverages.colors.push(h.scores.colors);
+                    if (h.scores.spatial !== undefined) gameAverages.spatial.push(h.scores.spatial);
+                }
+            });
+
+            const stats = {
+                total_tests: history.length,
+                best_brain_age: bestBrainAge,
+                last_played_at: today,
+                average_brain_age: averageBrainAge,
+                reaction_avg: gameAverages.reaction.length > 0 ? Math.round(gameAverages.reaction.reduce((a, b) => a + b, 0) / gameAverages.reaction.length) : 0,
+                numbers_avg: gameAverages.numbers.length > 0 ? Math.round(gameAverages.numbers.reduce((a, b) => a + b, 0) / gameAverages.numbers.length) : 0,
+                patterns_avg: gameAverages.patterns.length > 0 ? Math.round(gameAverages.patterns.reduce((a, b) => a + b, 0) / gameAverages.patterns.length) : 0,
+                math_avg: gameAverages.math.length > 0 ? Math.round(gameAverages.math.reduce((a, b) => a + b, 0) / gameAverages.math.length) : 0,
+                sequence_avg: gameAverages.sequence.length > 0 ? Math.round(gameAverages.sequence.reduce((a, b) => a + b, 0) / gameAverages.sequence.length) : 0,
+                colors_avg: gameAverages.colors.length > 0 ? Math.round(gameAverages.colors.reduce((a, b) => a + b, 0) / gameAverages.colors.length) : 0,
+                spatial_avg: gameAverages.spatial.length > 0 ? Math.round(gameAverages.spatial.reduce((a, b) => a + b, 0) / gameAverages.spatial.length) : 0,
+                current_streak: typeof getCurrentStreak === 'function' ? getCurrentStreak() : 0,
+                highest_streak: typeof getHighestStreak === 'function' ? getHighestStreak() : 0
+            };
+
+            // Calcular insignias desbloqueadas
+            const badges = {
+                first_test: history.length >= 1,
+                five_games: history.length >= 5,
+                veteran: history.length >= 10,
+                three_day_streak: stats.current_streak >= 3,
+                seven_day_streak: stats.current_streak >= 7,
+                brain_age_22: bestBrainAge <= 22,
+                brain_age_18: bestBrainAge <= 18
+            };
+            stats.badges_unlocked = JSON.stringify(badges);
+
+            // Actualizar perfil en Supabase
+            if (typeof updateUserProfile === 'function') {
+                const result = await updateUserProfile(user.id, { stats });
+
+                if (!result || !result.error) {
+                    console.log('✅ Perfil sincronizado con Supabase:', {
+                        total_tests: stats.total_tests,
+                        best_brain_age: stats.best_brain_age,
+                        average_brain_age: stats.average_brain_age,
+                        current_streak: stats.current_streak,
+                        highest_streak: stats.highest_streak,
+                        badges: badges
+                    });
+                } else {
+                    console.error('❌ Error sincronizando perfil:', result.error);
+                }
+            }
+        } catch (err) {
+            console.error('❌ Error en syncProfileWithSupabase:', err);
         }
     };
 

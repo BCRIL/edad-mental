@@ -131,9 +131,9 @@ async function getUserProfile(userId) {
     }
 }
 
-// Actualizar solo display_name y/o avatar_url del perfil
+// Actualizar perfil del usuario (display_name, avatar_url, estadísticas)
 // NOTA: No se puede borrar el perfil. Esta es la única mutación permitida.
-async function updateUserProfile(userId, { displayName, avatarUrl } = {}) {
+async function updateUserProfile(userId, { displayName, avatarUrl, stats } = {}) {
     const client = getSupabaseClient();
     if (!client) return { error: { message: 'Supabase no disponible.' } };
     const updates = {};
@@ -143,6 +143,29 @@ async function updateUserProfile(userId, { displayName, avatarUrl } = {}) {
         updates.display_name = safeName;
     }
     if (avatarUrl !== undefined) updates.avatar_url = avatarUrl;
+    if (stats !== undefined) {
+        // Actualizar estadísticas básicas
+        if (stats.total_tests !== undefined) updates.total_tests = stats.total_tests;
+        if (stats.best_brain_age !== undefined) updates.best_brain_age = stats.best_brain_age;
+        if (stats.last_played_at !== undefined) updates.last_played_at = stats.last_played_at;
+
+        // Actualizar promedios
+        if (stats.average_brain_age !== undefined) updates.average_brain_age = stats.average_brain_age;
+        if (stats.reaction_avg !== undefined) updates.reaction_avg = stats.reaction_avg;
+        if (stats.numbers_avg !== undefined) updates.numbers_avg = stats.numbers_avg;
+        if (stats.patterns_avg !== undefined) updates.patterns_avg = stats.patterns_avg;
+        if (stats.math_avg !== undefined) updates.math_avg = stats.math_avg;
+        if (stats.sequence_avg !== undefined) updates.sequence_avg = stats.sequence_avg;
+        if (stats.colors_avg !== undefined) updates.colors_avg = stats.colors_avg;
+        if (stats.spatial_avg !== undefined) updates.spatial_avg = stats.spatial_avg;
+
+        // Actualizar racha
+        if (stats.current_streak !== undefined) updates.current_streak = stats.current_streak;
+        if (stats.highest_streak !== undefined) updates.highest_streak = stats.highest_streak;
+
+        // Actualizar insignias
+        if (stats.badges_unlocked !== undefined) updates.badges_unlocked = stats.badges_unlocked;
+    }
     if (Object.keys(updates).length === 0) return { error: { message: 'Nada que actualizar.' } };
     try {
         const { error } = await client
