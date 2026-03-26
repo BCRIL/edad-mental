@@ -11,6 +11,29 @@
         const streak = getCurrentStreak();
         const highestStreak = typeof getHighestStreak === 'function' ? getHighestStreak() : 0;
 
+        // Verificar si el usuario está autenticado y mostrar/ocultar auth gate
+        let isLoggedIn = false;
+        let user = null;
+
+        if (typeof getCurrentUser === 'function') {
+            user = await getCurrentUser();
+            isLoggedIn = !!user;
+        }
+
+        const authGate = document.getElementById('profile-auth-gate');
+        const profileContent = document.getElementById('profile-content');
+
+        if (!isLoggedIn && authGate && profileContent) {
+            // Usuario no autenticado - mostrar auth gate
+            authGate.style.display = 'block';
+            profileContent.style.display = 'none';
+            return;
+        } else if (isLoggedIn && authGate && profileContent) {
+            // Usuario autenticado - mostrar contenido
+            authGate.style.display = 'none';
+            profileContent.style.display = 'block';
+        }
+
         // Renderizar estadísticas locales primero
         const bestAge = history.length > 0 ? Math.min(...history.map(h => h.brainAge)) : null;
         const avgAge = history.length > 0 ? Math.round(history.reduce((sum, h) => sum + h.brainAge, 0) / history.length) : null;
@@ -19,29 +42,26 @@
         $('#profile-best').textContent = bestAge ? bestAge : '--';
 
         // Si el usuario está autenticado, sincronizar con Supabase
-        if (typeof getCurrentUser === 'function' && typeof updateUserProfile === 'function') {
-            const user = await getCurrentUser();
-            if (user) {
-                try {
-                    // Actualizar estadísticas en el servidor si hay cambios
-                    const result = await updateUserProfile(user.id, {
-                        displayName: APP_STATE.currentDisplayName,
-                        stats: {
-                            total_tests: history.length,
-                            best_brain_age: bestAge,
-                            average_brain_age: avgAge,
-                            current_streak: streak,
-                            highest_streak: highestStreak,
-                            last_played_at: history.length > 0 ? history[0].date : null
-                        }
-                    });
-
-                    if (!result.error) {
-                        console.log('✅ Perfil sincronizado con Supabase');
+        if (user && typeof updateUserProfile === 'function') {
+            try {
+                // Actualizar estadísticas en el servidor si hay cambios
+                const result = await updateUserProfile(user.id, {
+                    displayName: APP_STATE.currentDisplayName,
+                    stats: {
+                        total_tests: history.length,
+                        best_brain_age: bestAge,
+                        average_brain_age: avgAge,
+                        current_streak: streak,
+                        highest_streak: highestStreak,
+                        last_played_at: history.length > 0 ? history[0].date : null
                     }
-                } catch (e) {
-                    console.error('Error sincronizando perfil:', e);
+                });
+
+                if (!result.error) {
+                    console.log('✅ Perfil sincronizado con Supabase');
                 }
+            } catch (e) {
+                console.error('Error sincronizando perfil:', e);
             }
         }
 

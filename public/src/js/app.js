@@ -1919,6 +1919,26 @@
     async function loadRanking(filter) {
         const tbody = document.getElementById('ranking-body');
         const podium = document.getElementById('ranking-podium');
+
+        // En páginas individuales, mostrar auth gate si no hay autenticación
+        const authGate = document.getElementById('ranking-page-auth-gate');
+        const rankingContent = document.getElementById('ranking-page-content');
+
+        // Verificar si el usuario está autenticado
+        if (typeof getCurrentUser === 'function') {
+            const user = await getCurrentUser();
+            if (!user && authGate && rankingContent) {
+                // Usuario no autenticado - mostrar auth gate
+                authGate.style.display = 'block';
+                rankingContent.style.display = 'none';
+                return;
+            } else if (user && authGate && rankingContent) {
+                // Usuario autenticado - mostrar contenido
+                authGate.style.display = 'none';
+                rankingContent.style.display = 'block';
+            }
+        }
+
         if (!tbody) return;
         tbody.innerHTML = '<tr><td colspan="5" class="loading-spinner" style="text-align: center; padding: 40px;">Cargando...</td></tr>';
         if (podium) podium.innerHTML = '';
@@ -2228,6 +2248,21 @@
         }, 300);
     }
 
+    function setupRankingFilters() {
+        // Ranking filter tabs listener
+        const filterTabs = document.getElementById('filter-tabs');
+        if (filterTabs) {
+            filterTabs.addEventListener('click', (e) => {
+                const tab = e.target.closest('.filter-tab');
+                if (!tab) return;
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentRankingFilter = tab.dataset.filter;
+                loadRanking(currentRankingFilter);
+            });
+        }
+    }
+
     function setupRouter() {
         // Intercept link clicks
         document.addEventListener('click', (e) => {
@@ -2261,18 +2296,7 @@
             navigate(window.location.pathname, false);
         });
 
-        // Ranking filter tabs listener
-        const filterTabs = document.getElementById('filter-tabs');
-        if (filterTabs) {
-            filterTabs.addEventListener('click', (e) => {
-                const tab = e.target.closest('.filter-tab');
-                if (!tab) return;
-                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                currentRankingFilter = tab.dataset.filter;
-                loadRanking(currentRankingFilter);
-            });
-        }
+        setupRankingFilters();
     }
 
     // ══════════════════════════════════════════
@@ -2616,6 +2640,7 @@
             setupRouter();
             navigate(window.location.pathname, false);
         }
+        // Las páginas individuales serán inicializadas por page-loader.js
 
         setupPhase4Buttons();
         checkDuelChallenge();
@@ -2988,7 +3013,21 @@
         });
     }
 
+    // Exponer funciones críticas al scope global para páginas individuales
     window.navigate = navigate;
+    window.loadRanking = loadRanking;
+    window.loadStats = loadStats;
+    window.showScreen = showScreen;
+    window.renderTrainingMode = renderTrainingMode;
+    window.exitTrainingFlow = exitTrainingFlow;
+    window.setupRankingFilters = setupRankingFilters;
+
+    // Getter para currentRankingFilter
+    Object.defineProperty(window, 'getCurrentRankingFilter', {
+        value: () => currentRankingFilter,
+        writable: false,
+        configurable: false
+    });
 
 })();
 
