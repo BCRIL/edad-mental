@@ -3,6 +3,26 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/entrenamiento",
+      "destination": "/entrenamiento.html"
+    },
+    {
+      "source": "/perfil",
+      "destination": "/perfil.html"
+    },
+    {
+      "source": "/ranking",
+      "destination": "/ranking.html"
+    },
+    {
+      "source": "/estadisticas",
+      "destination": "/estadisticas.html"
+    },
+    {
+      "source": "/faq",
+      "destination": "/faq.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
